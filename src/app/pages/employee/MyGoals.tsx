@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import {
@@ -23,9 +24,11 @@ import StatusPill from '../../components/common/StatusPill';
 import ProgressBar from '../../components/common/ProgressBar';
 import CreateGoalDrawer from '../../components/employee/CreateGoalDrawer';
 import { Goal } from '../../types';
+import PageHeader from '../../components/common/PageHeader';
 
 export default function MyGoals() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { goals, addGoal, updateGoal, deleteGoal, cycles } = useData();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | undefined>();
@@ -77,22 +80,18 @@ export default function MyGoals() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Box sx={{ fontSize: 24, fontWeight: 700, mb: 0.5 }}>My Goals</Box>
-          <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
-            Create and manage your performance goals
-          </Box>
-        </Box>
-        <Button
+      <PageHeader
+        title="My Goals"
+        subtitle="Create, validate, and submit your FY 2026 performance goals."
+        action={<Button
           variant="contained"
           startIcon={<Plus size={18} />}
           onClick={handleAddGoal}
           disabled={userGoals.length >= 8}
         >
           Add Goal
-        </Button>
-      </Box>
+        </Button>}
+      />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center' }}>
         <TextField
@@ -152,6 +151,7 @@ export default function MyGoals() {
                   <TableRow>
                     <TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Thrust Area</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>UoM</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Target</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Weightage</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Progress</TableCell>
@@ -169,8 +169,9 @@ export default function MyGoals() {
                         </Box>
                       </TableCell>
                       <TableCell>{goal.thrustArea}</TableCell>
+                      <TableCell>{goal.unitOfMeasure}</TableCell>
                       <TableCell>
-                        {goal.target} {goal.unitOfMeasure}
+                        {goal.target}
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -215,6 +216,21 @@ export default function MyGoals() {
           )}
         </CardContent>
       </Card>
+
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2.5 }}>
+        <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
+          Submit is enabled when total weightage is exactly 100%, there are 1-8 goals, and every goal is at least 10%.
+        </Box>
+        <Button
+          variant="contained"
+          color={canSubmit ? 'primary' : 'inherit'}
+          startIcon={<CheckCircle size={18} />}
+          disabled={!canSubmit}
+          onClick={() => navigate('/employee/submit-review')}
+        >
+          Submit for Review
+        </Button>
+      </Box>
 
       <CreateGoalDrawer
         open={drawerOpen}

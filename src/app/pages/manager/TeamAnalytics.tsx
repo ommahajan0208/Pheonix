@@ -67,7 +67,7 @@ export default function TeamAnalytics() {
             title="Total Goals"
             value={totalGoals}
             icon={Target}
-            color="#1976d2"
+            color="#9c27b0"
             trend="+12% from last cycle"
           />
         </Grid>
@@ -114,7 +114,7 @@ export default function TeamAnalytics() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="progress" fill="#1976d2" name="Avg Progress %" />
+                  <Bar dataKey="progress" fill="#9c27b0" name="Avg Progress %" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -137,7 +137,7 @@ export default function TeamAnalytics() {
                   <Line
                     type="monotone"
                     dataKey="completion"
-                    stroke="#2e7d32"
+                    stroke="#9c27b0"
                     strokeWidth={2}
                     name="Completion %"
                   />
@@ -158,7 +158,7 @@ export default function TeamAnalytics() {
                   <PolarGrid />
                   <PolarAngleAxis dataKey="thrust" />
                   <PolarRadiusAxis />
-                  <Radar name="Performance" dataKey="value" stroke="#1976d2" fill="#1976d2" fillOpacity={0.6} />
+                  <Radar name="Performance" dataKey="value" stroke="#9c27b0" fill="#9c27b0" fillOpacity={0.45} />
                   <Legend />
                 </RadarChart>
               </ResponsiveContainer>
@@ -170,32 +170,29 @@ export default function TeamAnalytics() {
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
-                Key Insights
+                Risk Heatmap
               </Box>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Box sx={{ p: 2, bgcolor: '#e8f5e9', borderRadius: 1 }}>
-                  <Box sx={{ fontSize: 14, fontWeight: 600, color: '#2e7d32', mb: 0.5 }}>
-                    Strong Performance
-                  </Box>
-                  <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
-                    Team is showing 12% improvement in goal completion compared to last cycle
-                  </Box>
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 1 }}>
+                {['Revenue', 'Customer', 'Innovation', 'Efficiency', 'Team'].flatMap((area, areaIdx) =>
+                  ['Q1', 'Q2', 'Q3'].map((quarter, qIdx) => {
+                    const score = (areaIdx * 17 + qIdx * 23 + 38) % 100;
+                    const bg = score > 70 ? '#e8f5e9' : score > 40 ? '#fff3e0' : '#ffebee';
+                    const color = score > 70 ? '#2e7d32' : score > 40 ? '#ed6c02' : '#d32f2f';
+                    return (
+                      <Box key={`${area}-${quarter}`} sx={{ p: 1.2, borderRadius: 1, bgcolor: bg, border: '1px solid rgba(0,0,0,0.05)' }}>
+                        <Box sx={{ fontSize: 11, color: 'text.secondary' }}>{area}</Box>
+                        <Box sx={{ fontSize: 13, fontWeight: 800, color }}>{quarter} {score}%</Box>
+                      </Box>
+                    );
+                  })
+                )}
+              </Box>
+              <Box sx={{ mt: 2, p: 2, bgcolor: '#f3e5f5', borderRadius: 1 }}>
+                <Box sx={{ fontSize: 14, fontWeight: 700, color: '#9c27b0', mb: 0.5 }}>
+                  Analytics Insight
                 </Box>
-                <Box sx={{ p: 2, bgcolor: '#fff3e0', borderRadius: 1 }}>
-                  <Box sx={{ fontSize: 14, fontWeight: 600, color: '#ed6c02', mb: 0.5 }}>
-                    Attention Required
-                  </Box>
-                  <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
-                    {atRisk} goal{atRisk !== 1 ? 's are' : ' is'} behind schedule and may need additional support
-                  </Box>
-                </Box>
-                <Box sx={{ p: 2, bgcolor: '#e3f2fd', borderRadius: 1 }}>
-                  <Box sx={{ fontSize: 14, fontWeight: 600, color: '#1976d2', mb: 0.5 }}>
-                    Innovation Focus
-                  </Box>
-                  <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
-                    Innovation thrust area shows most potential for growth with proper resources
-                  </Box>
+                <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
+                  {atRisk} approved goal{atRisk !== 1 ? 's need' : ' needs'} intervention; Innovation and Efficiency carry the highest delivery risk.
                 </Box>
               </Box>
             </CardContent>

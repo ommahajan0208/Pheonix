@@ -20,14 +20,15 @@ import StatusPill from '../../components/common/StatusPill';
 import ProgressBar from '../../components/common/ProgressBar';
 
 export default function Approvals() {
-  const { goals, updateGoal } = useData();
+  const { goals, updateGoal, teamMembers } = useData();
   const [selectedEmployee, setSelectedEmployee] = useState<string>('emp-001');
   const [editedGoals, setEditedGoals] = useState<Record<string, Partial<Goal>>>({});
 
+  const reviewGoals = goals.filter(g => ['pending', 'rework', 'approved'].includes(g.status));
   const pendingGoals = goals.filter(g => g.status === 'pending');
-  const employees = Array.from(new Set(pendingGoals.map(g => ({ id: g.employeeId, name: g.employeeName }))));
+  const employees = teamMembers.map(member => ({ id: member.id, name: member.name }));
 
-  const employeeGoals = pendingGoals.filter(g => g.employeeId === selectedEmployee);
+  const employeeGoals = reviewGoals.filter(g => g.employeeId === selectedEmployee);
 
   const handleEdit = (goalId: string, field: 'target' | 'weightage', value: number) => {
     setEditedGoals(prev => ({
@@ -68,7 +69,7 @@ export default function Approvals() {
 
       {pendingGoals.length === 0 && (
         <Alert severity="success" sx={{ mb: 3 }}>
-          All goals have been reviewed! No pending approvals.
+          All submitted goals have been reviewed. Approved cards remain visible with a lock for audit context.
         </Alert>
       )}
 

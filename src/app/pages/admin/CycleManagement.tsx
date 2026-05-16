@@ -15,7 +15,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 export default function CycleManagement() {
-  const { cycles } = useData();
+  const { cycles, updateCyclePhase } = useData();
   const [selectedCycle] = useState(cycles[0]);
 
   const phases = [
@@ -120,7 +120,10 @@ export default function CycleManagement() {
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       {phaseData?.isOpen ? <Unlock size={16} color="#2e7d32" /> : <Lock size={16} color="#d32f2f" />}
-                      <Switch checked={phaseData?.isOpen} />
+                      <Switch
+                        checked={phaseData?.isOpen}
+                        onChange={(event) => updateCyclePhase(selectedCycle.id, phase.id as keyof typeof selectedCycle.phases, { isOpen: event.target.checked })}
+                      />
                     </Box>
                   </Box>
 
@@ -130,7 +133,7 @@ export default function CycleManagement() {
                         <DatePicker
                           label="Start Date"
                           value={phaseData?.start}
-                          disabled={!phaseData?.isOpen}
+                          onChange={(date) => date && updateCyclePhase(selectedCycle.id, phase.id as keyof typeof selectedCycle.phases, { start: date })}
                           slotProps={{ textField: { size: 'small', fullWidth: true } }}
                         />
                       </Grid>
@@ -138,7 +141,7 @@ export default function CycleManagement() {
                         <DatePicker
                           label="End Date"
                           value={phaseData?.end}
-                          disabled={!phaseData?.isOpen}
+                          onChange={(date) => date && updateCyclePhase(selectedCycle.id, phase.id as keyof typeof selectedCycle.phases, { end: date })}
                           slotProps={{ textField: { size: 'small', fullWidth: true } }}
                         />
                       </Grid>

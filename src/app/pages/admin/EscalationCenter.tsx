@@ -8,12 +8,13 @@ import {
   Tab,
   Chip,
   Button,
+  Grid,
 } from '@mui/material';
 import { AlertCircle, Clock, XCircle } from 'lucide-react';
 import GoalCard from '../../components/common/GoalCard';
 
 export default function EscalationCenter() {
-  const { goals } = useData();
+  const { goals, escalations } = useData();
   const [selectedTab, setSelectedTab] = useState(0);
 
   const atRiskGoals = goals.filter(g => g.progress < 30 && g.status === 'approved');
@@ -42,6 +43,21 @@ export default function EscalationCenter() {
           Monitor and manage goals requiring immediate attention
         </Box>
       </Box>
+
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        {escalations.map(item => (
+          <Grid item xs={12} md={4} key={item.id}>
+            <Card sx={{ border: '1px solid #f3c7c7', boxShadow: '0 1px 4px rgba(211,47,47,0.08)' }}>
+              <CardContent>
+                <Chip label={item.severity.toUpperCase()} size="small" color={item.severity === 'high' ? 'error' : item.severity === 'medium' ? 'warning' : 'default'} sx={{ mb: 1 }} />
+                <Box sx={{ fontSize: 15, fontWeight: 800, mb: 0.5 }}>{item.title}</Box>
+                <Box sx={{ fontSize: 12, color: 'text.secondary', mb: 1 }}>{item.owner} / {item.reason}</Box>
+                <Chip label={item.status} size="small" variant="outlined" />
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
 
       <Card sx={{ boxShadow: 2, mb: 3 }}>
         <CardContent sx={{ pb: 0 }}>

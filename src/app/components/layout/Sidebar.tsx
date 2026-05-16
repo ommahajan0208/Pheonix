@@ -2,14 +2,14 @@ import { useNavigate, useLocation } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { Box, List, ListItemButton, ListItemIcon, ListItemText, Chip, Divider } from '@mui/material';
 import {
-  Dashboard,
+  LayoutDashboard,
   Target,
   CheckCircle,
   Users,
   TrendingUp,
   Settings,
   Calendar,
-  Sitemap,
+  Network,
   FileText,
   AlertCircle,
   Bell,
@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 
 const EMPLOYEE_NAV = [
-  { path: '/employee/dashboard', label: 'Dashboard', icon: Dashboard },
+  { path: '/employee/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/employee/my-goals', label: 'My Goals', icon: Target },
   { path: '/employee/submit-review', label: 'Submit Review', icon: CheckCircle },
   { path: '/employee/checkin', label: 'Quarterly Check-in', icon: Calendar },
@@ -26,7 +26,7 @@ const EMPLOYEE_NAV = [
 ];
 
 const MANAGER_NAV = [
-  { path: '/manager/dashboard', label: 'Dashboard', icon: Dashboard },
+  { path: '/manager/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/manager/team-goals', label: 'Team Goals', icon: Target },
   { path: '/manager/approvals', label: 'Approvals', icon: CheckCircle },
   { path: '/manager/checkin', label: 'Manager Check-in', icon: Calendar },
@@ -34,9 +34,9 @@ const MANAGER_NAV = [
 ];
 
 const ADMIN_NAV = [
-  { path: '/admin/dashboard', label: 'Dashboard', icon: Dashboard },
+  { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/admin/cycles', label: 'Cycle Management', icon: Calendar },
-  { path: '/admin/org-hierarchy', label: 'Org Hierarchy', icon: Sitemap },
+  { path: '/admin/org-hierarchy', label: 'Org Hierarchy', icon: Network },
   { path: '/admin/audit-logs', label: 'Audit Logs', icon: FileText },
   { path: '/admin/reports', label: 'Reports', icon: TrendingUp },
   { path: '/admin/escalations', label: 'Escalation Center', icon: AlertCircle },
@@ -53,7 +53,7 @@ export default function Sidebar() {
   return (
     <Box sx={{
       width: 260,
-      bgcolor: '#1a1a2e',
+      bgcolor: '#10233f',
       color: 'white',
       display: 'flex',
       flexDirection: 'column',
@@ -61,8 +61,8 @@ export default function Sidebar() {
     }}>
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <Target size={32} style={{ marginBottom: 8 }} />
-        <Box sx={{ fontSize: 20, fontWeight: 700, letterSpacing: 0.5 }}>GoalTracker</Box>
-        <Box sx={{ fontSize: 12, color: '#b0b0b0', mt: 0.5 }}>Performance Management</Box>
+        <Box sx={{ fontSize: 20, fontWeight: 800, letterSpacing: 0 }}>GoalWorks</Box>
+        <Box sx={{ fontSize: 12, color: '#b8c5d8', mt: 0.5 }}>Goal Setting Portal</Box>
       </Box>
 
       <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)' }} />
@@ -82,8 +82,9 @@ export default function Sidebar() {
                 borderRadius: 1,
                 color: isActive ? '#fff' : '#b0b0b0',
                 bgcolor: isActive ? '#1976d2' : 'transparent',
+                borderLeft: isActive ? '3px solid #7dd3fc' : '3px solid transparent',
                 '&:hover': {
-                  bgcolor: isActive ? '#1565c0' : 'rgba(255,255,255,0.05)',
+                  bgcolor: isActive ? '#1565c0' : 'rgba(255,255,255,0.08)',
                   color: '#fff',
                 },
               }}

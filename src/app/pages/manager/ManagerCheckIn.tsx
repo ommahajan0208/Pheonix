@@ -9,9 +9,15 @@ import {
   MenuItem,
   Button,
   Divider,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Chip,
 } from '@mui/material';
 import { Save } from 'lucide-react';
-import GoalCard from '../../components/common/GoalCard';
+import PageHeader from '../../components/common/PageHeader';
 
 export default function ManagerCheckIn() {
   const { goals } = useData();
@@ -25,12 +31,7 @@ export default function ManagerCheckIn() {
 
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ fontSize: 24, fontWeight: 700, mb: 0.5 }}>Manager Check-in</Box>
-        <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
-          Review employee progress and provide feedback
-        </Box>
-      </Box>
+      <PageHeader title="Manager Check-in" subtitle="Review planned vs actual progress and capture feedback, risk, and next actions." />
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={7}>
@@ -74,20 +75,38 @@ export default function ManagerCheckIn() {
             </CardContent>
           </Card>
 
-          {selectedGoal && (
-            <Card sx={{ boxShadow: 2 }}>
-              <CardContent>
-                <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
-                  Goal Details
-                </Box>
-                {employeeGoals
-                  .filter(g => g.id === selectedGoal)
-                  .map(goal => (
-                    <GoalCard key={goal.id} goal={goal} showActions={false} />
-                  ))}
-              </CardContent>
-            </Card>
-          )}
+          <Card sx={{ boxShadow: 2 }}>
+            <CardContent>
+              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
+                Planned vs Actual
+              </Box>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 700 }}>Goal</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Planned</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Actual</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Risk</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {employeeGoals.map(goal => {
+                    const risk = goal.progress < 30 ? 'High' : goal.progress < 55 ? 'Medium' : 'Low';
+                    return (
+                      <TableRow key={goal.id} hover selected={selectedGoal === goal.id} onClick={() => setSelectedGoal(goal.id)} sx={{ cursor: 'pointer' }}>
+                        <TableCell>{goal.title}</TableCell>
+                        <TableCell>{goal.target}</TableCell>
+                        <TableCell>{goal.progress}%</TableCell>
+                        <TableCell>
+                          <Chip label={risk} size="small" color={risk === 'High' ? 'error' : risk === 'Medium' ? 'warning' : 'success'} />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </Grid>
 
         <Grid item xs={12} md={5}>
@@ -128,13 +147,13 @@ export default function ManagerCheckIn() {
                   Recommendations
                 </Box>
                 <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
-                  • Review progress against quarterly targets
+                  - Review progress against quarterly targets
                 </Box>
                 <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
-                  • Identify blockers and provide support
+                  - Identify blockers and provide support
                 </Box>
                 <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
-                  • Adjust targets if needed based on changing priorities
+                  - Adjust targets if needed based on changing priorities
                 </Box>
               </Box>
 

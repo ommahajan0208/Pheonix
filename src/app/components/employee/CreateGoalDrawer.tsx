@@ -207,7 +207,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
             </Box>
 
             <Box sx={{ mt: 3, p: 1.5, bgcolor: '#e3f2fd', borderRadius: 1, fontSize: 12, color: '#1976d2' }}>
-              💡 Auto-save is enabled. Your changes are being saved automatically.
+              Auto-save enabled. Draft changes are captured in this prototype while the drawer is open.
             </Box>
           </Box>
         )}

@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { Box, Card, CardContent, Button, Alert, Stepper, Step, StepLabel } from '@mui/material';
+import { Box, Card, CardContent, Button, Alert, Stepper, Step, StepLabel, Chip } from '@mui/material';
 import { Send, CheckCircle } from 'lucide-react';
 import GoalCard from '../../components/common/GoalCard';
+import PageHeader from '../../components/common/PageHeader';
 
 export default function GoalSubmitReview() {
   const { user } = useAuth();
   const { goals, updateGoal } = useData();
   const [submitted, setSubmitted] = useState(false);
 
-  const userGoals = goals.filter(g => g.employeeId === user?.id && g.status === 'draft');
+  const userGoals = goals.filter(g => g.employeeId === user?.id);
+  const draftGoals = userGoals.filter(g => g.status === 'draft');
   const totalWeightage = userGoals.reduce((sum, g) => sum + g.weightage, 0);
 
   const validations = [
@@ -19,10 +21,10 @@ export default function GoalSubmitReview() {
     { label: 'Each goal minimum 10% weightage', passed: userGoals.every(g => g.weightage >= 10) },
   ];
 
-  const canSubmit = validations.every(v => v.passed);
+  const canSubmit = validations.every(v => v.passed) && draftGoals.length > 0;
 
   const handleSubmit = () => {
-    userGoals.forEach(goal => {
+    draftGoals.forEach(goal => {
       updateGoal(goal.id, { status: 'pending' });
     });
     setSubmitted(true);
@@ -37,12 +39,7 @@ export default function GoalSubmitReview() {
 
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ fontSize: 24, fontWeight: 700, mb: 0.5 }}>Goal Submission Review</Box>
-        <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
-          Review and submit your goals to your manager
-        </Box>
-      </Box>
+      <PageHeader title="Goal Submission Review" subtitle="Read-only goal summary, validation status, and manager approval timeline." />
 
       {submitted ? (
         <Card sx={{ boxShadow: 2, mb: 3 }}>
@@ -78,7 +75,7 @@ export default function GoalSubmitReview() {
         </Card>
       ) : (
         <>
-          <Alert severity="info" sx={{ mb: 3 }}>
+          <Alert severity={canSubmit ? 'success' : 'info'} sx={{ mb: 3 }}>
             <Box sx={{ fontWeight: 600, mb: 1 }}>Validation Checklist</Box>
             {validations.map((validation, idx) => (
               <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
@@ -94,8 +91,9 @@ export default function GoalSubmitReview() {
 
           <Card sx={{ boxShadow: 2, mb: 3 }}>
             <CardContent>
-              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
-                Goals Summary ({userGoals.length})
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Box sx={{ fontSize: 18, fontWeight: 600 }}>Goals Summary ({userGoals.length})</Box>
+                <Chip label={`Drafts to submit: ${draftGoals.length}`} color={draftGoals.length ? 'warning' : 'success'} size="small" />
               </Box>
               {userGoals.length === 0 ? (
                 <Box sx={{ py: 4, textAlign: 'center', color: 'text.secondary' }}>

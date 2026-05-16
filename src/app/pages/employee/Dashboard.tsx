@@ -1,9 +1,11 @@
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { Box, Grid, Card, CardContent, Alert } from '@mui/material';
+import { Box, Grid, Card, CardContent, Alert, Chip, LinearProgress } from '@mui/material';
 import { Target, CheckCircle, Clock, TrendingUp, AlertCircle } from 'lucide-react';
 import KPICard from '../../components/common/KPICard';
 import GoalCard from '../../components/common/GoalCard';
+import DonutRing from '../../components/common/DonutRing';
+import PageHeader from '../../components/common/PageHeader';
 
 export default function EmployeeDashboard() {
   const { user } = useAuth();
@@ -32,14 +34,11 @@ export default function EmployeeDashboard() {
 
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ fontSize: 24, fontWeight: 700, mb: 0.5 }}>
-          Welcome back, {user?.name}
-        </Box>
-        <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
-          Track your goals and quarterly progress
-        </Box>
-      </Box>
+      <PageHeader
+        title={`Welcome back, ${user?.name}`}
+        subtitle="Track goal creation, approvals, progress, deadlines, and manager feedback."
+        chip={user?.departmentName || 'Engineering'}
+      />
 
       {unreadNotifs.length > 0 && (
         <Alert severity="info" sx={{ mb: 3 }} icon={<AlertCircle size={20} />}>
@@ -56,7 +55,7 @@ export default function EmployeeDashboard() {
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={3}>
           <KPICard
-            title="Total Goals"
+            title="Goals Created"
             value={userGoals.length}
             icon={Target}
             color="#1976d2"
@@ -113,6 +112,29 @@ export default function EmployeeDashboard() {
         </Grid>
 
         <Grid item xs={12} md={4}>
+          <Card sx={{ boxShadow: 2, mb: 3 }}>
+            <CardContent>
+              <Box sx={{ fontSize: 18, fontWeight: 700, mb: 2 }}>Progress Snapshot</Box>
+              <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                <DonutRing value={avgCompletion} label="Completion" color="#1976d2" />
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Box sx={{ fontSize: 13, fontWeight: 700 }}>Weightage</Box>
+                <Chip label={`${totalWeightage}/100%`} size="small" sx={{ bgcolor: totalWeightage === 100 ? '#e8f5e9' : '#fff3e0', color: totalWeightage === 100 ? '#2e7d32' : '#ed6c02', fontWeight: 700 }} />
+              </Box>
+              <LinearProgress
+                variant="determinate"
+                value={Math.min(totalWeightage, 100)}
+                sx={{
+                  height: 10,
+                  borderRadius: 1,
+                  bgcolor: '#edf1f7',
+                  '& .MuiLinearProgress-bar': { bgcolor: totalWeightage === 100 ? '#2e7d32' : '#ed6c02' },
+                }}
+              />
+            </CardContent>
+          </Card>
+
           <Card sx={{ boxShadow: 2, mb: 3 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>

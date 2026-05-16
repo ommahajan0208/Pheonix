@@ -5,6 +5,16 @@ import { router } from './routes';
 import { ThemeProvider, createTheme } from '@mui/material';
 
 const theme = createTheme({
+  shape: {
+    borderRadius: 8,
+  },
+  typography: {
+    fontFamily: '"Inter", "Segoe UI", Arial, sans-serif',
+    button: {
+      textTransform: 'none',
+      fontWeight: 700,
+    },
+  },
   palette: {
     primary: {
       main: '#1976d2',

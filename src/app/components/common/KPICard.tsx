@@ -12,8 +12,8 @@ interface KPICardProps {
 
 export default function KPICard({ title, value, icon: Icon, color, subtitle, trend }: KPICardProps) {
   return (
-    <Card sx={{ height: '100%', boxShadow: 2 }}>
-      <CardContent>
+    <Card sx={{ height: '100%', boxShadow: '0 1px 4px rgba(16,35,63,0.08)', border: '1px solid #e1e8f2' }}>
+      <CardContent sx={{ p: 2.25 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
           <Box sx={{ fontSize: 13, color: 'text.secondary', fontWeight: 500 }}>
             {title}
@@ -22,7 +22,7 @@ export default function KPICard({ title, value, icon: Icon, color, subtitle, tre
             sx={{
               width: 40,
               height: 40,
-              borderRadius: 2,
+              borderRadius: 1.5,
               bgcolor: `${color}15`,
               display: 'flex',
               alignItems: 'center',
@@ -32,7 +32,7 @@ export default function KPICard({ title, value, icon: Icon, color, subtitle, tre
             <Icon size={20} color={color} />
           </Box>
         </Box>
-        <Box sx={{ fontSize: 32, fontWeight: 700, color: 'text.primary', mb: 0.5 }}>
+        <Box sx={{ fontSize: 30, fontWeight: 800, color: 'text.primary', mb: 0.5 }}>
           {value}
         </Box>
         {subtitle && (

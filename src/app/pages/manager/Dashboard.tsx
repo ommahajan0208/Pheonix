@@ -120,7 +120,7 @@ export default function ManagerDashboard() {
                     <Box>
                       <Box sx={{ fontWeight: 600 }}>{member.name}</Box>
                       <Box sx={{ fontSize: 12, color: 'text.secondary' }}>
-                        {member.goals} goals • {member.approved} approved
+                        {member.goals} goals / {member.approved} approved
                       </Box>
                     </Box>
                     <Box

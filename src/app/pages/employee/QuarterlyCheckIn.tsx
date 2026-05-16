@@ -17,17 +17,20 @@ import {
   MenuItem,
   Button,
   Grid,
+  Alert,
 } from '@mui/material';
 import { Save, Upload } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
+import PageHeader from '../../components/common/PageHeader';
 
 type Quarter = 'Q1' | 'Q2' | 'Q3' | 'Q4';
 
 export default function QuarterlyCheckIn() {
   const { user } = useAuth();
-  const { goals } = useData();
+  const { goals, addCheckIn } = useData();
   const [selectedQuarter, setSelectedQuarter] = useState<Quarter>('Q1');
   const [checkInData, setCheckInData] = useState<Record<string, { planned: number; actual: number; status: string; comments: string }>>({});
+  const [notice, setNotice] = useState('');
 
   const userGoals = goals.filter(g => g.employeeId === user?.id && g.status === 'approved');
 
@@ -63,14 +66,30 @@ export default function QuarterlyCheckIn() {
     { name: 'Off Track', value: statusCounts['Off Track'] || 0, color: '#d32f2f' },
   ];
 
+  const handleSaveDraft = () => setNotice(`${selectedQuarter} draft saved locally.`);
+  const handleSubmit = () => {
+    userGoals.forEach(goal => {
+      const data = checkInData[goal.id];
+      if (data) {
+        addCheckIn({
+          goalId: goal.id,
+          quarter: selectedQuarter,
+          plannedValue: data.planned || 0,
+          actualValue: data.actual || 0,
+          status: (data.status || 'on-track') as 'on-track' | 'at-risk' | 'off-track',
+          comments: data.comments || '',
+          evidenceUrls: [],
+          submittedAt: new Date(),
+        });
+      }
+    });
+    setNotice(`${selectedQuarter} check-in submitted for manager review.`);
+  };
+
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ fontSize: 24, fontWeight: 700, mb: 0.5 }}>Quarterly Check-in</Box>
-        <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
-          Track your quarterly progress against planned targets
-        </Box>
-      </Box>
+      <PageHeader title="Quarterly Check-in" subtitle="Track planned vs actual performance and submit evidence for manager review." />
+      {notice && <Alert severity="success" sx={{ mb: 2 }}>{notice}</Alert>}
 
       <Card sx={{ boxShadow: 2, mb: 3 }}>
         <CardContent>
@@ -164,8 +183,8 @@ export default function QuarterlyCheckIn() {
               </TableContainer>
 
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3 }}>
-                <Button variant="outlined">Save Draft</Button>
-                <Button variant="contained" startIcon={<Save size={18} />}>
+                <Button variant="outlined" onClick={handleSaveDraft}>Save Draft</Button>
+                <Button variant="contained" startIcon={<Save size={18} />} onClick={handleSubmit}>
                   Submit Check-in
                 </Button>
               </Box>

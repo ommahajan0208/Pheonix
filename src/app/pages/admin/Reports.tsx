@@ -132,7 +132,7 @@ export default function Reports() {
                 <Box>
                   <Box sx={{ fontWeight: 600, fontSize: 14 }}>{export_.name}</Box>
                   <Box sx={{ fontSize: 12, color: 'text.secondary' }}>
-                    {export_.date} • {export_.size}
+                    {export_.date} / {export_.size}
                   </Box>
                 </Box>
                 <Button size="small" startIcon={<Download size={16} />}>

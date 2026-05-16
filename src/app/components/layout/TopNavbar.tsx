@@ -21,12 +21,13 @@ import { Search, Bell, LogOut, UserCircle, RefreshCw } from 'lucide-react';
 export default function TopNavbar() {
   const navigate = useNavigate();
   const { user, logout, switchRole } = useAuth();
-  const { notifications, cycles } = useData();
+  const { notifications, cycles, markNotificationRead } = useData();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [notifAnchor, setNotifAnchor] = useState<null | HTMLElement>(null);
 
   const activeCycle = cycles.find(c => c.isActive);
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const roleNotifications = notifications.filter(n => !user || n.userId === user.id);
+  const unreadCount = roleNotifications.filter(n => !n.isRead).length;
 
   const handleProfileClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -130,15 +131,16 @@ export default function TopNavbar() {
             Notifications
           </Box>
           <Divider />
-          {notifications.length === 0 ? (
+          {roleNotifications.length === 0 ? (
             <Box sx={{ px: 2, py: 3, textAlign: 'center', color: 'text.secondary' }}>
               No notifications
             </Box>
           ) : (
-            notifications.slice(0, 5).map((notif) => (
+            roleNotifications.slice(0, 5).map((notif) => (
               <MenuItem
                 key={notif.id}
                 onClick={() => {
+                  markNotificationRead(notif.id);
                   navigate(notif.link);
                   handleNotifClose();
                 }}

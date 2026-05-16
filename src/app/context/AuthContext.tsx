@@ -19,6 +19,8 @@ const DEMO_USERS: Record<UserRole, User> = {
     role: 'employee',
     managerId: 'mgr-001',
     departmentId: 'dept-eng',
+    departmentName: 'Engineering',
+    title: 'Senior Software Engineer',
   },
   manager: {
     id: 'mgr-001',
@@ -26,12 +28,15 @@ const DEMO_USERS: Record<UserRole, User> = {
     email: 'sarah.johnson@company.com',
     role: 'manager',
     departmentId: 'dept-eng',
+    departmentName: 'Engineering',
+    title: 'Engineering Manager',
   },
   admin: {
     id: 'admin-001',
     name: 'Alex Chen',
     email: 'alex.chen@company.com',
     role: 'admin',
+    title: 'People Operations Admin',
   },
 };
 

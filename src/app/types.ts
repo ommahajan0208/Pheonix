@@ -50,6 +50,8 @@ export interface User {
   role: UserRole;
   managerId?: string;
   departmentId?: string;
+  departmentName?: string;
+  title?: string;
 }
 
 export interface CheckIn {
@@ -84,5 +86,34 @@ export interface Notification {
   message: string;
   link: string;
   isRead: boolean;
+  createdAt: Date;
+}
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  title: string;
+  departmentId: string;
+  departmentName: string;
+  managerId: string;
+}
+
+export interface ActivityItem {
+  id: string;
+  title: string;
+  description: string;
+  tone: 'info' | 'success' | 'warning' | 'error' | 'analytics';
+  createdAt: Date;
+  link?: string;
+}
+
+export interface Escalation {
+  id: string;
+  title: string;
+  owner: string;
+  severity: 'high' | 'medium' | 'low';
+  reason: string;
+  status: 'open' | 'monitoring' | 'resolved';
   createdAt: Date;
 }

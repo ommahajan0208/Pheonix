@@ -213,7 +213,7 @@ export default function Settings() {
                   <TextField
                     label="API Key"
                     type="password"
-                    placeholder="••••••••••••••••"
+                    placeholder="****************"
                     fullWidth
                     size="small"
                   />
