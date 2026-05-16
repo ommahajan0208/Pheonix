@@ -153,7 +153,7 @@ export default function QuarterlyCheckIn() {
       </Card>
 
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={9}>
+        <Grid size={{ xs: 12, md: 9 }}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
@@ -277,7 +277,7 @@ export default function QuarterlyCheckIn() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>

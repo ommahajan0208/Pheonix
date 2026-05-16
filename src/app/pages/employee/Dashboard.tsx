@@ -53,7 +53,7 @@ export default function EmployeeDashboard() {
       )}
 
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <KPICard
             title="Goals Created"
             value={userGoals.length}
@@ -62,7 +62,7 @@ export default function EmployeeDashboard() {
             subtitle="This cycle"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <KPICard
             title="Approved"
             value={approvedGoals.length}
@@ -71,7 +71,7 @@ export default function EmployeeDashboard() {
             subtitle={`${pendingGoals.length} pending`}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <KPICard
             title="Weightage"
             value={`${totalWeightage}%`}
@@ -80,7 +80,7 @@ export default function EmployeeDashboard() {
             subtitle="Target: 100%"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <KPICard
             title="Avg Completion"
             value={`${avgCompletion}%`}
@@ -92,7 +92,7 @@ export default function EmployeeDashboard() {
       </Grid>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <Card sx={{ boxShadow: 2, mb: 3 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
@@ -111,7 +111,7 @@ export default function EmployeeDashboard() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Card sx={{ boxShadow: 2, mb: 3 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 700, mb: 2 }}>Progress Snapshot</Box>

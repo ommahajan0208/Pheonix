@@ -30,7 +30,7 @@ export default function SharedGoals() {
           ) : (
             <Grid container spacing={2}>
               {sharedGoals.map(goal => (
-                <Grid item xs={12} md={6} key={goal.id}>
+                <Grid size={{ xs: 12, md: 6 }} key={goal.id}>
                   <Card sx={{ border: '1px solid #e4d7f6', boxShadow: '0 1px 4px rgba(96,39,158,0.08)', height: '100%' }}>
                     <CardContent>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>

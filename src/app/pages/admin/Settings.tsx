@@ -17,7 +17,7 @@ export default function Settings() {
       </Box>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
@@ -62,7 +62,7 @@ export default function Settings() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
@@ -99,7 +99,7 @@ export default function Settings() {
           </Card>
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 0.5 }}>
@@ -113,7 +113,7 @@ export default function Settings() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
@@ -144,7 +144,7 @@ export default function Settings() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
@@ -185,7 +185,7 @@ export default function Settings() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
@@ -221,14 +221,14 @@ export default function Settings() {
           </Card>
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
                 Integration Settings
               </Box>
               <Grid container spacing={2}>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <TextField
                     label="SMTP Server"
                     defaultValue="smtp.company.com"
@@ -236,7 +236,7 @@ export default function Settings() {
                     size="small"
                   />
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <TextField
                     label="SMTP Port"
                     defaultValue="587"
@@ -244,7 +244,7 @@ export default function Settings() {
                     size="small"
                   />
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <TextField
                     label="From Email"
                     defaultValue="noreply@company.com"
@@ -257,7 +257,7 @@ export default function Settings() {
               <Divider sx={{ my: 3 }} />
 
               <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     label="SSO Provider URL"
                     placeholder="https://sso.company.com"
@@ -265,7 +265,7 @@ export default function Settings() {
                     size="small"
                   />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     label="API Key"
                     type="password"
@@ -279,7 +279,7 @@ export default function Settings() {
           </Card>
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
             <Button variant="outlined" size="large">
               Reset to Defaults

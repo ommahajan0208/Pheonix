@@ -84,7 +84,7 @@ export default function Approvals() {
       )}
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 16, fontWeight: 600, mb: 2 }}>
@@ -119,7 +119,7 @@ export default function Approvals() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={9}>
+        <Grid size={{ xs: 12, md: 9 }}>
           {employeeGoals.length === 0 ? (
             <Card sx={{ boxShadow: 2 }}>
               <CardContent>
@@ -190,19 +190,19 @@ export default function Approvals() {
                     <Divider sx={{ my: 2 }} />
 
                     <Grid container spacing={2} sx={{ mb: 2 }}>
-                      <Grid item xs={3}>
+                      <Grid size={3}>
                         <Box sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>
                           Thrust Area
                         </Box>
                         <Box sx={{ fontSize: 14, fontWeight: 600 }}>{goal.thrustArea}</Box>
                       </Grid>
-                      <Grid item xs={3}>
+                      <Grid size={3}>
                         <Box sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>
                           Unit of Measure
                         </Box>
                         <Box sx={{ fontSize: 14, fontWeight: 600 }}>{goal.unitOfMeasure}</Box>
                       </Grid>
-                      <Grid item xs={3}>
+                      <Grid size={3}>
                         <Box sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>
                           Target
                         </Box>
@@ -215,7 +215,7 @@ export default function Approvals() {
                           sx={{ width: '100%' }}
                         />
                       </Grid>
-                      <Grid item xs={3}>
+                      <Grid size={3}>
                         <Box sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>
                           Weightage (%)
                         </Box>

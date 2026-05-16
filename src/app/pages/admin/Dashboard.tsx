@@ -38,7 +38,7 @@ export default function AdminDashboard() {
       </Box>
 
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <KPICard
             title="Total Employees"
             value={totalEmployees}
@@ -47,7 +47,7 @@ export default function AdminDashboard() {
             subtitle="Across all departments"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <KPICard
             title="Total Goals"
             value={totalGoals}
@@ -56,7 +56,7 @@ export default function AdminDashboard() {
             subtitle={`${activeCycle?.name || 'Current cycle'}`}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <KPICard
             title="Pending Approvals"
             value={pendingApprovals}
@@ -65,7 +65,7 @@ export default function AdminDashboard() {
             subtitle="Awaiting manager review"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <KPICard
             title="Active Cycles"
             value={cycles.filter(c => c.isActive).length}
@@ -77,7 +77,7 @@ export default function AdminDashboard() {
       </Grid>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={7}>
+        <Grid size={{ xs: 12, md: 7 }}>
           <Card sx={{ boxShadow: 2, mb: 3 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 3 }}>
@@ -116,7 +116,7 @@ export default function AdminDashboard() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={5}>
+        <Grid size={{ xs: 12, md: 5 }}>
           <Card sx={{ boxShadow: 2, mb: 3 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>

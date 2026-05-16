@@ -84,6 +84,8 @@ export default function Notifications() {
                           </Box>
                         </Box>
                       }
+                      primaryTypographyProps={{ component: 'div' }}
+                      secondaryTypographyProps={{ component: 'div' }}
                     />
                   </ListItemButton>
                 </ListItem>

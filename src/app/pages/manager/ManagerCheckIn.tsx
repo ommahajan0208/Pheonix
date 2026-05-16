@@ -96,14 +96,14 @@ export default function ManagerCheckIn() {
       </Alert>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <Card sx={{ boxShadow: 2, mb: 3 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
                 Team Member & Quarter
               </Box>
               <Grid container spacing={2}>
-                <Grid item xs={12} md={8}>
+                <Grid size={{ xs: 12, md: 8 }}>
                   <TextField
                     select
                     fullWidth
@@ -121,7 +121,7 @@ export default function ManagerCheckIn() {
                     ))}
                   </TextField>
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <TextField
                     select
                     fullWidth
@@ -203,7 +203,7 @@ export default function ManagerCheckIn() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 0.5 }}>

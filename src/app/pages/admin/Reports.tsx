@@ -93,13 +93,13 @@ export default function Reports() {
       </Box>
 
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <KPICard title="Approved Goals" value={totalApprovedGoals} icon={FileSpreadsheet} color="#1976d2" subtitle="Eligible for check-ins" />
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <KPICard title="Employee Completion" value={`${employeeCompletionAverage}%`} icon={CheckCircle} color="#2e7d32" subtitle={`${quarter} check-ins submitted`} />
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <KPICard title="Manager Completion" value={`${managerCompletionAverage}%`} icon={Users} color="#ed6c02" subtitle={`${quarter} manager comments`} />
         </Grid>
       </Grid>

@@ -59,23 +59,23 @@ export default function EscalationCenter() {
       </Box>
 
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <KPICard title="Open Escalations" value={openCount} icon={AlertCircle} color="#d32f2f" subtitle="Need action" />
         </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <KPICard title="Manager Level" value={managerLevelCount} icon={Users} color="#ed6c02" subtitle="Escalated to L1" />
         </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <KPICard title="HR Level" value={hrLevelCount} icon={Clock} color="#9c27b0" subtitle="Skip-level / HR" />
         </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <KPICard title="Active Rules" value={escalationRules.filter(rule => rule.active).length} icon={CheckCircle} color="#2e7d32" subtitle="Demo configuration" />
         </Grid>
       </Grid>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {escalationRules.map(rule => (
-          <Grid item xs={12} md={4} key={rule.id}>
+          <Grid size={{ xs: 12, md: 4 }} key={rule.id}>
             <Card sx={{ boxShadow: 2, height: '100%' }}>
               <CardContent>
                 <Chip label={rule.active ? 'ACTIVE' : 'INACTIVE'} size="small" color={rule.active ? 'success' : 'default'} sx={{ mb: 1 }} />

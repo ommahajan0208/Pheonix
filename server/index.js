@@ -187,6 +187,7 @@ function migrate() {
     const insertCheckIn = db.prepare('INSERT INTO check_ins VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
     checkIns.forEach((row) => insertCheckIn.run(...row));
     notificationSeeds.forEach((row) => db.prepare('INSERT INTO notifications VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(...row));
+    auditLogSeeds.forEach((row) => db.prepare('INSERT INTO audit_logs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(...row));
     addAudit({ userId: 'system', userName: 'Seeder', action: 'Seeded Demo Data', after: { goals: goals.length } });
   }
 
@@ -199,6 +200,8 @@ function migrate() {
   checkIns.forEach((row) => ensureCheckIn.run(...row));
   const ensureNotification = db.prepare('INSERT OR IGNORE INTO notifications VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
   notificationSeeds.forEach((row) => ensureNotification.run(...row));
+  const ensureAuditLog = db.prepare('INSERT OR IGNORE INTO audit_logs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+  auditLogSeeds.forEach((row) => ensureAuditLog.run(...row));
 }
 
 function mapGoal(row) {

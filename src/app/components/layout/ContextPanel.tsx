@@ -24,13 +24,19 @@ export default function ContextPanel() {
     .sort((a, b) => new Date(a.deadlineDate!).getTime() - new Date(b.deadlineDate!).getTime())
     .slice(0, 3);
   const pendingActions = user?.role === 'manager'
-    ? goals.filter(g => g.status === 'pending').slice(0, 3).map(g => ({ label: `Review ${g.employeeName}`, path: '/manager/approvals' }))
+    ? goals
+      .filter(g => g.status === 'pending')
+      .slice(0, 3)
+      .map(g => ({ id: g.id, label: `Review ${g.employeeName}`, path: '/manager/approvals' }))
     : user?.role === 'admin'
-      ? escalations.filter(e => e.status !== 'resolved').slice(0, 3).map(e => ({ label: e.title, path: '/admin/escalations' }))
+      ? escalations
+        .filter(e => e.status !== 'resolved')
+        .slice(0, 3)
+        .map(e => ({ id: e.id, label: e.title, path: '/admin/escalations' }))
       : [
-          { label: 'Complete Q2 check-in', path: '/employee/checkin' },
-          { label: 'Review goal weightage', path: '/employee/my-goals' },
-        ];
+        { id: 'employee-checkin', label: 'Complete Q2 check-in', path: '/employee/checkin' },
+        { id: 'employee-weightage', label: 'Review goal weightage', path: '/employee/my-goals' },
+      ];
   const unread = notifications.filter(n => !n.isRead && (!user || n.userId === user.id));
 
   return (
@@ -53,7 +59,7 @@ export default function ContextPanel() {
         <PanelSection title="Pending Actions" icon={<CheckCircle2 size={16} color="#1976d2" />}>
           {pendingActions.map((action) => (
             <Button
-              key={action.label}
+              key={action.id}
               fullWidth
               variant="outlined"
               size="small"

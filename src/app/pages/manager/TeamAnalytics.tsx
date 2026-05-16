@@ -64,7 +64,7 @@ export default function TeamAnalytics() {
       </Box>
 
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <KPICard
             title="Total Goals"
             value={totalGoals}
@@ -73,7 +73,7 @@ export default function TeamAnalytics() {
             subtitle="Current cycle"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <KPICard
             title="Approved"
             value={approvedGoals}
@@ -82,7 +82,7 @@ export default function TeamAnalytics() {
             subtitle="Ready for check-ins"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <KPICard
             title="Avg Progress"
             value={`${avgProgress}%`}
@@ -91,7 +91,7 @@ export default function TeamAnalytics() {
             subtitle="Across all goals"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <KPICard
             title="At Risk"
             value={atRisk}
@@ -103,7 +103,7 @@ export default function TeamAnalytics() {
       </Grid>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 3 }}>
@@ -123,7 +123,7 @@ export default function TeamAnalytics() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 3 }}>
@@ -157,7 +157,7 @@ export default function TeamAnalytics() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 3 }}>
@@ -176,7 +176,7 @@ export default function TeamAnalytics() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
@@ -211,14 +211,14 @@ export default function TeamAnalytics() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 3 }}>
                 Goal Distribution
               </Box>
               <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <ResponsiveContainer width="100%" height={220}>
                     <PieChart>
                       <Pie data={distribution.uomTypes} cx="50%" cy="50%" outerRadius={82} dataKey="value" nameKey="name" label>
@@ -229,7 +229,7 @@ export default function TeamAnalytics() {
                     </PieChart>
                   </ResponsiveContainer>
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <ResponsiveContainer width="100%" height={220}>
                     <BarChart data={distribution.statuses}>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -245,7 +245,7 @@ export default function TeamAnalytics() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 3 }}>

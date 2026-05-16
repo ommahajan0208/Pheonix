@@ -21,6 +21,7 @@ export default function CycleManagement() {
   const selectedCycle = cycles.find(cycle => cycle.id === selectedCycleId) || cycles[0];
 
   const phases: CyclePhaseKey[] = ['goalSetting', 'q1Checkin', 'q2Checkin', 'q3Checkin', 'q4Checkin'];
+  const toDate = (value?: string | Date | null) => (value instanceof Date ? value : value ? new Date(value) : null);
 
   return (
     <Box>
@@ -113,7 +114,7 @@ export default function CycleManagement() {
           const meta = PHASE_METADATA[phase];
           const inDateWindow = isDateInPhaseWindow(selectedCycle, phase);
           return (
-            <Grid item xs={12} md={6} key={phase}>
+            <Grid size={{ xs: 12, md: 6 }} key={phase}>
               <Card sx={{ boxShadow: 2 }}>
                 <CardContent>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -136,18 +137,18 @@ export default function CycleManagement() {
 
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <Grid container spacing={2}>
-                      <Grid item xs={6}>
+                      <Grid size={6}>
                         <DatePicker
                           label="Start Date"
-                          value={phaseData?.start}
+                          value={toDate(phaseData?.start)}
                           onChange={(date) => date && updateCyclePhase(selectedCycle.id, phase, { start: date })}
                           slotProps={{ textField: { size: 'small', fullWidth: true } }}
                         />
                       </Grid>
-                      <Grid item xs={6}>
+                      <Grid size={6}>
                         <DatePicker
                           label="End Date"
-                          value={phaseData?.end}
+                          value={toDate(phaseData?.end)}
                           onChange={(date) => date && updateCyclePhase(selectedCycle.id, phase, { end: date })}
                           slotProps={{ textField: { size: 'small', fullWidth: true } }}
                         />
