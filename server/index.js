@@ -7,9 +7,10 @@ import fs from 'node:fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = path.join(__dirname, 'data');
-fs.mkdirSync(dataDir, { recursive: true });
+const dbPath = process.env.DB_FILE || path.join(dataDir, 'phoenix.sqlite');
+fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
-const db = new Database(process.env.DB_FILE || path.join(dataDir, 'phoenix.sqlite'));
+const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');
 
 const nowIso = () => new Date().toISOString();
