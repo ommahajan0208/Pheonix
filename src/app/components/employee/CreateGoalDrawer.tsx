@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Drawer,
   Box,
@@ -12,6 +12,7 @@ import {
   IconButton,
   ToggleButtonGroup,
   ToggleButton,
+  Alert,
 } from '@mui/material';
 import { X, Save } from 'lucide-react';
 import { ThrustArea, UnitOfMeasure, Goal } from '../../types';
@@ -28,21 +29,46 @@ interface CreateGoalDrawerProps {
 }
 
 const THRUST_AREAS: ThrustArea[] = ['Revenue', 'Customer Success', 'Innovation', 'Efficiency', 'Team Development'];
-const UNITS: UnitOfMeasure[] = ['Percentage', 'Number', 'Currency', 'Time', 'Boolean'];
+const UNITS: UnitOfMeasure[] = ['Numeric', '%', 'Timeline', 'Zero-based'];
+
+const DEFAULT_GOAL: Partial<Goal> = {
+  title: '',
+  description: '',
+  thrustArea: 'Efficiency',
+  unitOfMeasure: '%',
+  target: 0,
+  weightage: 10,
+  deadlineDate: undefined,
+};
 
 export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, totalWeightage }: CreateGoalDrawerProps) {
   const [activeStep, setActiveStep] = useState(0);
-  const [formData, setFormData] = useState<Partial<Goal>>(existingGoal || {
-    title: '',
-    description: '',
-    thrustArea: 'Efficiency',
-    unitOfMeasure: 'Percentage',
-    target: 0,
-    weightage: 10,
-    deadlineDate: undefined,
-  });
+  const [formData, setFormData] = useState<Partial<Goal>>(existingGoal || DEFAULT_GOAL);
 
   const remainingWeightage = 100 - totalWeightage + (existingGoal?.weightage || 0);
+  const isSharedRecipient = Boolean(existingGoal?.isShared && existingGoal.employeeId !== existingGoal.primaryOwnerId);
+  const nextTotalWeightage = totalWeightage - (existingGoal?.weightage || 0) + (formData.weightage || 0);
+
+  useEffect(() => {
+    if (open) {
+      setFormData(existingGoal || DEFAULT_GOAL);
+      setActiveStep(0);
+    }
+  }, [existingGoal, open]);
+
+  const validationErrors = useMemo(() => {
+    const errors: string[] = [];
+    if (!formData.title?.trim()) errors.push('Goal title is required.');
+    if (!formData.description?.trim()) errors.push('Description is required.');
+    if (!formData.thrustArea) errors.push('Thrust area is required.');
+    if (!formData.unitOfMeasure) errors.push('Unit of measure is required.');
+    if (typeof formData.target !== 'number' || Number.isNaN(formData.target)) errors.push('Target must be a valid value.');
+    if (!formData.weightage || formData.weightage < 10) errors.push('Weightage must be at least 10%.');
+    if (nextTotalWeightage > 100) errors.push('Total sheet weightage cannot exceed 100%.');
+    return errors;
+  }, [formData, nextTotalWeightage]);
+
+  const canSave = validationErrors.length === 0;
 
   const handleNext = () => {
     setActiveStep((prev) => Math.min(prev + 1, 2));
@@ -53,6 +79,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
   };
 
   const handleSave = () => {
+    if (!canSave) return;
     onSave(formData);
     onClose();
     setActiveStep(0);
@@ -89,6 +116,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
               value={formData.thrustArea}
               onChange={(e) => setFormData({ ...formData, thrustArea: e.target.value as ThrustArea })}
               sx={{ mb: 3 }}
+              disabled={isSharedRecipient}
             >
               {THRUST_AREAS.map((area) => (
                 <MenuItem key={area} value={area}>
@@ -104,6 +132,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               sx={{ mb: 3 }}
               placeholder="e.g., Increase API Response Time by 25%"
+              disabled={isSharedRecipient}
             />
 
             <TextField
@@ -114,6 +143,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Describe your goal and how you plan to achieve it..."
+              disabled={isSharedRecipient}
             />
           </Box>
         )}
@@ -128,6 +158,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
                 onChange={(_, value) => value && setFormData({ ...formData, unitOfMeasure: value })}
                 fullWidth
                 size="small"
+                disabled={isSharedRecipient}
               >
                 {UNITS.map((unit) => (
                   <ToggleButton key={unit} value={unit} sx={{ textTransform: 'none', fontSize: 12 }}>
@@ -144,6 +175,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
               value={formData.target}
               onChange={(e) => setFormData({ ...formData, target: Number(e.target.value) })}
               sx={{ mb: 3 }}
+              disabled={isSharedRecipient}
             />
 
             <Box sx={{ mb: 2 }}>
@@ -156,8 +188,8 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
               <Slider
                 value={formData.weightage}
                 onChange={(_, value) => setFormData({ ...formData, weightage: value as number })}
-                min={0}
-                max={Math.min(remainingWeightage, 100)}
+                min={10}
+                max={Math.max(10, Math.min(remainingWeightage, 100))}
                 step={5}
                 marks
                 valueLabelDisplay="on"
@@ -168,13 +200,13 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
             <Box
               sx={{
                 p: 2,
-                bgcolor: formData.weightage && formData.weightage <= remainingWeightage ? '#e8f5e9' : '#ffebee',
+                bgcolor: canSave ? '#e8f5e9' : '#ffebee',
                 borderRadius: 1,
                 fontSize: 13,
               }}
             >
               Current weightage: <strong>{formData.weightage}%</strong> |
-              After save: <strong>{totalWeightage - (existingGoal?.weightage || 0) + (formData.weightage || 0)}%</strong>
+              After save: <strong>{nextTotalWeightage}%</strong>
             </Box>
           </Box>
         )}
@@ -189,6 +221,14 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
                 slotProps={{ textField: { fullWidth: true } }}
               />
             </LocalizationProvider>
+
+            {validationErrors.length > 0 && (
+              <Alert severity="warning" sx={{ mt: 3 }}>
+                {validationErrors.map((error) => (
+                  <Box key={error} sx={{ fontSize: 13 }}>{error}</Box>
+                ))}
+              </Alert>
+            )}
 
             <Box sx={{ mt: 4, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
               <Box sx={{ fontSize: 14, fontWeight: 600, mb: 2 }}>Goal Summary</Box>
@@ -236,6 +276,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
               onClick={handleSave}
               startIcon={<Save size={18} />}
               fullWidth
+              disabled={!canSave}
             >
               Save Goal
             </Button>

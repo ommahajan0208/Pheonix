@@ -8,26 +8,19 @@ import PageHeader from '../../components/common/PageHeader';
 
 export default function GoalSubmitReview() {
   const { user } = useAuth();
-  const { goals, updateGoal } = useData();
+  const { goals, submitGoalSheet, validateGoalSheet, cycles } = useData();
   const [submitted, setSubmitted] = useState(false);
+  const activeCycleId = cycles.find(cycle => cycle.isActive)?.id;
 
-  const userGoals = goals.filter(g => g.employeeId === user?.id);
-  const draftGoals = userGoals.filter(g => g.status === 'draft');
-  const totalWeightage = userGoals.reduce((sum, g) => sum + g.weightage, 0);
-
-  const validations = [
-    { label: 'Weightage equals 100%', passed: totalWeightage === 100 },
-    { label: 'Maximum 8 goals', passed: userGoals.length <= 8 && userGoals.length > 0 },
-    { label: 'Each goal minimum 10% weightage', passed: userGoals.every(g => g.weightage >= 10) },
-  ];
-
-  const canSubmit = validations.every(v => v.passed) && draftGoals.length > 0;
+  const userGoals = goals.filter(g => g.employeeId === user?.id && (!activeCycleId || g.cycleId === activeCycleId));
+  const submittableGoals = userGoals.filter(g => ['draft', 'rework'].includes(g.status));
+  const validation = validateGoalSheet(user?.id || '', activeCycleId);
+  const canSubmit = validation.canSubmit && submittableGoals.length > 0;
 
   const handleSubmit = () => {
-    draftGoals.forEach(goal => {
-      updateGoal(goal.id, { status: 'pending' });
-    });
-    setSubmitted(true);
+    if (user && submitGoalSheet(user.id, activeCycleId)) {
+      setSubmitted(true);
+    }
   };
 
   const statusTimeline = [
@@ -77,14 +70,14 @@ export default function GoalSubmitReview() {
         <>
           <Alert severity={canSubmit ? 'success' : 'info'} sx={{ mb: 3 }}>
             <Box sx={{ fontWeight: 600, mb: 1 }}>Validation Checklist</Box>
-            {validations.map((validation, idx) => (
+            {validation.checks.map((check, idx) => (
               <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                {validation.passed ? (
+                {check.passed ? (
                   <CheckCircle size={16} color="#2e7d32" />
                 ) : (
                   <Box sx={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid #ed6c02' }} />
                 )}
-                <Box sx={{ fontSize: 13 }}>{validation.label}</Box>
+                <Box sx={{ fontSize: 13 }}>{check.label}</Box>
               </Box>
             ))}
           </Alert>
@@ -93,7 +86,7 @@ export default function GoalSubmitReview() {
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Box sx={{ fontSize: 18, fontWeight: 600 }}>Goals Summary ({userGoals.length})</Box>
-                <Chip label={`Drafts to submit: ${draftGoals.length}`} color={draftGoals.length ? 'warning' : 'success'} size="small" />
+                <Chip label={`Ready to submit: ${submittableGoals.length}`} color={submittableGoals.length ? 'warning' : 'success'} size="small" />
               </Box>
               {userGoals.length === 0 ? (
                 <Box sx={{ py: 4, textAlign: 'center', color: 'text.secondary' }}>

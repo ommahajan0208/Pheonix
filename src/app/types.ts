@@ -4,7 +4,7 @@ export type GoalStatus = 'draft' | 'pending' | 'approved' | 'rework' | 'complete
 
 export type ThrustArea = 'Revenue' | 'Customer Success' | 'Innovation' | 'Efficiency' | 'Team Development';
 
-export type UnitOfMeasure = 'Percentage' | 'Number' | 'Currency' | 'Time' | 'Boolean';
+export type UnitOfMeasure = 'Numeric' | '%' | 'Timeline' | 'Zero-based';
 
 export interface Goal {
   id: string;
@@ -20,10 +20,24 @@ export interface Goal {
   status: GoalStatus;
   cycleId: string;
   isShared: boolean;
+  sharedGoalId?: string;
   primaryOwnerId?: string;
+  lockedAt?: Date;
+  unlockedByAdmin?: boolean;
   createdAt: Date;
   updatedAt: Date;
   deadlineDate?: Date;
+}
+
+export interface GoalSheetValidation {
+  totalWeightage: number;
+  goalCount: number;
+  canSubmit: boolean;
+  errors: string[];
+  checks: {
+    label: string;
+    passed: boolean;
+  }[];
 }
 
 export interface Cycle {

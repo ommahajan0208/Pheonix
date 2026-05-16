@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useData } from '../../context/DataContext';
 import { Box, Card, CardContent, TextField, MenuItem } from '@mui/material';
 import GoalCard from '../../components/common/GoalCard';
+import SharedKpiForm from '../../components/common/SharedKpiForm';
 
 export default function TeamGoals() {
   const { goals } = useData();
@@ -37,6 +38,16 @@ export default function TeamGoals() {
           ))}
         </TextField>
       </Box>
+
+      <Card sx={{ boxShadow: 2, mb: 3 }}>
+        <CardContent>
+          <Box sx={{ fontSize: 18, fontWeight: 700, mb: 0.5 }}>Push Shared Department KPI</Box>
+          <Box sx={{ fontSize: 13, color: 'text.secondary', mb: 2 }}>
+            Title, target, and progress stay linked; recipients can adjust only their weightage before submission.
+          </Box>
+          <SharedKpiForm />
+        </CardContent>
+      </Card>
 
       <Card sx={{ boxShadow: 2 }}>
         <CardContent>

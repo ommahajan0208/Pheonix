@@ -27,7 +27,7 @@ type Quarter = 'Q1' | 'Q2' | 'Q3' | 'Q4';
 
 export default function QuarterlyCheckIn() {
   const { user } = useAuth();
-  const { goals, addCheckIn } = useData();
+  const { goals, addCheckIn, updateGoal } = useData();
   const [selectedQuarter, setSelectedQuarter] = useState<Quarter>('Q1');
   const [checkInData, setCheckInData] = useState<Record<string, { planned: number; actual: number; status: string; comments: string }>>({});
   const [notice, setNotice] = useState('');
@@ -81,6 +81,8 @@ export default function QuarterlyCheckIn() {
           evidenceUrls: [],
           submittedAt: new Date(),
         });
+        const progress = goal.target > 0 ? Math.min(100, Math.round(((data.actual || 0) / goal.target) * 100)) : goal.progress;
+        updateGoal(goal.id, { progress });
       }
     });
     setNotice(`${selectedQuarter} check-in submitted for manager review.`);

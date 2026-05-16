@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Goal, Cycle, CheckIn, AuditLog, Notification, TeamMember, ActivityItem, Escalation } from '../types';
+import { Goal, Cycle, CheckIn, AuditLog, Notification, TeamMember, ActivityItem, Escalation, GoalSheetValidation } from '../types';
 
 interface DataContextType {
   goals: Goal[];
@@ -11,8 +11,14 @@ interface DataContextType {
   activities: ActivityItem[];
   escalations: Escalation[];
   addGoal: (goal: Omit<Goal, 'id' | 'createdAt' | 'updatedAt'>) => void;
-  updateGoal: (id: string, updates: Partial<Goal>) => void;
+  updateGoal: (id: string, updates: Partial<Goal>, options?: { adminOverride?: boolean }) => boolean;
   deleteGoal: (id: string) => void;
+  validateGoalSheet: (employeeId: string, cycleId?: string, goalsOverride?: Goal[]) => GoalSheetValidation;
+  submitGoalSheet: (employeeId: string, cycleId?: string) => boolean;
+  approveGoalSheet: (employeeId: string, cycleId?: string, edits?: Record<string, Partial<Goal>>) => boolean;
+  returnGoalSheetForRework: (employeeId: string, cycleId?: string) => void;
+  addSharedGoal: (goal: Omit<Goal, 'id' | 'createdAt' | 'updatedAt' | 'employeeId' | 'employeeName' | 'status' | 'progress' | 'isShared' | 'sharedGoalId'>, employeeIds: string[], primaryOwnerId: string) => void;
+  adminUnlockGoal: (id: string) => void;
   addCheckIn: (checkIn: Omit<CheckIn, 'id'>) => void;
   markNotificationRead: (id: string) => void;
   addAuditLog: (log: Omit<AuditLog, 'id' | 'timestamp'>) => void;
@@ -53,7 +59,7 @@ const MOCK_GOALS: Goal[] = [
     title: 'Increase API Response Time by 25%',
     description: 'Optimize database queries and implement caching',
     thrustArea: 'Efficiency',
-    unitOfMeasure: 'Percentage',
+    unitOfMeasure: '%',
     target: 25,
     weightage: 20,
     progress: 15,
@@ -71,7 +77,7 @@ const MOCK_GOALS: Goal[] = [
     title: 'Launch Mobile App MVP',
     description: 'Complete React Native app with core features',
     thrustArea: 'Innovation',
-    unitOfMeasure: 'Boolean',
+    unitOfMeasure: 'Zero-based',
     target: 1,
     weightage: 30,
     progress: 45,
@@ -89,7 +95,7 @@ const MOCK_GOALS: Goal[] = [
     title: 'Mentor 2 Junior Developers',
     description: 'Provide weekly 1:1 coaching sessions',
     thrustArea: 'Team Development',
-    unitOfMeasure: 'Number',
+    unitOfMeasure: 'Numeric',
     target: 2,
     weightage: 15,
     progress: 50,
@@ -107,14 +113,16 @@ const MOCK_GOALS: Goal[] = [
     title: 'Revenue Growth - Engineering Efficiency',
     description: 'Shared goal: Reduce infrastructure costs by 15%',
     thrustArea: 'Revenue',
-    unitOfMeasure: 'Percentage',
+    unitOfMeasure: '%',
     target: 15,
     weightage: 10,
     progress: 8,
     status: 'approved',
     cycleId: 'cycle-2026',
     isShared: true,
-    primaryOwnerId: 'mgr-001',
+    sharedGoalId: 'shared-eng-cost',
+    primaryOwnerId: 'emp-001',
+    lockedAt: new Date('2026-01-10'),
     createdAt: new Date('2026-01-08'),
     updatedAt: new Date('2026-05-12'),
     deadlineDate: new Date('2026-12-31'),
@@ -126,7 +134,7 @@ const MOCK_GOALS: Goal[] = [
     title: 'Improve Search Reliability',
     description: 'Raise search success rate and reduce failed customer searches',
     thrustArea: 'Customer Success',
-    unitOfMeasure: 'Percentage',
+    unitOfMeasure: '%',
     target: 98,
     weightage: 15,
     progress: 0,
@@ -144,7 +152,7 @@ const MOCK_GOALS: Goal[] = [
     title: 'Reduce Incident MTTR',
     description: 'Cut production incident mean time to recovery through runbooks',
     thrustArea: 'Efficiency',
-    unitOfMeasure: 'Time',
+    unitOfMeasure: 'Timeline',
     target: 45,
     weightage: 10,
     progress: 0,
@@ -162,7 +170,7 @@ const MOCK_GOALS: Goal[] = [
     title: 'Improve Activation Funnel',
     description: 'Lift new user activation through onboarding experiments',
     thrustArea: 'Revenue',
-    unitOfMeasure: 'Percentage',
+    unitOfMeasure: '%',
     target: 12,
     weightage: 30,
     progress: 62,
@@ -180,14 +188,15 @@ const MOCK_GOALS: Goal[] = [
     title: 'AI Triage Pilot',
     description: 'Ship a pilot workflow for support ticket classification',
     thrustArea: 'Innovation',
-    unitOfMeasure: 'Boolean',
+    unitOfMeasure: 'Zero-based',
     target: 1,
     weightage: 25,
     progress: 30,
     status: 'pending',
     cycleId: 'cycle-2026',
     isShared: true,
-    primaryOwnerId: 'mgr-001',
+    sharedGoalId: 'shared-ai-triage',
+    primaryOwnerId: 'emp-002',
     createdAt: new Date('2026-02-02'),
     updatedAt: new Date('2026-05-11'),
     deadlineDate: new Date('2026-07-31'),
@@ -199,7 +208,7 @@ const MOCK_GOALS: Goal[] = [
     title: 'Cloud Cost Guardrails',
     description: 'Implement spend alerts and service owner reporting',
     thrustArea: 'Efficiency',
-    unitOfMeasure: 'Currency',
+    unitOfMeasure: 'Numeric',
     target: 150000,
     weightage: 40,
     progress: 22,
@@ -217,7 +226,7 @@ const MOCK_GOALS: Goal[] = [
     title: 'Regression Automation Coverage',
     description: 'Increase automated coverage for release-critical journeys',
     thrustArea: 'Customer Success',
-    unitOfMeasure: 'Percentage',
+    unitOfMeasure: '%',
     target: 85,
     weightage: 35,
     progress: 44,
@@ -308,7 +317,36 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [activities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
   const [escalations] = useState<Escalation[]>(MOCK_ESCALATIONS);
 
+  const getGoalSheet = (employeeId: string, cycleId?: string, sourceGoals: Goal[] = goals) => (
+    sourceGoals.filter(goal => goal.employeeId === employeeId && (!cycleId || goal.cycleId === cycleId))
+  );
+
+  const validateGoalSheet = (employeeId: string, cycleId?: string, goalsOverride?: Goal[]): GoalSheetValidation => {
+    const sheetGoals = getGoalSheet(employeeId, cycleId, goalsOverride || goals);
+    const totalWeightage = sheetGoals.reduce((sum, goal) => sum + goal.weightage, 0);
+    const checks = [
+      { label: 'Total weightage equals 100%', passed: totalWeightage === 100 },
+      { label: 'Maximum 8 goals', passed: sheetGoals.length > 0 && sheetGoals.length <= 8 },
+      { label: 'Each goal has at least 10% weightage', passed: sheetGoals.length > 0 && sheetGoals.every(goal => goal.weightage >= 10) },
+    ];
+
+    return {
+      totalWeightage,
+      goalCount: sheetGoals.length,
+      canSubmit: checks.every(check => check.passed),
+      errors: checks.filter(check => !check.passed).map(check => check.label),
+      checks,
+    };
+  };
+
+  const isGoalLocked = (goal?: Goal, adminOverride = false) => (
+    Boolean(goal && goal.status === 'approved' && !goal.unlockedByAdmin && !adminOverride)
+  );
+
   const addGoal = (goalData: Omit<Goal, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const sheetGoals = getGoalSheet(goalData.employeeId, goalData.cycleId);
+    if (sheetGoals.length >= 8) return;
+
     const newGoal: Goal = {
       ...goalData,
       id: `goal-${Date.now()}`,
@@ -327,9 +365,42 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const updateGoal = (id: string, updates: Partial<Goal>) => {
+  const updateGoal = (id: string, updates: Partial<Goal>, options?: { adminOverride?: boolean }) => {
     const previous = goals.find(g => g.id === id);
-    setGoals(goals.map(g => g.id === id ? { ...g, ...updates, updatedAt: new Date() } : g));
+    const updateKeys = Object.keys(updates);
+    const isAchievementUpdate = updateKeys.length > 0 && updateKeys.every(key => key === 'progress' || key === 'updatedAt');
+    if (!previous || (isGoalLocked(previous, options?.adminOverride) && !isAchievementUpdate)) return false;
+
+    const isSharedRecipient = previous.isShared && previous.employeeId !== previous.primaryOwnerId && !options?.adminOverride;
+    if (isSharedRecipient && isAchievementUpdate) return false;
+    const safeUpdates = isSharedRecipient
+      ? { weightage: updates.weightage }
+      : updates;
+
+    const nextGoals = goals.map(g => {
+      if (g.id !== id) return g;
+
+      const nextGoal = {
+        ...g,
+        ...safeUpdates,
+        lockedAt: safeUpdates.status === 'approved' ? new Date() : g.lockedAt,
+        unlockedByAdmin: safeUpdates.status === 'approved' ? false : g.unlockedByAdmin,
+        updatedAt: new Date(),
+      };
+
+      return nextGoal;
+    }).map(g => {
+      const shouldSyncProgress = previous.isShared
+        && previous.sharedGoalId
+        && previous.employeeId === previous.primaryOwnerId
+        && g.sharedGoalId === previous.sharedGoalId
+        && g.id !== id
+        && typeof safeUpdates.progress === 'number';
+
+      return shouldSyncProgress ? { ...g, progress: safeUpdates.progress!, updatedAt: new Date() } : g;
+    });
+
+    setGoals(nextGoals);
     if (previous) {
       addAuditLog({
         userId: 'system',
@@ -341,10 +412,130 @@ export function DataProvider({ children }: { children: ReactNode }) {
         after: updates,
       });
     }
+    return true;
   };
 
   const deleteGoal = (id: string) => {
+    const previous = goals.find(g => g.id === id);
+    if (isGoalLocked(previous)) return;
     setGoals(goals.filter(g => g.id !== id));
+  };
+
+  const submitGoalSheet = (employeeId: string, cycleId?: string) => {
+    const validation = validateGoalSheet(employeeId, cycleId);
+    if (!validation.canSubmit) return false;
+
+    const submittableStatuses = ['draft', 'rework'];
+    setGoals(goals.map(goal => (
+      goal.employeeId === employeeId
+        && (!cycleId || goal.cycleId === cycleId)
+        && submittableStatuses.includes(goal.status)
+        ? { ...goal, status: 'pending', updatedAt: new Date() }
+        : goal
+    )));
+
+    addAuditLog({
+      userId: employeeId,
+      userName: goals.find(goal => goal.employeeId === employeeId)?.employeeName || 'Employee',
+      action: 'Submitted Goal Sheet',
+      before: { status: 'draft/rework' },
+      after: { status: 'pending', totalWeightage: validation.totalWeightage },
+    });
+    return true;
+  };
+
+  const approveGoalSheet = (employeeId: string, cycleId?: string, edits: Record<string, Partial<Goal>> = {}) => {
+    const editedGoals = goals.map(goal => (
+      edits[goal.id] ? { ...goal, ...edits[goal.id] } : goal
+    ));
+    const validation = validateGoalSheet(employeeId, cycleId, editedGoals);
+    if (!validation.canSubmit) return false;
+
+    setGoals(editedGoals.map(goal => (
+      goal.employeeId === employeeId
+        && (!cycleId || goal.cycleId === cycleId)
+        && goal.status === 'pending'
+        ? { ...goal, status: 'approved', lockedAt: new Date(), unlockedByAdmin: false, updatedAt: new Date() }
+        : goal
+    )));
+
+    addAuditLog({
+      userId: 'mgr-001',
+      userName: 'Sarah Johnson',
+      action: 'Approved Goal Sheet',
+      before: { status: 'pending' },
+      after: { status: 'approved', totalWeightage: validation.totalWeightage },
+    });
+    return true;
+  };
+
+  const returnGoalSheetForRework = (employeeId: string, cycleId?: string) => {
+    const employeeName = goals.find(goal => goal.employeeId === employeeId)?.employeeName || 'Employee';
+    setGoals(goals.map(goal => (
+      goal.employeeId === employeeId
+        && (!cycleId || goal.cycleId === cycleId)
+        && goal.status === 'pending'
+        ? { ...goal, status: 'rework', updatedAt: new Date() }
+        : goal
+    )));
+    addAuditLog({
+      userId: 'mgr-001',
+      userName: 'Sarah Johnson',
+      action: 'Requested Goal Sheet Rework',
+      before: { status: 'pending' },
+      after: { status: 'rework', employeeName },
+    });
+  };
+
+  const addSharedGoal = (
+    goalData: Omit<Goal, 'id' | 'createdAt' | 'updatedAt' | 'employeeId' | 'employeeName' | 'status' | 'progress' | 'isShared' | 'sharedGoalId'>,
+    employeeIds: string[],
+    primaryOwnerId: string
+  ) => {
+    const sharedGoalId = `shared-${Date.now()}`;
+    const uniqueEmployeeIds = Array.from(new Set([primaryOwnerId, ...employeeIds]));
+    const newGoals = uniqueEmployeeIds
+      .filter(employeeId => getGoalSheet(employeeId, goalData.cycleId).length < 8)
+      .map(employeeId => MOCK_TEAM_MEMBERS.find(member => member.id === employeeId))
+      .filter(Boolean)
+      .map((member, index) => ({
+        ...goalData,
+        id: `goal-${Date.now()}-${index}`,
+        employeeId: member!.id,
+        employeeName: member!.name,
+        status: 'draft' as const,
+        progress: 0,
+        isShared: true,
+        sharedGoalId,
+        primaryOwnerId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }));
+
+    setGoals([...goals, ...newGoals]);
+    addAuditLog({
+      userId: 'mgr-001',
+      userName: 'Sarah Johnson',
+      action: 'Pushed Shared KPI',
+      goalTitle: goalData.title,
+      before: null,
+      after: { recipients: uniqueEmployeeIds.length, primaryOwnerId, sharedGoalId },
+    });
+  };
+
+  const adminUnlockGoal = (id: string) => {
+    const goal = goals.find(g => g.id === id);
+    if (!goal) return;
+    setGoals(goals.map(g => g.id === id ? { ...g, status: 'rework', lockedAt: undefined, unlockedByAdmin: true, updatedAt: new Date() } : g));
+    addAuditLog({
+      userId: 'admin-001',
+      userName: 'Alex Chen',
+      action: 'Admin Unlocked Goal',
+      goalId: id,
+      goalTitle: goal.title,
+      before: { status: goal.status, lockedAt: goal.lockedAt },
+      after: { status: 'rework', unlockedByAdmin: true },
+    });
   };
 
   const addCheckIn = (checkInData: Omit<CheckIn, 'id'>) => {
@@ -396,6 +587,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
       addGoal,
       updateGoal,
       deleteGoal,
+      validateGoalSheet,
+      submitGoalSheet,
+      approveGoalSheet,
+      returnGoalSheetForRework,
+      addSharedGoal,
+      adminUnlockGoal,
       addCheckIn,
       markNotificationRead,
       addAuditLog,

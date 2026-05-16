@@ -42,7 +42,11 @@ export default function SharedGoals() {
                       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5, mb: 2 }}>
                         <Box>
                           <Box sx={{ fontSize: 11, color: 'text.secondary' }}>Primary Owner</Box>
-                          <Box sx={{ fontSize: 13, fontWeight: 700 }}>Sarah Johnson</Box>
+                          <Box sx={{ fontSize: 13, fontWeight: 700 }}>{goals.find(g => g.employeeId === goal.primaryOwnerId)?.employeeName || 'Primary owner'}</Box>
+                        </Box>
+                        <Box>
+                          <Box sx={{ fontSize: 11, color: 'text.secondary' }}>Read-only Target</Box>
+                          <Box sx={{ fontSize: 13, fontWeight: 700 }}>{goal.target} {goal.unitOfMeasure}</Box>
                         </Box>
                         <Box>
                           <Box sx={{ fontSize: 11, color: 'text.secondary' }}>Status</Box>
@@ -57,12 +61,18 @@ export default function SharedGoals() {
                         </Box>
                         <Slider
                           value={goal.weightage}
-                          min={5}
+                          min={10}
                           max={30}
                           step={5}
+                          disabled={!['draft', 'rework'].includes(goal.status)}
                           onChange={(_, value) => updateGoal(goal.id, { weightage: value as number })}
                           sx={{ color: '#9c27b0' }}
                         />
+                        {!['draft', 'rework'].includes(goal.status) && (
+                          <Box sx={{ fontSize: 12, color: 'text.secondary' }}>
+                            Weightage is locked while this goal is submitted or approved.
+                          </Box>
+                        )}
                       </Box>
                       <Button variant="outlined" size="small" fullWidth sx={{ mt: 1, borderColor: '#9c27b0', color: '#9c27b0' }}>
                         View Shared Contributions

@@ -19,7 +19,7 @@ import {
   Chip,
   Alert,
 } from '@mui/material';
-import { Plus, Edit, Trash2, CheckCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, CheckCircle, Lock, Share2 } from 'lucide-react';
 import StatusPill from '../../components/common/StatusPill';
 import ProgressBar from '../../components/common/ProgressBar';
 import CreateGoalDrawer from '../../components/employee/CreateGoalDrawer';
@@ -29,21 +29,15 @@ import PageHeader from '../../components/common/PageHeader';
 export default function MyGoals() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { goals, addGoal, updateGoal, deleteGoal, cycles } = useData();
+  const { goals, addGoal, updateGoal, deleteGoal, cycles, validateGoalSheet } = useData();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | undefined>();
   const [selectedCycle, setSelectedCycle] = useState(cycles[0]?.id || '');
 
   const userGoals = goals.filter(g => g.employeeId === user?.id && g.cycleId === selectedCycle);
-  const totalWeightage = userGoals.reduce((sum, g) => sum + g.weightage, 0);
-
-  const validations = [
-    { label: 'Weightage equals 100%', passed: totalWeightage === 100 },
-    { label: 'Maximum 8 goals', passed: userGoals.length <= 8 },
-    { label: 'Each goal minimum 10% weightage', passed: userGoals.every(g => g.weightage >= 10) },
-  ];
-
-  const canSubmit = validations.every(v => v.passed);
+  const validation = validateGoalSheet(user?.id || '', selectedCycle);
+  const totalWeightage = validation.totalWeightage;
+  const canSubmit = validation.canSubmit && userGoals.some(goal => ['draft', 'rework'].includes(goal.status));
 
   const handleAddGoal = () => {
     setEditingGoal(undefined);
@@ -124,14 +118,14 @@ export default function MyGoals() {
       {!canSubmit && (
         <Alert severity="warning" sx={{ mb: 3 }}>
           <Box sx={{ fontWeight: 600, mb: 1 }}>Validation Checklist</Box>
-          {validations.map((validation, idx) => (
+          {validation.checks.map((check, idx) => (
             <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-              {validation.passed ? (
+              {check.passed ? (
                 <CheckCircle size={16} color="#2e7d32" />
               ) : (
                 <Box sx={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid #ed6c02' }} />
               )}
-              <Box sx={{ fontSize: 13 }}>{validation.label}</Box>
+              <Box sx={{ fontSize: 13 }}>{check.label}</Box>
             </Box>
           ))}
         </Alert>
@@ -164,6 +158,10 @@ export default function MyGoals() {
                     <TableRow key={goal.id} hover>
                       <TableCell>
                         <Box sx={{ fontWeight: 600, fontSize: 14 }}>{goal.title}</Box>
+                        {goal.isShared && (
+                          <Chip icon={<Share2 size={13} />} label="Shared" size="small" sx={{ ml: 1, height: 22, fontSize: 11 }} />
+                        )}
+                        {goal.status === 'approved' && <Lock size={14} color="#2e7d32" style={{ marginLeft: 6 }} />}
                         <Box sx={{ fontSize: 12, color: 'text.secondary', mt: 0.5 }}>
                           {goal.description}
                         </Box>
@@ -195,14 +193,14 @@ export default function MyGoals() {
                           <IconButton
                             size="small"
                             onClick={() => handleEditGoal(goal)}
-                            disabled={goal.status === 'approved'}
+                            disabled={!['draft', 'rework'].includes(goal.status)}
                           >
                             <Edit size={16} />
                           </IconButton>
                           <IconButton
                             size="small"
                             onClick={() => handleDeleteGoal(goal.id)}
-                            disabled={goal.status === 'approved'}
+                            disabled={goal.status === 'approved' || goal.isShared || goal.status === 'pending'}
                           >
                             <Trash2 size={16} />
                           </IconButton>

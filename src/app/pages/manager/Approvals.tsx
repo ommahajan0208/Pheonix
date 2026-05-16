@@ -13,14 +13,15 @@ import {
   Button,
   Alert,
   Divider,
+  Chip,
 } from '@mui/material';
-import { CheckCircle, XCircle, RotateCcw, Lock } from 'lucide-react';
+import { CheckCircle, RotateCcw, Lock } from 'lucide-react';
 import { Goal } from '../../types';
 import StatusPill from '../../components/common/StatusPill';
 import ProgressBar from '../../components/common/ProgressBar';
 
 export default function Approvals() {
-  const { goals, updateGoal, teamMembers } = useData();
+  const { goals, teamMembers, approveGoalSheet, returnGoalSheetForRework, validateGoalSheet } = useData();
   const [selectedEmployee, setSelectedEmployee] = useState<string>('emp-001');
   const [editedGoals, setEditedGoals] = useState<Record<string, Partial<Goal>>>({});
 
@@ -29,6 +30,9 @@ export default function Approvals() {
   const employees = teamMembers.map(member => ({ id: member.id, name: member.name }));
 
   const employeeGoals = reviewGoals.filter(g => g.employeeId === selectedEmployee);
+  const previewGoals = goals.map(goal => editedGoals[goal.id] ? { ...goal, ...editedGoals[goal.id] } : goal);
+  const validation = validateGoalSheet(selectedEmployee, undefined, previewGoals);
+  const hasPendingGoals = employeeGoals.some(goal => goal.status === 'pending');
 
   const handleEdit = (goalId: string, field: 'target' | 'weightage', value: number) => {
     setEditedGoals(prev => ({
@@ -40,22 +44,10 @@ export default function Approvals() {
     }));
   };
 
-  const handleApprove = (goalId: string) => {
-    const edits = editedGoals[goalId] || {};
-    updateGoal(goalId, { ...edits, status: 'approved' });
-    setEditedGoals(prev => {
-      const newEdits = { ...prev };
-      delete newEdits[goalId];
-      return newEdits;
-    });
-  };
-
-  const handleReject = (goalId: string) => {
-    updateGoal(goalId, { status: 'rework' });
-  };
-
-  const handleRework = (goalId: string) => {
-    updateGoal(goalId, { status: 'rework' });
+  const handleApproveSheet = () => {
+    if (approveGoalSheet(selectedEmployee, undefined, editedGoals)) {
+      setEditedGoals({});
+    }
   };
 
   return (
@@ -70,6 +62,15 @@ export default function Approvals() {
       {pendingGoals.length === 0 && (
         <Alert severity="success" sx={{ mb: 3 }}>
           All submitted goals have been reviewed. Approved cards remain visible with a lock for audit context.
+        </Alert>
+      )}
+
+      {hasPendingGoals && (
+        <Alert severity={validation.canSubmit ? 'success' : 'warning'} sx={{ mb: 3 }}>
+          <Box sx={{ fontWeight: 700, mb: 0.5 }}>Sheet Validation</Box>
+          <Box sx={{ fontSize: 13 }}>
+            Total weightage is {validation.totalWeightage}/100%. {validation.errors.length ? validation.errors.join(' ') : 'Ready to approve.'}
+          </Box>
         </Alert>
       )}
 
@@ -119,9 +120,46 @@ export default function Approvals() {
               </CardContent>
             </Card>
           ) : (
-            employeeGoals.map((goal) => {
+            <>
+            <Card sx={{ boxShadow: 2, mb: 2 }}>
+              <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+                <Box>
+                  <Box sx={{ fontSize: 18, fontWeight: 700 }}>Goal Sheet Review</Box>
+                  <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
+                    {employeeGoals.length} goals, {validation.totalWeightage}% total weightage
+                  </Box>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    startIcon={<CheckCircle size={18} />}
+                    onClick={handleApproveSheet}
+                    disabled={!hasPendingGoals || !validation.canSubmit}
+                  >
+                    Approve Sheet
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="warning"
+                    startIcon={<RotateCcw size={18} />}
+                    onClick={() => {
+                      returnGoalSheetForRework(selectedEmployee);
+                      setEditedGoals({});
+                    }}
+                    disabled={!hasPendingGoals}
+                  >
+                    Return for Rework
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+
+            {employeeGoals.map((goal) => {
               const edits = editedGoals[goal.id] || {};
               const isApproved = goal.status === 'approved';
+              const isEditable = goal.status === 'pending';
+              const isSharedRecipient = goal.isShared && goal.employeeId !== goal.primaryOwnerId;
 
               return (
                 <Card key={goal.id} sx={{ boxShadow: 2, mb: 2 }}>
@@ -131,6 +169,7 @@ export default function Approvals() {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                           <Box sx={{ fontSize: 18, fontWeight: 600 }}>{goal.title}</Box>
                           {isApproved && <Lock size={16} color="#2e7d32" />}
+                          {goal.isShared && <Chip label="Shared KPI" size="small" />}
                         </Box>
                         <Box sx={{ fontSize: 14, color: 'text.secondary', mb: 1 }}>
                           {goal.description}
@@ -163,7 +202,7 @@ export default function Approvals() {
                           size="small"
                           value={edits.target ?? goal.target}
                           onChange={(e) => handleEdit(goal.id, 'target', Number(e.target.value))}
-                          disabled={isApproved}
+                          disabled={!isEditable || isSharedRecipient}
                           sx={{ width: '100%' }}
                         />
                       </Grid>
@@ -176,7 +215,8 @@ export default function Approvals() {
                           size="small"
                           value={edits.weightage ?? goal.weightage}
                           onChange={(e) => handleEdit(goal.id, 'weightage', Number(e.target.value))}
-                          disabled={isApproved}
+                          disabled={!isEditable}
+                          inputProps={{ min: 10 }}
                           sx={{ width: '100%' }}
                         />
                       </Grid>
@@ -188,39 +228,16 @@ export default function Approvals() {
                       </Box>
                       <ProgressBar value={goal.progress} />
                     </Box>
-
-                    {!isApproved && (
-                      <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button
-                          variant="contained"
-                          color="success"
-                          startIcon={<CheckCircle size={18} />}
-                          onClick={() => handleApprove(goal.id)}
-                        >
-                          Approve
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          color="warning"
-                          startIcon={<RotateCcw size={18} />}
-                          onClick={() => handleRework(goal.id)}
-                        >
-                          Request Rework
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          color="error"
-                          startIcon={<XCircle size={18} />}
-                          onClick={() => handleReject(goal.id)}
-                        >
-                          Reject
-                        </Button>
-                      </Box>
+                    {isApproved && (
+                      <Alert severity="success" icon={<Lock size={18} />}>
+                        Approved and locked. Admin intervention is required for further edits.
+                      </Alert>
                     )}
                   </CardContent>
                 </Card>
               );
-            })
+            })}
+            </>
           )}
         </Grid>
       </Grid>

@@ -1,7 +1,12 @@
 import { Box, Card, CardContent, Grid, TextField, Switch, Button, Divider } from '@mui/material';
-import { Save } from 'lucide-react';
+import { Save, Unlock } from 'lucide-react';
+import { useData } from '../../context/DataContext';
+import SharedKpiForm from '../../components/common/SharedKpiForm';
 
 export default function Settings() {
+  const { goals, adminUnlockGoal } = useData();
+  const lockedGoals = goals.filter(goal => goal.status === 'approved');
+
   return (
     <Box>
       <Box sx={{ mb: 3 }}>
@@ -53,6 +58,57 @@ export default function Settings() {
                 <Box sx={{ fontSize: 14 }}>Require Manager Approval</Box>
                 <Switch defaultChecked />
               </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Card sx={{ boxShadow: 2 }}>
+            <CardContent>
+              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
+                Admin Goal Intervention
+              </Box>
+              <Box sx={{ fontSize: 13, color: 'text.secondary', mb: 2 }}>
+                Unlock an approved goal by moving it back to rework for correction.
+              </Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxHeight: 280, overflow: 'auto' }}>
+                {lockedGoals.map(goal => (
+                  <Box
+                    key={goal.id}
+                    sx={{
+                      p: 1.5,
+                      border: '1px solid #e0e0e0',
+                      borderRadius: 1,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
+                    <Box>
+                      <Box sx={{ fontSize: 13, fontWeight: 700 }}>{goal.title}</Box>
+                      <Box sx={{ fontSize: 12, color: 'text.secondary' }}>{goal.employeeName} / {goal.weightage}%</Box>
+                    </Box>
+                    <Button size="small" variant="outlined" startIcon={<Unlock size={14} />} onClick={() => adminUnlockGoal(goal.id)}>
+                      Unlock
+                    </Button>
+                  </Box>
+                ))}
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Card sx={{ boxShadow: 2 }}>
+            <CardContent>
+              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 0.5 }}>
+                Push Shared Department KPI
+              </Box>
+              <Box sx={{ fontSize: 13, color: 'text.secondary', mb: 2 }}>
+                Admins can push a locked-title shared KPI to multiple employee goal sheets.
+              </Box>
+              <SharedKpiForm />
             </CardContent>
           </Card>
         </Grid>
