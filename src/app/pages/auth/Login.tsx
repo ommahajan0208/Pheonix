@@ -56,6 +56,7 @@ export default function Login() {
 
           <Box
             component="form"
+            autoComplete="off"
             noValidate
             onSubmit={(event) => {
               event.preventDefault();
@@ -65,24 +66,24 @@ export default function Login() {
             <TextField
               fullWidth
               id="login-email"
-              name="email"
+              name="loginIdentifier"
               label="Email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              autoComplete="username"
+              autoComplete="off"
               sx={{ mb: 2 }}
             />
 
             <TextField
               fullWidth
               id="login-password"
-              name="password"
+              name="loginSecret"
               label="Password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
+              autoComplete="new-password"
               sx={{ mb: 3 }}
             />
 

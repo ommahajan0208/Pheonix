@@ -110,8 +110,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setEscalationStatusOverrides(data.escalationStatusOverrides || {});
   }, []);
 
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') ?? '';
+  const buildUrl = (path: string) => (apiBaseUrl ? `${apiBaseUrl}${path}` : path);
+
   const request = useCallback(async (path: string, options: RequestInit = {}) => {
-    const response = await fetch(path, {
+    const response = await fetch(buildUrl(path), {
       ...options,
       headers: {
         'Content-Type': 'application/json',
