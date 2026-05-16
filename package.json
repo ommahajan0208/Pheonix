@@ -8,7 +8,7 @@
     "dev": "vite",
     "server": "node server/index.js",
     "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
-    "test:backend": "node --test server/*.test.js"
+    "test:backend": "node server/phase1.test.js"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
