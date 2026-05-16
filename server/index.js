@@ -1645,6 +1645,6 @@ app.use((err, _req, res, _next) => {
 });
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const port = Number(process.env.PORT || 4000);
-  app.listen(port, () => console.log(`Phoenix API listening on http://localhost:${port}`));
+  const port = Number(process.env.PORT || 10000);
+  app.listen(port, '0.0.0.0', () => console.log(`Phoenix API listening on port ${port}`));
 }
