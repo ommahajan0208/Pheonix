@@ -13,19 +13,14 @@ import { Plus, Lock, Unlock } from 'lucide-react';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { CyclePhaseKey, PHASE_METADATA, isDateInPhaseWindow } from '../../utils/cycleSchedule';
 
 export default function CycleManagement() {
   const { cycles, updateCyclePhase } = useData();
-  const [selectedCycle] = useState(cycles[0]);
+  const [selectedCycleId] = useState(cycles[0]?.id || '');
+  const selectedCycle = cycles.find(cycle => cycle.id === selectedCycleId) || cycles[0];
 
-  const phases = [
-    { id: 'goalSetting', label: 'Goal Setting', color: '#1976d2' },
-    { id: 'q1Checkin', label: 'Q1 Check-in', color: '#2e7d32' },
-    { id: 'q2Checkin', label: 'Q2 Check-in', color: '#2e7d32' },
-    { id: 'q3Checkin', label: 'Q3 Check-in', color: '#2e7d32' },
-    { id: 'q4Checkin', label: 'Q4 Check-in', color: '#2e7d32' },
-    { id: 'finalReview', label: 'Final Review', color: '#9c27b0' },
-  ];
+  const phases: CyclePhaseKey[] = ['goalSetting', 'q1Checkin', 'q2Checkin', 'q3Checkin', 'q4Checkin'];
 
   return (
     <Box>
@@ -64,25 +59,30 @@ export default function CycleManagement() {
             </Box>
             <Box sx={{ display: 'flex', gap: 1, mb: 2, overflowX: 'auto', pb: 1 }}>
               {phases.map((phase, idx) => {
-                const phaseData = selectedCycle?.phases[phase.id as keyof typeof selectedCycle.phases];
+                const phaseData = selectedCycle?.phases[phase];
+                const meta = PHASE_METADATA[phase];
+                const inDateWindow = isDateInPhaseWindow(selectedCycle, phase);
                 return (
                   <Box
-                    key={phase.id}
+                    key={phase}
                     sx={{
                       flex: 1,
                       minWidth: 150,
                       p: 2,
                       borderRadius: 1,
-                      bgcolor: phaseData?.isOpen ? `${phase.color}15` : '#f5f5f5',
-                      border: `2px solid ${phaseData?.isOpen ? phase.color : '#e0e0e0'}`,
+                      bgcolor: phaseData?.isOpen ? `${meta.color}15` : '#f5f5f5',
+                      border: `2px solid ${phaseData?.isOpen ? meta.color : inDateWindow ? '#ed6c02' : '#e0e0e0'}`,
                       position: 'relative',
                     }}
                   >
-                    <Box sx={{ fontSize: 13, fontWeight: 600, mb: 1, color: phase.color }}>
-                      {phase.label}
+                    <Box sx={{ fontSize: 13, fontWeight: 600, mb: 1, color: meta.color }}>
+                      {meta.label}
                     </Box>
                     <Box sx={{ fontSize: 11, color: 'text.secondary' }}>
                       {phaseData && new Date(phaseData.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {phaseData && new Date(phaseData.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </Box>
+                    <Box sx={{ fontSize: 11, color: 'text.secondary', mt: 0.5 }}>
+                      {meta.action}
                     </Box>
                     {idx < phases.length - 1 && (
                       <Box
@@ -95,7 +95,7 @@ export default function CycleManagement() {
                           height: 0,
                           borderTop: '8px solid transparent',
                           borderBottom: '8px solid transparent',
-                          borderLeft: `8px solid ${phaseData?.isOpen ? phase.color : '#e0e0e0'}`,
+                          borderLeft: `8px solid ${phaseData?.isOpen ? meta.color : '#e0e0e0'}`,
                         }}
                       />
                     )}
@@ -109,20 +109,27 @@ export default function CycleManagement() {
 
       <Grid container spacing={3}>
         {phases.map((phase) => {
-          const phaseData = selectedCycle?.phases[phase.id as keyof typeof selectedCycle.phases];
+          const phaseData = selectedCycle?.phases[phase];
+          const meta = PHASE_METADATA[phase];
+          const inDateWindow = isDateInPhaseWindow(selectedCycle, phase);
           return (
-            <Grid item xs={12} md={6} key={phase.id}>
+            <Grid item xs={12} md={6} key={phase}>
               <Card sx={{ boxShadow: 2 }}>
                 <CardContent>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Box sx={{ fontSize: 16, fontWeight: 600 }}>
-                      {phase.label}
+                    <Box>
+                      <Box sx={{ fontSize: 16, fontWeight: 600 }}>
+                        {meta.label}
+                      </Box>
+                      <Box sx={{ fontSize: 12, color: 'text.secondary' }}>
+                        {meta.action}
+                      </Box>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       {phaseData?.isOpen ? <Unlock size={16} color="#2e7d32" /> : <Lock size={16} color="#d32f2f" />}
                       <Switch
                         checked={phaseData?.isOpen}
-                        onChange={(event) => updateCyclePhase(selectedCycle.id, phase.id as keyof typeof selectedCycle.phases, { isOpen: event.target.checked })}
+                        onChange={(event) => updateCyclePhase(selectedCycle.id, phase, { isOpen: event.target.checked })}
                       />
                     </Box>
                   </Box>
@@ -133,7 +140,7 @@ export default function CycleManagement() {
                         <DatePicker
                           label="Start Date"
                           value={phaseData?.start}
-                          onChange={(date) => date && updateCyclePhase(selectedCycle.id, phase.id as keyof typeof selectedCycle.phases, { start: date })}
+                          onChange={(date) => date && updateCyclePhase(selectedCycle.id, phase, { start: date })}
                           slotProps={{ textField: { size: 'small', fullWidth: true } }}
                         />
                       </Grid>
@@ -141,7 +148,7 @@ export default function CycleManagement() {
                         <DatePicker
                           label="End Date"
                           value={phaseData?.end}
-                          onChange={(date) => date && updateCyclePhase(selectedCycle.id, phase.id as keyof typeof selectedCycle.phases, { end: date })}
+                          onChange={(date) => date && updateCyclePhase(selectedCycle.id, phase, { end: date })}
                           slotProps={{ textField: { size: 'small', fullWidth: true } }}
                         />
                       </Grid>
@@ -149,7 +156,7 @@ export default function CycleManagement() {
                   </LocalizationProvider>
 
                   <Box sx={{ mt: 2, p: 1.5, bgcolor: '#f5f5f5', borderRadius: 1, fontSize: 12 }}>
-                    Status: {phaseData?.isOpen ? 'Open for submissions' : 'Locked'}
+                    Status: {phaseData?.isOpen ? 'Open for submissions' : 'Locked'} / Calendar window: {inDateWindow ? 'today is within the configured dates' : 'today is outside the configured dates'}
                   </Box>
                 </CardContent>
               </Card>

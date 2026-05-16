@@ -6,6 +6,12 @@ export type ThrustArea = 'Revenue' | 'Customer Success' | 'Innovation' | 'Effici
 
 export type UnitOfMeasure = 'Numeric' | '%' | 'Timeline' | 'Zero-based';
 
+export type ScoringDirection = 'higher-is-better' | 'lower-is-better' | 'date-based' | 'zero-success';
+
+export type CheckInStatus = 'not-started' | 'on-track' | 'completed';
+
+export type Quarter = 'Q1' | 'Q2' | 'Q3' | 'Q4';
+
 export interface Goal {
   id: string;
   employeeId: string;
@@ -14,6 +20,7 @@ export interface Goal {
   description: string;
   thrustArea: ThrustArea;
   unitOfMeasure: UnitOfMeasure;
+  scoringDirection: ScoringDirection;
   target: number;
   weightage: number;
   progress: number;
@@ -71,12 +78,21 @@ export interface User {
 export interface CheckIn {
   id: string;
   goalId: string;
-  quarter: 'Q1' | 'Q2' | 'Q3' | 'Q4';
+  quarter: Quarter;
   plannedValue: number;
   actualValue: number;
-  status: 'on-track' | 'at-risk' | 'off-track';
+  status: CheckInStatus;
+  progressScore: number;
+  achievementDate?: Date;
   comments: string;
   evidenceUrls: string[];
+  managerComment?: {
+    discussionSummary: string;
+    blockersSupportNeeded: string;
+    nextActions: string;
+  };
+  managerId?: string;
+  managerCommentedAt?: Date;
   submittedAt?: Date;
 }
 
@@ -90,6 +106,15 @@ export interface AuditLog {
   goalTitle?: string;
   before?: any;
   after?: any;
+  fieldChanges?: AuditFieldChange[];
+  changedAfterLock?: boolean;
+  changedAt?: Date;
+}
+
+export interface AuditFieldChange {
+  field: string;
+  before: any;
+  after: any;
 }
 
 export interface Notification {
@@ -130,4 +155,37 @@ export interface Escalation {
   reason: string;
   status: 'open' | 'monitoring' | 'resolved';
   createdAt: Date;
+}
+
+export type EscalationCondition = 'goal-not-submitted' | 'manager-not-approved' | 'checkin-not-completed';
+
+export type EscalationLevel = 'employee' | 'manager' | 'hr';
+
+export interface EscalationRule {
+  id: string;
+  name: string;
+  condition: EscalationCondition;
+  thresholdDays: number;
+  managerAfterDays: number;
+  hrAfterDays: number;
+  active: boolean;
+}
+
+export interface EscalationLog {
+  id: string;
+  ruleId: string;
+  ruleName: string;
+  employeeId: string;
+  employeeName: string;
+  managerId?: string;
+  managerName?: string;
+  departmentName?: string;
+  goalId?: string;
+  goalTitle?: string;
+  quarter?: Quarter;
+  currentLevel: EscalationLevel;
+  reason: string;
+  status: 'open' | 'monitoring' | 'resolved';
+  triggeredAt: Date;
+  resolvedAt?: Date;
 }

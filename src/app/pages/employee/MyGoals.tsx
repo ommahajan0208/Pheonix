@@ -25,6 +25,7 @@ import ProgressBar from '../../components/common/ProgressBar';
 import CreateGoalDrawer from '../../components/employee/CreateGoalDrawer';
 import { Goal } from '../../types';
 import PageHeader from '../../components/common/PageHeader';
+import { getWindowMessage, isPhaseOpen } from '../../utils/cycleSchedule';
 
 export default function MyGoals() {
   const { user } = useAuth();
@@ -34,10 +35,12 @@ export default function MyGoals() {
   const [editingGoal, setEditingGoal] = useState<Goal | undefined>();
   const [selectedCycle, setSelectedCycle] = useState(cycles[0]?.id || '');
 
+  const selectedCycleData = cycles.find(cycle => cycle.id === selectedCycle);
+  const goalSettingOpen = isPhaseOpen(selectedCycleData, 'goalSetting');
   const userGoals = goals.filter(g => g.employeeId === user?.id && g.cycleId === selectedCycle);
   const validation = validateGoalSheet(user?.id || '', selectedCycle);
   const totalWeightage = validation.totalWeightage;
-  const canSubmit = validation.canSubmit && userGoals.some(goal => ['draft', 'rework'].includes(goal.status));
+  const canSubmit = goalSettingOpen && validation.canSubmit && userGoals.some(goal => ['draft', 'rework'].includes(goal.status));
 
   const handleAddGoal = () => {
     setEditingGoal(undefined);
@@ -81,7 +84,7 @@ export default function MyGoals() {
           variant="contained"
           startIcon={<Plus size={18} />}
           onClick={handleAddGoal}
-          disabled={userGoals.length >= 8}
+          disabled={!goalSettingOpen || userGoals.length >= 8}
         >
           Add Goal
         </Button>}
@@ -114,6 +117,10 @@ export default function MyGoals() {
           }}
         />
       </Box>
+
+      <Alert severity={goalSettingOpen ? 'success' : 'info'} sx={{ mb: 3 }}>
+        {getWindowMessage(selectedCycleData, 'goalSetting')} Employees can create, edit, and submit goals only while this window is open.
+      </Alert>
 
       {!canSubmit && (
         <Alert severity="warning" sx={{ mb: 3 }}>
@@ -193,14 +200,14 @@ export default function MyGoals() {
                           <IconButton
                             size="small"
                             onClick={() => handleEditGoal(goal)}
-                            disabled={!['draft', 'rework'].includes(goal.status)}
+                            disabled={!goalSettingOpen || !['draft', 'rework'].includes(goal.status)}
                           >
                             <Edit size={16} />
                           </IconButton>
                           <IconButton
                             size="small"
                             onClick={() => handleDeleteGoal(goal.id)}
-                            disabled={goal.status === 'approved' || goal.isShared || goal.status === 'pending'}
+                            disabled={!goalSettingOpen || goal.status === 'approved' || goal.isShared || goal.status === 'pending'}
                           >
                             <Trash2 size={16} />
                           </IconButton>

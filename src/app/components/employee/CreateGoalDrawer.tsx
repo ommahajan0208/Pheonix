@@ -15,7 +15,8 @@ import {
   Alert,
 } from '@mui/material';
 import { X, Save } from 'lucide-react';
-import { ThrustArea, UnitOfMeasure, Goal } from '../../types';
+import { ThrustArea, UnitOfMeasure, Goal, ScoringDirection } from '../../types';
+import { getDefaultScoringDirection, getScoringDirectionLabel } from '../../utils/progressScore';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -36,6 +37,7 @@ const DEFAULT_GOAL: Partial<Goal> = {
   description: '',
   thrustArea: 'Efficiency',
   unitOfMeasure: '%',
+  scoringDirection: 'higher-is-better',
   target: 0,
   weightage: 10,
   deadlineDate: undefined,
@@ -48,6 +50,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
   const remainingWeightage = 100 - totalWeightage + (existingGoal?.weightage || 0);
   const isSharedRecipient = Boolean(existingGoal?.isShared && existingGoal.employeeId !== existingGoal.primaryOwnerId);
   const nextTotalWeightage = totalWeightage - (existingGoal?.weightage || 0) + (formData.weightage || 0);
+  const directionLocked = formData.unitOfMeasure === 'Timeline' || formData.unitOfMeasure === 'Zero-based';
 
   useEffect(() => {
     if (open) {
@@ -155,7 +158,11 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
               <ToggleButtonGroup
                 value={formData.unitOfMeasure}
                 exclusive
-                onChange={(_, value) => value && setFormData({ ...formData, unitOfMeasure: value })}
+                onChange={(_, value) => value && setFormData({
+                  ...formData,
+                  unitOfMeasure: value,
+                  scoringDirection: getDefaultScoringDirection(value),
+                })}
                 fullWidth
                 size="small"
                 disabled={isSharedRecipient}
@@ -167,6 +174,24 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
                 ))}
               </ToggleButtonGroup>
             </Box>
+
+            <TextField
+              select
+              fullWidth
+              label="Scoring Direction"
+              value={formData.scoringDirection || getDefaultScoringDirection(formData.unitOfMeasure || '%')}
+              onChange={(e) => setFormData({ ...formData, scoringDirection: e.target.value as ScoringDirection })}
+              sx={{ mb: 3 }}
+              disabled={isSharedRecipient || directionLocked}
+            >
+              {(['higher-is-better', 'lower-is-better', 'date-based', 'zero-success'] as ScoringDirection[])
+                .filter(direction => !directionLocked || direction === getDefaultScoringDirection(formData.unitOfMeasure || '%'))
+                .map(direction => (
+                  <MenuItem key={direction} value={direction}>
+                    {getScoringDirectionLabel(direction)}
+                  </MenuItem>
+                ))}
+            </TextField>
 
             <TextField
               fullWidth
@@ -240,6 +265,9 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
               </Box>
               <Box sx={{ fontSize: 13, mb: 1 }}>
                 <strong>Target:</strong> {formData.target} {formData.unitOfMeasure}
+              </Box>
+              <Box sx={{ fontSize: 13, mb: 1 }}>
+                <strong>Scoring:</strong> {getScoringDirectionLabel(formData.scoringDirection || getDefaultScoringDirection(formData.unitOfMeasure || '%'))}
               </Box>
               <Box sx={{ fontSize: 13 }}>
                 <strong>Weightage:</strong> {formData.weightage}%

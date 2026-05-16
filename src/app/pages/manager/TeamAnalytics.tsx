@@ -18,10 +18,16 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
+  PieChart,
+  Pie,
+  Cell,
 } from 'recharts';
+import { buildGoalDistribution, buildManagerEffectiveness, buildQoqTrends } from '../../utils/governanceAnalytics';
+
+const CHART_COLORS = ['#1976d2', '#2e7d32', '#ed6c02', '#9c27b0', '#d32f2f', '#00838f'];
 
 export default function TeamAnalytics() {
-  const { goals } = useData();
+  const { goals, checkIns, teamMembers } = useData();
 
   const totalGoals = goals.length;
   const approvedGoals = goals.filter(g => g.status === 'approved').length;
@@ -30,27 +36,23 @@ export default function TeamAnalytics() {
     : 0;
   const atRisk = goals.filter(g => g.progress < 50 && g.status === 'approved').length;
 
-  const progressByEmployee = [
-    { name: 'John Smith', progress: 32 },
-    { name: 'Jane Doe', progress: 48 },
-    { name: 'Mike Johnson', progress: 25 },
-  ];
+  const progressByEmployee = teamMembers.map(member => {
+    const employeeGoals = goals.filter(goal => goal.employeeId === member.id);
+    return {
+      name: member.name,
+      progress: employeeGoals.length
+        ? Math.round(employeeGoals.reduce((sum, goal) => sum + goal.progress, 0) / employeeGoals.length)
+        : 0,
+    };
+  });
 
-  const monthlyTrend = [
-    { month: 'Jan', completion: 10 },
-    { month: 'Feb', completion: 15 },
-    { month: 'Mar', completion: 25 },
-    { month: 'Apr', completion: 30 },
-    { month: 'May', completion: 35 },
-  ];
-
-  const thrustAreaData = [
-    { thrust: 'Revenue', value: 85 },
-    { thrust: 'Customer Success', value: 70 },
-    { thrust: 'Innovation', value: 60 },
-    { thrust: 'Efficiency', value: 75 },
-    { thrust: 'Team Dev', value: 65 },
-  ];
+  const qoqTrends = buildQoqTrends(goals, checkIns, teamMembers);
+  const distribution = buildGoalDistribution(goals);
+  const managerEffectiveness = buildManagerEffectiveness(goals, checkIns, teamMembers, 'Q1');
+  const thrustAreaData = distribution.thrustAreas.map(item => ({
+    thrust: item.name,
+    value: Math.round((item.value / Math.max(goals.length, 1)) * 100),
+  }));
 
   return (
     <Box>
@@ -68,7 +70,7 @@ export default function TeamAnalytics() {
             value={totalGoals}
             icon={Target}
             color="#9c27b0"
-            trend="+12% from last cycle"
+            subtitle="Current cycle"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -77,7 +79,7 @@ export default function TeamAnalytics() {
             value={approvedGoals}
             icon={CheckCircle}
             color="#2e7d32"
-            trend="+8% approval rate"
+            subtitle="Ready for check-ins"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -86,7 +88,7 @@ export default function TeamAnalytics() {
             value={`${avgProgress}%`}
             icon={TrendingUp}
             color={avgProgress >= 50 ? '#2e7d32' : '#ed6c02'}
-            trend="+5% this month"
+            subtitle="Across all goals"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -125,22 +127,30 @@ export default function TeamAnalytics() {
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 3 }}>
-                Monthly Completion Trend
+                Quarter-on-Quarter Achievement
               </Box>
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={monthlyTrend}>
+                <LineChart data={qoqTrends}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
+                  <XAxis dataKey="quarter" />
                   <YAxis />
                   <Tooltip />
                   <Legend />
                   <Line
                     type="monotone"
-                    dataKey="completion"
-                    stroke="#9c27b0"
+                    dataKey="individual"
+                    stroke="#1976d2"
                     strokeWidth={2}
-                    name="Completion %"
+                    name="Individual Achievement %"
                   />
+                  <Line
+                    type="monotone"
+                    dataKey="team"
+                    stroke="#2e7d32"
+                    strokeWidth={2}
+                    name="Team Achievement %"
+                  />
+                  <Line type="monotone" dataKey="department" stroke="#ed6c02" strokeWidth={2} name="Department Achievement %" />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
@@ -170,18 +180,20 @@ export default function TeamAnalytics() {
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
-                Risk Heatmap
+                Completion Heatmap
               </Box>
               <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 1 }}>
-                {['Revenue', 'Customer', 'Innovation', 'Efficiency', 'Team'].flatMap((area, areaIdx) =>
-                  ['Q1', 'Q2', 'Q3'].map((quarter, qIdx) => {
-                    const score = (areaIdx * 17 + qIdx * 23 + 38) % 100;
+                {teamMembers.flatMap(member =>
+                  qoqTrends.map(trend => {
+                    const employeeGoals = goals.filter(goal => goal.employeeId === member.id && goal.status === 'approved');
+                    const submitted = employeeGoals.filter(goal => checkIns.some(checkIn => checkIn.goalId === goal.id && checkIn.quarter === trend.quarter && checkIn.submittedAt)).length;
+                    const score = employeeGoals.length ? Math.round((submitted / employeeGoals.length) * 100) : 0;
                     const bg = score > 70 ? '#e8f5e9' : score > 40 ? '#fff3e0' : '#ffebee';
                     const color = score > 70 ? '#2e7d32' : score > 40 ? '#ed6c02' : '#d32f2f';
                     return (
-                      <Box key={`${area}-${quarter}`} sx={{ p: 1.2, borderRadius: 1, bgcolor: bg, border: '1px solid rgba(0,0,0,0.05)' }}>
-                        <Box sx={{ fontSize: 11, color: 'text.secondary' }}>{area}</Box>
-                        <Box sx={{ fontSize: 13, fontWeight: 800, color }}>{quarter} {score}%</Box>
+                      <Box key={`${member.id}-${trend.quarter}`} sx={{ p: 1.2, borderRadius: 1, bgcolor: bg, border: '1px solid rgba(0,0,0,0.05)' }}>
+                        <Box sx={{ fontSize: 11, color: 'text.secondary' }}>{member.name.split(' ')[0]}</Box>
+                        <Box sx={{ fontSize: 13, fontWeight: 800, color }}>{trend.quarter} {score}%</Box>
                       </Box>
                     );
                   })
@@ -192,9 +204,64 @@ export default function TeamAnalytics() {
                   Analytics Insight
                 </Box>
                 <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
-                  {atRisk} approved goal{atRisk !== 1 ? 's need' : ' needs'} intervention; Innovation and Efficiency carry the highest delivery risk.
+                  {atRisk} approved goal{atRisk !== 1 ? 's need' : ' needs'} intervention; Q1 employee completion is {qoqTrends[0]?.checkInCompletion || 0}%.
                 </Box>
               </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Card sx={{ boxShadow: 2 }}>
+            <CardContent>
+              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 3 }}>
+                Goal Distribution
+              </Box>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={6}>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <PieChart>
+                      <Pie data={distribution.uomTypes} cx="50%" cy="50%" outerRadius={82} dataKey="value" nameKey="name" label>
+                        {distribution.uomTypes.map((_, index) => <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={distribution.statuses}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="value" fill="#1976d2" name="Goals" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Card sx={{ boxShadow: 2 }}>
+            <CardContent>
+              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 3 }}>
+                Manager Effectiveness
+              </Box>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={managerEffectiveness}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="manager" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="employeeCompletion" fill="#2e7d32" name="Employee Check-ins %" />
+                  <Bar dataKey="managerCompletion" fill="#ed6c02" name="Manager Comments %" />
+                </BarChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         </Grid>

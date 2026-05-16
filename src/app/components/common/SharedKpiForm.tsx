@@ -2,25 +2,30 @@ import { useState } from 'react';
 import { Box, Button, Checkbox, Chip, FormControlLabel, MenuItem, TextField, Alert } from '@mui/material';
 import { Share2 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
-import { ThrustArea, UnitOfMeasure } from '../../types';
+import { ScoringDirection, ThrustArea, UnitOfMeasure } from '../../types';
+import { getDefaultScoringDirection, getScoringDirectionLabel } from '../../utils/progressScore';
+import { getActiveCycle, getWindowMessage, isPhaseOpen } from '../../utils/cycleSchedule';
 
 const THRUST_AREAS: ThrustArea[] = ['Revenue', 'Customer Success', 'Innovation', 'Efficiency', 'Team Development'];
 const UNITS: UnitOfMeasure[] = ['Numeric', '%', 'Timeline', 'Zero-based'];
 
 export default function SharedKpiForm() {
   const { teamMembers, cycles, addSharedGoal } = useData();
-  const activeCycleId = cycles.find(cycle => cycle.isActive)?.id || cycles[0]?.id || 'cycle-2026';
+  const activeCycle = getActiveCycle(cycles);
+  const activeCycleId = activeCycle?.id || 'cycle-2026';
+  const goalSettingOpen = isPhaseOpen(activeCycle, 'goalSetting');
   const [title, setTitle] = useState('Departmental Delivery KPI');
   const [description, setDescription] = useState('Shared KPI pushed to linked employee goal sheets.');
   const [thrustArea, setThrustArea] = useState<ThrustArea>('Efficiency');
   const [unitOfMeasure, setUnitOfMeasure] = useState<UnitOfMeasure>('%');
+  const [scoringDirection, setScoringDirection] = useState<ScoringDirection>('higher-is-better');
   const [target, setTarget] = useState(95);
   const [weightage, setWeightage] = useState(10);
   const [primaryOwnerId, setPrimaryOwnerId] = useState(teamMembers[0]?.id || '');
   const [selectedIds, setSelectedIds] = useState<string[]>(teamMembers.map(member => member.id));
   const [notice, setNotice] = useState('');
 
-  const canPush = title.trim() && description.trim() && primaryOwnerId && selectedIds.length > 0 && weightage >= 10;
+  const canPush = goalSettingOpen && title.trim() && description.trim() && primaryOwnerId && selectedIds.length > 0 && weightage >= 10;
 
   const toggleEmployee = (id: string) => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(employeeId => employeeId !== id) : [...prev, id]);
@@ -33,6 +38,7 @@ export default function SharedKpiForm() {
       description,
       thrustArea,
       unitOfMeasure,
+      scoringDirection,
       target,
       weightage,
       cycleId: activeCycleId,
@@ -45,6 +51,9 @@ export default function SharedKpiForm() {
   return (
     <Box>
       {notice && <Alert severity="success" sx={{ mb: 2 }}>{notice}</Alert>}
+      <Alert severity={goalSettingOpen ? 'success' : 'info'} sx={{ mb: 2 }}>
+        {getWindowMessage(activeCycle, 'goalSetting')} Shared KPIs can be pushed only during goal setting.
+      </Alert>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr' }, gap: 2, mb: 2 }}>
         <TextField label="Shared KPI Title" size="small" value={title} onChange={(event) => setTitle(event.target.value)} />
         <TextField select label="Thrust Area" size="small" value={thrustArea} onChange={(event) => setThrustArea(event.target.value as ThrustArea)}>
@@ -66,9 +75,33 @@ export default function SharedKpiForm() {
         sx={{ mb: 2 }}
       />
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2, mb: 2 }}>
-        <TextField select label="UoM" size="small" value={unitOfMeasure} onChange={(event) => setUnitOfMeasure(event.target.value as UnitOfMeasure)}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr 1fr' }, gap: 2, mb: 2 }}>
+        <TextField
+          select
+          label="UoM"
+          size="small"
+          value={unitOfMeasure}
+          onChange={(event) => {
+            const nextUnit = event.target.value as UnitOfMeasure;
+            setUnitOfMeasure(nextUnit);
+            setScoringDirection(getDefaultScoringDirection(nextUnit));
+          }}
+        >
           {UNITS.map(unit => <MenuItem key={unit} value={unit}>{unit}</MenuItem>)}
+        </TextField>
+        <TextField
+          select
+          label="Scoring"
+          size="small"
+          value={scoringDirection}
+          disabled={unitOfMeasure === 'Timeline' || unitOfMeasure === 'Zero-based'}
+          onChange={(event) => setScoringDirection(event.target.value as ScoringDirection)}
+        >
+          {(['higher-is-better', 'lower-is-better', 'date-based', 'zero-success'] as ScoringDirection[])
+            .filter(direction => unitOfMeasure === 'Timeline' || unitOfMeasure === 'Zero-based'
+              ? direction === getDefaultScoringDirection(unitOfMeasure)
+              : direction === 'higher-is-better' || direction === 'lower-is-better')
+            .map(direction => <MenuItem key={direction} value={direction}>{getScoringDirectionLabel(direction)}</MenuItem>)}
         </TextField>
         <TextField label="Target" type="number" size="small" value={target} onChange={(event) => setTarget(Number(event.target.value))} />
         <TextField label="Default Weightage (%)" type="number" size="small" value={weightage} inputProps={{ min: 10 }} onChange={(event) => setWeightage(Number(event.target.value))} />

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import {
   Box,
@@ -15,90 +16,183 @@ import {
   TableHead,
   TableRow,
   Chip,
+  Alert,
 } from '@mui/material';
 import { Save } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader';
+import { CheckIn, CheckInStatus, Quarter } from '../../types';
+import { getScoringDirectionLabel } from '../../utils/progressScore';
+import { getActiveCycle, getPhaseForQuarter, getWindowMessage, isPhaseOpen } from '../../utils/cycleSchedule';
+
+type ManagerCommentDraft = NonNullable<CheckIn['managerComment']>;
+
+const QUARTERS: Quarter[] = ['Q1', 'Q2', 'Q3', 'Q4'];
+
+const STATUS_LABELS: Record<CheckInStatus, string> = {
+  'not-started': 'Not Started',
+  'on-track': 'On Track',
+  completed: 'Completed',
+};
+
+const emptyComment: ManagerCommentDraft = {
+  discussionSummary: '',
+  blockersSupportNeeded: '',
+  nextActions: '',
+};
 
 export default function ManagerCheckIn() {
-  const { goals } = useData();
-  const [selectedEmployee, setSelectedEmployee] = useState<string>('emp-001');
+  const { user } = useAuth();
+  const { goals, checkIns, teamMembers, saveManagerCheckInComment, cycles } = useData();
+  const [selectedEmployee, setSelectedEmployee] = useState<string>(teamMembers[0]?.id || '');
+  const [selectedQuarter, setSelectedQuarter] = useState<Quarter>('Q1');
   const [selectedGoal, setSelectedGoal] = useState<string>('');
-  const [feedback, setFeedback] = useState('');
-  const [riskLevel, setRiskLevel] = useState<'low' | 'medium' | 'high'>('low');
+  const [commentDraft, setCommentDraft] = useState<ManagerCommentDraft>(emptyComment);
+  const [notice, setNotice] = useState('');
 
-  const employees = Array.from(new Set(goals.map(g => ({ id: g.employeeId, name: g.employeeName }))));
-  const employeeGoals = goals.filter(g => g.employeeId === selectedEmployee && g.status === 'approved');
+  const activeCycle = getActiveCycle(cycles);
+  const selectedPhase = getPhaseForQuarter(selectedQuarter);
+  const checkInOpen = isPhaseOpen(activeCycle, selectedPhase);
+  const employees = teamMembers.filter(member => member.managerId === user?.id || user?.role === 'manager');
+  const employeeGoals = goals.filter(g => g.employeeId === selectedEmployee && g.status === 'approved' && (!activeCycle?.id || g.cycleId === activeCycle.id));
+
+  const checkInByGoal = useMemo(() => {
+    return checkIns.reduce((acc, checkIn) => {
+      if (checkIn.quarter === selectedQuarter) acc[checkIn.goalId] = checkIn;
+      return acc;
+    }, {} as Record<string, CheckIn>);
+  }, [checkIns, selectedQuarter]);
+
+  const selectedCheckIn = selectedGoal ? checkInByGoal[selectedGoal] : undefined;
+  const selectedGoalData = goals.find(goal => goal.id === selectedGoal);
+  const firstEmployeeGoalId = employeeGoals[0]?.id || '';
+
+  useEffect(() => {
+    setSelectedGoal(firstEmployeeGoalId);
+  }, [firstEmployeeGoalId, selectedEmployee, selectedQuarter]);
+
+  useEffect(() => {
+    setCommentDraft(selectedCheckIn?.managerComment || emptyComment);
+  }, [selectedCheckIn?.id, selectedCheckIn?.managerComment]);
+
+  const handleCommentChange = (field: keyof ManagerCommentDraft, value: string) => {
+    setCommentDraft(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveComment = () => {
+    if (!selectedGoal || !checkInOpen) return;
+
+    saveManagerCheckInComment(selectedGoal, selectedQuarter, user?.id || 'mgr-001', commentDraft);
+    setNotice(`Manager check-in comment saved for ${selectedGoalData?.title || 'selected goal'}.`);
+  };
+
+  const hasComment = Object.values(commentDraft).some(value => value.trim());
 
   return (
     <Box>
-      <PageHeader title="Manager Check-in" subtitle="Review planned vs actual progress and capture feedback, risk, and next actions." />
+      <PageHeader title="Manager Check-in" subtitle="Review quarterly planned vs achievement data and document check-in discussions." />
+      {notice && <Alert severity="success" sx={{ mb: 2 }}>{notice}</Alert>}
+      <Alert severity={checkInOpen ? 'success' : 'info'} sx={{ mb: 2 }}>
+        {getWindowMessage(activeCycle, selectedPhase)} Manager feedback can be saved only while this window is open.
+      </Alert>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={7}>
+        <Grid item xs={12} md={8}>
           <Card sx={{ boxShadow: 2, mb: 3 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
-                Select Employee & Goal
+                Team Member & Quarter
               </Box>
-              <TextField
-                select
-                fullWidth
-                label="Employee"
-                value={selectedEmployee}
-                onChange={(e) => {
-                  setSelectedEmployee(e.target.value);
-                  setSelectedGoal('');
-                }}
-                sx={{ mb: 2 }}
-              >
-                {employees.map((emp) => (
-                  <MenuItem key={emp.id} value={emp.id}>
-                    {emp.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-
-              <TextField
-                select
-                fullWidth
-                label="Goal"
-                value={selectedGoal}
-                onChange={(e) => setSelectedGoal(e.target.value)}
-                disabled={!selectedEmployee}
-              >
-                {employeeGoals.map((goal) => (
-                  <MenuItem key={goal.id} value={goal.id}>
-                    {goal.title}
-                  </MenuItem>
-                ))}
-              </TextField>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={8}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Employee"
+                    value={selectedEmployee}
+                    onChange={(e) => {
+                      setSelectedEmployee(e.target.value);
+                      setNotice('');
+                    }}
+                  >
+                    {employees.map((emp) => (
+                      <MenuItem key={emp.id} value={emp.id}>
+                        {emp.name} - {emp.title}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Quarter"
+                    value={selectedQuarter}
+                    onChange={(e) => {
+                      setSelectedQuarter(e.target.value as Quarter);
+                      setNotice('');
+                    }}
+                  >
+                    {QUARTERS.map(quarter => <MenuItem key={quarter} value={quarter}>{quarter}</MenuItem>)}
+                  </TextField>
+                </Grid>
+              </Grid>
             </CardContent>
           </Card>
 
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
-                Planned vs Actual
+                Planned vs Achievement
               </Box>
               <Table size="small">
                 <TableHead>
                   <TableRow>
                     <TableCell sx={{ fontWeight: 700 }}>Goal</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Target</TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Planned</TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Actual</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Risk</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Score</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {employeeGoals.map(goal => {
-                    const risk = goal.progress < 30 ? 'High' : goal.progress < 55 ? 'Medium' : 'Low';
+                    const checkIn = checkInByGoal[goal.id];
+                    const status = checkIn?.status || 'not-started';
+
                     return (
-                      <TableRow key={goal.id} hover selected={selectedGoal === goal.id} onClick={() => setSelectedGoal(goal.id)} sx={{ cursor: 'pointer' }}>
-                        <TableCell>{goal.title}</TableCell>
-                        <TableCell>{goal.target}</TableCell>
-                        <TableCell>{goal.progress}%</TableCell>
+                      <TableRow
+                        key={goal.id}
+                        hover
+                        selected={selectedGoal === goal.id}
+                        onClick={() => {
+                          setSelectedGoal(goal.id);
+                          setNotice('');
+                        }}
+                        sx={{ cursor: 'pointer' }}
+                      >
                         <TableCell>
-                          <Chip label={risk} size="small" color={risk === 'High' ? 'error' : risk === 'Medium' ? 'warning' : 'success'} />
+                          <Box sx={{ fontWeight: 700 }}>{goal.title}</Box>
+                          <Box sx={{ color: 'text.secondary', fontSize: 12 }}>
+                            {goal.unitOfMeasure} | {getScoringDirectionLabel(goal.scoringDirection)}
+                          </Box>
+                        </TableCell>
+                        <TableCell>{goal.target}</TableCell>
+                        <TableCell>{checkIn?.plannedValue ?? '-'}</TableCell>
+                        <TableCell>{checkIn?.actualValue ?? '-'}</TableCell>
+                        <TableCell>
+                          <Chip
+                            label={`${checkIn?.progressScore ?? 0}%`}
+                            size="small"
+                            sx={{ bgcolor: '#e3f2fd', color: '#1976d2', fontWeight: 700 }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={STATUS_LABELS[status]}
+                            size="small"
+                            color={status === 'completed' ? 'success' : status === 'on-track' ? 'primary' : 'default'}
+                          />
                         </TableCell>
                       </TableRow>
                     );
@@ -109,61 +203,63 @@ export default function ManagerCheckIn() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={5}>
+        <Grid item xs={12} md={4}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
-              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
-                Feedback & Assessment
+              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 0.5 }}>
+                Structured Check-in Comment
               </Box>
-
-              <TextField
-                select
-                fullWidth
-                label="Risk Level"
-                value={riskLevel}
-                onChange={(e) => setRiskLevel(e.target.value as 'low' | 'medium' | 'high')}
-                sx={{ mb: 2 }}
-              >
-                <MenuItem value="low">Low Risk</MenuItem>
-                <MenuItem value="medium">Medium Risk</MenuItem>
-                <MenuItem value="high">High Risk</MenuItem>
-              </TextField>
+              <Box sx={{ fontSize: 13, color: 'text.secondary', mb: 2 }}>
+                {selectedGoalData ? selectedGoalData.title : 'Select a goal'}
+              </Box>
 
               <TextField
                 fullWidth
                 multiline
-                rows={8}
-                label="Manager Feedback"
-                value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
-                placeholder="Provide feedback on progress, challenges, and recommendations..."
+                rows={4}
+                label="Discussion Summary"
+                value={commentDraft.discussionSummary}
+                onChange={(e) => handleCommentChange('discussionSummary', e.target.value)}
                 sx={{ mb: 2 }}
+                disabled={!selectedGoal || !checkInOpen}
+              />
+
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                label="Blockers / Support Needed"
+                value={commentDraft.blockersSupportNeeded}
+                onChange={(e) => handleCommentChange('blockersSupportNeeded', e.target.value)}
+                sx={{ mb: 2 }}
+                disabled={!selectedGoal || !checkInOpen}
+              />
+
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                label="Next Actions"
+                value={commentDraft.nextActions}
+                onChange={(e) => handleCommentChange('nextActions', e.target.value)}
+                sx={{ mb: 2 }}
+                disabled={!selectedGoal || !checkInOpen}
               />
 
               <Divider sx={{ my: 2 }} />
 
-              <Box sx={{ mb: 2 }}>
-                <Box sx={{ fontSize: 14, fontWeight: 600, mb: 1 }}>
-                  Recommendations
-                </Box>
-                <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
-                  - Review progress against quarterly targets
-                </Box>
-                <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
-                  - Identify blockers and provide support
-                </Box>
-                <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
-                  - Adjust targets if needed based on changing priorities
-                </Box>
+              <Box sx={{ fontSize: 13, color: 'text.secondary', mb: 2 }}>
+                Last saved: {selectedCheckIn?.managerCommentedAt ? new Date(selectedCheckIn.managerCommentedAt).toLocaleString() : 'Not saved yet'}
               </Box>
 
               <Button
                 fullWidth
                 variant="contained"
                 startIcon={<Save size={18} />}
-                disabled={!selectedGoal || !feedback}
+                disabled={!selectedGoal || !checkInOpen || !hasComment}
+                onClick={handleSaveComment}
               >
-                Save Feedback
+                Save Check-in Comment
               </Button>
             </CardContent>
           </Card>

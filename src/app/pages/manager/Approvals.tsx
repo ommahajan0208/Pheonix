@@ -19,19 +19,24 @@ import { CheckCircle, RotateCcw, Lock } from 'lucide-react';
 import { Goal } from '../../types';
 import StatusPill from '../../components/common/StatusPill';
 import ProgressBar from '../../components/common/ProgressBar';
+import { getActiveCycle, getWindowMessage, isPhaseOpen } from '../../utils/cycleSchedule';
 
 export default function Approvals() {
-  const { goals, teamMembers, approveGoalSheet, returnGoalSheetForRework, validateGoalSheet } = useData();
+  const { goals, teamMembers, approveGoalSheet, returnGoalSheetForRework, validateGoalSheet, cycles } = useData();
   const [selectedEmployee, setSelectedEmployee] = useState<string>('emp-001');
   const [editedGoals, setEditedGoals] = useState<Record<string, Partial<Goal>>>({});
 
-  const reviewGoals = goals.filter(g => ['pending', 'rework', 'approved'].includes(g.status));
-  const pendingGoals = goals.filter(g => g.status === 'pending');
+  const activeCycle = getActiveCycle(cycles);
+  const activeCycleId = activeCycle?.id;
+  const goalSettingOpen = isPhaseOpen(activeCycle, 'goalSetting');
+  const cycleGoals = goals.filter(g => !activeCycleId || g.cycleId === activeCycleId);
+  const reviewGoals = cycleGoals.filter(g => ['pending', 'rework', 'approved'].includes(g.status));
+  const pendingGoals = cycleGoals.filter(g => g.status === 'pending');
   const employees = teamMembers.map(member => ({ id: member.id, name: member.name }));
 
   const employeeGoals = reviewGoals.filter(g => g.employeeId === selectedEmployee);
   const previewGoals = goals.map(goal => editedGoals[goal.id] ? { ...goal, ...editedGoals[goal.id] } : goal);
-  const validation = validateGoalSheet(selectedEmployee, undefined, previewGoals);
+  const validation = validateGoalSheet(selectedEmployee, activeCycleId, previewGoals);
   const hasPendingGoals = employeeGoals.some(goal => goal.status === 'pending');
 
   const handleEdit = (goalId: string, field: 'target' | 'weightage', value: number) => {
@@ -44,8 +49,8 @@ export default function Approvals() {
     }));
   };
 
-  const handleApproveSheet = () => {
-    if (approveGoalSheet(selectedEmployee, undefined, editedGoals)) {
+  const handleApproveSheet = async () => {
+    if (await approveGoalSheet(selectedEmployee, activeCycleId, editedGoals)) {
       setEditedGoals({});
     }
   };
@@ -64,6 +69,10 @@ export default function Approvals() {
           All submitted goals have been reviewed. Approved cards remain visible with a lock for audit context.
         </Alert>
       )}
+
+      <Alert severity={goalSettingOpen ? 'success' : 'info'} sx={{ mb: 3 }}>
+        {getWindowMessage(activeCycle, 'goalSetting')} Manager approval actions and inline edits are available only while this window is open.
+      </Alert>
 
       {hasPendingGoals && (
         <Alert severity={validation.canSubmit ? 'success' : 'warning'} sx={{ mb: 3 }}>
@@ -135,7 +144,7 @@ export default function Approvals() {
                     color="success"
                     startIcon={<CheckCircle size={18} />}
                     onClick={handleApproveSheet}
-                    disabled={!hasPendingGoals || !validation.canSubmit}
+                    disabled={!goalSettingOpen || !hasPendingGoals || !validation.canSubmit}
                   >
                     Approve Sheet
                   </Button>
@@ -143,11 +152,11 @@ export default function Approvals() {
                     variant="outlined"
                     color="warning"
                     startIcon={<RotateCcw size={18} />}
-                    onClick={() => {
-                      returnGoalSheetForRework(selectedEmployee);
+                    onClick={async () => {
+                      await returnGoalSheetForRework(selectedEmployee, activeCycleId);
                       setEditedGoals({});
                     }}
-                    disabled={!hasPendingGoals}
+                    disabled={!goalSettingOpen || !hasPendingGoals}
                   >
                     Return for Rework
                   </Button>
@@ -158,7 +167,7 @@ export default function Approvals() {
             {employeeGoals.map((goal) => {
               const edits = editedGoals[goal.id] || {};
               const isApproved = goal.status === 'approved';
-              const isEditable = goal.status === 'pending';
+              const isEditable = goalSettingOpen && goal.status === 'pending';
               const isSharedRecipient = goal.isShared && goal.employeeId !== goal.primaryOwnerId;
 
               return (

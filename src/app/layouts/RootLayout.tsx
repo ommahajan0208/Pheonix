@@ -1,4 +1,4 @@
-import { Outlet, Navigate } from 'react-router';
+import { Outlet, Navigate, useLocation } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/layout/Sidebar';
 import TopNavbar from '../components/layout/TopNavbar';
@@ -7,9 +7,15 @@ import { Box } from '@mui/material';
 
 export default function RootLayout() {
   const { user } = useAuth();
+  const location = useLocation();
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  const routeRole = location.pathname.split('/')[1];
+  if (['employee', 'manager', 'admin'].includes(routeRole) && routeRole !== user.role) {
+    return <Navigate to={`/${user.role}/dashboard`} replace />;
   }
 
   return (

@@ -15,73 +15,16 @@ import {
   Button,
   Chip,
 } from '@mui/material';
-import { Download, Filter } from 'lucide-react';
+import { Download, Lock } from 'lucide-react';
+import { downloadCsv, toCsv } from '../../utils/governanceAnalytics';
 
 export default function AuditLogs() {
   const { auditLogs } = useData();
   const [filterAction, setFilterAction] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const mockLogs = [
-    {
-      id: '1',
-      timestamp: new Date('2026-05-16T10:30:00'),
-      userId: 'emp-001',
-      userName: 'John Smith',
-      action: 'Created Goal',
-      goalId: 'goal-001',
-      goalTitle: 'Increase API Response Time',
-      before: null,
-      after: { title: 'Increase API Response Time', weightage: 20 },
-    },
-    {
-      id: '2',
-      timestamp: new Date('2026-05-16T09:15:00'),
-      userId: 'mgr-001',
-      userName: 'Sarah Johnson',
-      action: 'Approved Goal',
-      goalId: 'goal-001',
-      goalTitle: 'Increase API Response Time',
-      before: { status: 'pending' },
-      after: { status: 'approved' },
-    },
-    {
-      id: '3',
-      timestamp: new Date('2026-05-15T14:20:00'),
-      userId: 'emp-001',
-      userName: 'John Smith',
-      action: 'Updated Goal',
-      goalId: 'goal-002',
-      goalTitle: 'Launch Mobile App MVP',
-      before: { weightage: 25 },
-      after: { weightage: 30 },
-    },
-    {
-      id: '4',
-      timestamp: new Date('2026-05-15T11:00:00'),
-      userId: 'admin-001',
-      userName: 'Alex Chen',
-      action: 'Opened Cycle Phase',
-      goalId: null,
-      goalTitle: null,
-      before: { phase: 'goalSetting', isOpen: false },
-      after: { phase: 'goalSetting', isOpen: true },
-    },
-    {
-      id: '5',
-      timestamp: new Date('2026-05-14T16:45:00'),
-      userId: 'mgr-001',
-      userName: 'Sarah Johnson',
-      action: 'Requested Rework',
-      goalId: 'goal-003',
-      goalTitle: 'Mentor Junior Developers',
-      before: { status: 'pending' },
-      after: { status: 'rework' },
-    },
-  ];
-
-  const allLogs = [...mockLogs, ...auditLogs];
-  const filteredLogs = allLogs
+  const actionOptions = Array.from(new Set(auditLogs.map(log => log.action)));
+  const filteredLogs = auditLogs
     .filter((log) => filterAction === 'all' || log.action === filterAction)
     .filter((log) =>
       searchQuery === '' ||
@@ -99,26 +42,20 @@ export default function AuditLogs() {
   };
 
   const handleExport = () => {
-    const csv = [
-      ['Timestamp', 'User', 'Action', 'Goal', 'Before', 'After'].join(','),
-      ...filteredLogs.map((log) =>
-        [
-          log.timestamp.toLocaleString(),
-          log.userName,
-          log.action,
-          log.goalTitle || 'N/A',
-          log.before ? JSON.stringify(log.before) : 'N/A',
-          log.after ? JSON.stringify(log.after) : 'N/A',
-        ].join(',')
-      ),
-    ].join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'audit-logs.csv';
-    a.click();
+    const csv = toCsv(
+      ['Timestamp', 'User', 'Action', 'Goal', 'Changed After Lock', 'Fields Changed', 'Before', 'After'],
+      filteredLogs.map(log => [
+        log.timestamp.toLocaleString(),
+        log.userName,
+        log.action,
+        log.goalTitle || 'N/A',
+        log.changedAfterLock ? 'Yes' : 'No',
+        log.fieldChanges?.map(change => change.field).join('; ') || 'N/A',
+        log.before ? JSON.stringify(log.before) : 'N/A',
+        log.after ? JSON.stringify(log.after) : 'N/A',
+      ]),
+    );
+    downloadCsv('audit-logs.csv', csv);
   };
 
   return (
@@ -154,11 +91,7 @@ export default function AuditLogs() {
               sx={{ width: 200 }}
             >
               <MenuItem value="all">All Actions</MenuItem>
-              <MenuItem value="Created Goal">Created Goal</MenuItem>
-              <MenuItem value="Updated Goal">Updated Goal</MenuItem>
-              <MenuItem value="Approved Goal">Approved Goal</MenuItem>
-              <MenuItem value="Requested Rework">Requested Rework</MenuItem>
-              <MenuItem value="Opened Cycle Phase">Opened Cycle Phase</MenuItem>
+              {actionOptions.map(action => <MenuItem key={action} value={action}>{action}</MenuItem>)}
             </TextField>
           </Box>
 
@@ -170,6 +103,7 @@ export default function AuditLogs() {
                   <TableCell sx={{ fontWeight: 600 }}>User</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Action</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Goal</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Locked Change</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Before</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>After</TableCell>
                 </TableRow>
@@ -177,7 +111,7 @@ export default function AuditLogs() {
               <TableBody>
                 {filteredLogs.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                    <TableCell colSpan={7} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                       No audit logs found
                     </TableCell>
                   </TableRow>
@@ -191,6 +125,18 @@ export default function AuditLogs() {
                           hour: '2-digit',
                           minute: '2-digit',
                         })}
+                      </TableCell>
+                      <TableCell>
+                        {log.changedAfterLock ? (
+                          <Chip icon={<Lock size={14} />} label="After lock" size="small" color="error" />
+                        ) : (
+                          <Chip label="Standard" size="small" variant="outlined" />
+                        )}
+                        {log.fieldChanges && log.fieldChanges.length > 0 && (
+                          <Box sx={{ fontSize: 11, color: 'text.secondary', mt: 0.5 }}>
+                            {log.fieldChanges.map(change => change.field).join(', ')}
+                          </Box>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Box sx={{ fontWeight: 600, fontSize: 14 }}>{log.userName}</Box>
