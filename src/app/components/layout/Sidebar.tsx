@@ -61,7 +61,7 @@ export default function Sidebar() {
     }}>
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <Target size={32} style={{ marginBottom: 8 }} />
-        <Box sx={{ fontSize: 20, fontWeight: 800, letterSpacing: 0 }}>GoalWorks</Box>
+        <Box sx={{ fontSize: 20, fontWeight: 800, letterSpacing: 0 }}>Pheonix</Box>
         <Box sx={{ fontSize: 12, color: '#b8c5d8', mt: 0.5 }}>Goal Setting Portal</Box>
       </Box>
 

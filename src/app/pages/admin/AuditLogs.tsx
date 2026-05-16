@@ -76,6 +76,8 @@ export default function AuditLogs() {
         <CardContent>
           <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
             <TextField
+              id="audit-log-search"
+              name="auditLogSearch"
               size="small"
               placeholder="Search logs..."
               value={searchQuery}
@@ -84,6 +86,8 @@ export default function AuditLogs() {
             />
             <TextField
               select
+              id="audit-action-filter"
+              name="auditActionFilter"
               size="small"
               label="Filter by Action"
               value={filterAction}

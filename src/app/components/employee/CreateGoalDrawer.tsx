@@ -115,6 +115,8 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
             <TextField
               select
               fullWidth
+              id="goal-thrust-area"
+              name="goalThrustArea"
               label="Thrust Area"
               value={formData.thrustArea}
               onChange={(e) => setFormData({ ...formData, thrustArea: e.target.value as ThrustArea })}
@@ -130,6 +132,8 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
 
             <TextField
               fullWidth
+              id="goal-title"
+              name="goalTitle"
               label="Goal Title"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -140,6 +144,8 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
 
             <TextField
               fullWidth
+              id="goal-description"
+              name="goalDescription"
               multiline
               rows={4}
               label="Description"
@@ -156,6 +162,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
             <Box sx={{ mb: 3 }}>
               <Box sx={{ fontSize: 14, fontWeight: 600, mb: 1.5 }}>Unit of Measure</Box>
               <ToggleButtonGroup
+                aria-label="Unit of measure"
                 value={formData.unitOfMeasure}
                 exclusive
                 onChange={(_, value) => value && setFormData({
@@ -178,6 +185,8 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
             <TextField
               select
               fullWidth
+              id="goal-scoring-direction"
+              name="goalScoringDirection"
               label="Scoring Direction"
               value={formData.scoringDirection || getDefaultScoringDirection(formData.unitOfMeasure || '%')}
               onChange={(e) => setFormData({ ...formData, scoringDirection: e.target.value as ScoringDirection })}
@@ -195,6 +204,8 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
 
             <TextField
               fullWidth
+              id="goal-target-value"
+              name="goalTargetValue"
               type="number"
               label="Target Value"
               value={formData.target}
@@ -211,6 +222,8 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
                 </Box>
               </Box>
               <Slider
+                aria-label="Goal weightage"
+                name="goalWeightage"
                 value={formData.weightage}
                 onChange={(_, value) => setFormData({ ...formData, weightage: value as number })}
                 min={10}
@@ -243,7 +256,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
                 label="Deadline Date"
                 value={formData.deadlineDate}
                 onChange={(date) => setFormData({ ...formData, deadlineDate: date || undefined })}
-                slotProps={{ textField: { fullWidth: true } }}
+                slotProps={{ textField: { fullWidth: true, id: 'goal-deadline-date', name: 'goalDeadlineDate' } }}
               />
             </LocalizationProvider>
 

@@ -29,8 +29,7 @@ export default function Login() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        bgcolor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        background: 'linear-gradient(135deg, #1976d2 0%, #9c27b0 100%)',
+        bgcolor: '#10233f',
       }}
     >
       <Card sx={{ width: 450, boxShadow: 6 }}>
@@ -48,50 +47,56 @@ export default function Login() {
               <Target size={48} color="#1976d2" />
             </Box>
             <Box sx={{ fontSize: 28, fontWeight: 700, mb: 1 }}>
-              GoalTracker
+              Pheonix
             </Box>
             <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
               Enterprise Performance Management Portal
             </Box>
           </Box>
 
-          <TextField
-            fullWidth
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            sx={{ mb: 2 }}
-          />
-
-          <TextField
-            fullWidth
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            sx={{ mb: 3 }}
-          />
-
-          <Button
-            fullWidth
-            variant="contained"
-            size="large"
-            startIcon={<LogIn size={20} />}
-            onClick={handleLogin}
-            sx={{ mb: 2, py: 1.5, textTransform: 'none', fontSize: 15 }}
+          <Box
+            component="form"
+            noValidate
+            onSubmit={(event) => {
+              event.preventDefault();
+              handleLogin();
+            }}
           >
-            Sign In
-          </Button>
+            <TextField
+              fullWidth
+              id="login-email"
+              name="email"
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="username"
+              sx={{ mb: 2 }}
+            />
 
-          <Button
-            fullWidth
-            variant="outlined"
-            size="large"
-            sx={{ mb: 3, py: 1.5, textTransform: 'none', fontSize: 15 }}
-          >
-            Sign in with SSO
-          </Button>
+            <TextField
+              fullWidth
+              id="login-password"
+              name="password"
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              sx={{ mb: 3 }}
+            />
+
+            <Button
+              fullWidth
+              variant="contained"
+              size="large"
+              type="submit"
+              startIcon={<LogIn size={20} />}
+              sx={{ mb: 2, py: 1.5, textTransform: 'none', fontSize: 15 }}
+            >
+              Sign In
+            </Button>
+          </Box>
 
           <Divider sx={{ my: 3 }}>
             <Box sx={{ fontSize: 13, color: 'text.secondary', px: 2 }}>

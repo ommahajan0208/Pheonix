@@ -60,6 +60,8 @@ export default function TopNavbar() {
     <AppBar position="static" sx={{ bgcolor: 'white', boxShadow: 1 }}>
       <Toolbar sx={{ gap: 2 }}>
         <TextField
+          id="global-search"
+          name="globalSearch"
           size="small"
           placeholder="Search goals, employees..."
           sx={{ width: 350 }}

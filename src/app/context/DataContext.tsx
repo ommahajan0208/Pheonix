@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
-import { Goal, Cycle, CheckIn, AuditLog, Notification, TeamMember, ActivityItem, Escalation, GoalSheetValidation, Quarter, EscalationRule, EscalationLog } from '../types';
+import { Goal, Cycle, CheckIn, AuditLog, Notification, TeamMember, ActivityItem, Escalation, GoalSheetValidation, Quarter, EscalationRule, EscalationLog, DeliveryOutboxItem } from '../types';
 import { calculateProgressScore } from '../utils/progressScore';
 import { buildEscalationLogs } from '../utils/governanceAnalytics';
 import { useAuth } from './AuthContext';
@@ -15,6 +15,7 @@ interface DataContextType {
   escalations: Escalation[];
   escalationRules: EscalationRule[];
   escalationLogs: EscalationLog[];
+  deliveryOutbox: DeliveryOutboxItem[];
   addGoal: (goal: Omit<Goal, 'id' | 'createdAt' | 'updatedAt'>) => Promise<boolean>;
   updateGoal: (id: string, updates: Partial<Goal>, options?: { adminOverride?: boolean }) => Promise<boolean>;
   deleteGoal: (id: string) => Promise<boolean>;
@@ -45,6 +46,7 @@ type BootstrapPayload = {
   escalations: Escalation[];
   escalationRules: EscalationRule[];
   escalationStatusOverrides?: Record<string, EscalationLog['status']>;
+  deliveryOutbox?: DeliveryOutboxItem[];
 };
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -90,6 +92,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [escalations, setEscalations] = useState<Escalation[]>([]);
   const [escalationRules, setEscalationRules] = useState<EscalationRule[]>([]);
+  const [deliveryOutbox, setDeliveryOutbox] = useState<DeliveryOutboxItem[]>([]);
   const [escalationStatusOverrides, setEscalationStatusOverrides] = useState<Record<string, EscalationLog['status']>>({});
 
   const applyBootstrap = useCallback((payload: BootstrapPayload) => {
@@ -103,6 +106,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setActivities(data.activities || []);
     setEscalations(data.escalations || []);
     setEscalationRules(data.escalationRules || []);
+    setDeliveryOutbox(data.deliveryOutbox || []);
     setEscalationStatusOverrides(data.escalationStatusOverrides || {});
   }, []);
 
@@ -240,6 +244,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       escalations,
       escalationRules,
       escalationLogs,
+      deliveryOutbox,
       addGoal,
       updateGoal,
       deleteGoal,

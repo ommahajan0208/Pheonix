@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import {
@@ -55,7 +56,9 @@ const formatDateInput = (date?: Date) => {
 export default function QuarterlyCheckIn() {
   const { user } = useAuth();
   const { goals, checkIns, upsertCheckIn, calculateProgressScore, cycles } = useData();
-  const [selectedQuarter, setSelectedQuarter] = useState<Quarter>('Q1');
+  const [searchParams] = useSearchParams();
+  const initialQuarter = searchParams.get('quarter') as Quarter | null;
+  const [selectedQuarter, setSelectedQuarter] = useState<Quarter>(initialQuarter && ['Q1', 'Q2', 'Q3', 'Q4'].includes(initialQuarter) ? initialQuarter : 'Q1');
   const [checkInData, setCheckInData] = useState<Record<string, Partial<CheckInDraft>>>({});
   const [notice, setNotice] = useState('');
 
@@ -194,6 +197,8 @@ export default function QuarterlyCheckIn() {
                           </TableCell>
                           <TableCell>
                             <TextField
+                              id={`checkin-planned-${goal.id}`}
+                              name={`checkinPlanned-${goal.id}`}
                               type="number"
                               size="small"
                               value={draft.plannedValue}
@@ -204,6 +209,8 @@ export default function QuarterlyCheckIn() {
                           </TableCell>
                           <TableCell>
                             <TextField
+                              id={`checkin-actual-${goal.id}`}
+                              name={`checkinActual-${goal.id}`}
                               type="number"
                               size="small"
                               value={draft.actualValue}
@@ -214,6 +221,8 @@ export default function QuarterlyCheckIn() {
                           </TableCell>
                           <TableCell>
                             <TextField
+                              id={`checkin-achievement-date-${goal.id}`}
+                              name={`checkinAchievementDate-${goal.id}`}
                               type="date"
                               size="small"
                               value={draft.achievementDate || ''}
@@ -233,6 +242,8 @@ export default function QuarterlyCheckIn() {
                           <TableCell>
                             <TextField
                               select
+                              id={`checkin-status-${goal.id}`}
+                              name={`checkinStatus-${goal.id}`}
                               size="small"
                               value={draft.status}
                               onChange={(e) => handleDataChange(goal.id, 'status', e.target.value as CheckInStatus)}
@@ -246,6 +257,8 @@ export default function QuarterlyCheckIn() {
                           </TableCell>
                           <TableCell>
                             <TextField
+                              id={`checkin-comments-${goal.id}`}
+                              name={`checkinComments-${goal.id}`}
                               size="small"
                               multiline
                               value={draft.comments}

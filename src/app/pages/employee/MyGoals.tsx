@@ -93,6 +93,8 @@ export default function MyGoals() {
       <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center' }}>
         <TextField
           select
+          id="my-goals-cycle"
+          name="myGoalsCycle"
           size="small"
           label="Cycle"
           value={selectedCycle}

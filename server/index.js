@@ -49,7 +49,11 @@ const validCheckInStatuses = new Set(['not-started', 'on-track', 'completed']);
 const validRoles = new Set(['employee', 'manager', 'admin']);
 const validEscalationConditions = new Set(['goal-not-submitted', 'manager-not-approved', 'checkin-not-completed']);
 const validEscalationStatuses = new Set(['open', 'monitoring', 'resolved']);
+const validDeliveryChannels = new Set(['email', 'teams']);
 const managerCommentFields = ['discussionSummary', 'blockersSupportNeeded', 'nextActions'];
+const appBaseUrl = (process.env.APP_BASE_URL || 'http://localhost:5173').replace(/\/$/, '');
+const notificationRetryLimit = Number(process.env.NOTIFICATION_RETRY_LIMIT || 3);
+const reminderWindowDays = Number(process.env.CHECKIN_REMINDER_DAYS || 7);
 
 const users = [
   ['emp-001', 'John Smith', 'john.smith@company.com', 'employee', 'Senior Software Engineer', 'mgr-001', 'dept-eng', 'Engineering'],
@@ -169,6 +173,15 @@ function migrate() {
     CREATE TABLE IF NOT EXISTS check_ins (id TEXT PRIMARY KEY, goal_id TEXT NOT NULL, quarter TEXT NOT NULL, planned_value REAL NOT NULL, actual_value REAL NOT NULL, status TEXT NOT NULL, progress_score REAL NOT NULL, achievement_date TEXT, comments TEXT, evidence_urls TEXT, manager_comment TEXT, manager_id TEXT, manager_commented_at TEXT, submitted_at TEXT, UNIQUE(goal_id, quarter));
     CREATE TABLE IF NOT EXISTS audit_logs (id TEXT PRIMARY KEY, timestamp TEXT NOT NULL, changed_at TEXT, user_id TEXT NOT NULL, user_name TEXT NOT NULL, action TEXT NOT NULL, goal_id TEXT, goal_title TEXT, before_json TEXT, after_json TEXT, field_changes TEXT, changed_after_lock INTEGER NOT NULL DEFAULT 0);
     CREATE TABLE IF NOT EXISTS notifications (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, type TEXT NOT NULL, title TEXT NOT NULL, message TEXT NOT NULL, link TEXT NOT NULL, is_read INTEGER NOT NULL, created_at TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS delivery_outbox (
+      id TEXT PRIMARY KEY, event_key TEXT NOT NULL, channel TEXT NOT NULL, recipient_id TEXT NOT NULL, recipient_address TEXT,
+      payload TEXT NOT NULL, status TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, error TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+      UNIQUE(event_key, channel, recipient_id)
+    );
+    CREATE TABLE IF NOT EXISTS teams_conversation_refs (
+      user_id TEXT PRIMARY KEY, aad_object_id TEXT, conversation_id TEXT NOT NULL, service_url TEXT NOT NULL, tenant_id TEXT,
+      bot_id TEXT, reference_json TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+    );
     CREATE TABLE IF NOT EXISTS escalation_rules (id TEXT PRIMARY KEY, name TEXT NOT NULL, condition TEXT NOT NULL, threshold_days INTEGER NOT NULL, manager_after_days INTEGER NOT NULL, hr_after_days INTEGER NOT NULL, active INTEGER NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS escalation_status_overrides (id TEXT PRIMARY KEY, status TEXT NOT NULL);
   `);
@@ -237,6 +250,7 @@ const mapCheckIn = (row) => ({ id: row.id, goalId: row.goal_id, quarter: row.qua
 const mapAudit = (row) => ({ id: row.id, timestamp: row.timestamp, changedAt: row.changed_at || undefined, userId: row.user_id, userName: row.user_name, action: row.action, goalId: row.goal_id || undefined, goalTitle: row.goal_title || undefined, before: parseJson(row.before_json, undefined), after: parseJson(row.after_json, undefined), fieldChanges: parseJson(row.field_changes, undefined), changedAfterLock: Boolean(row.changed_after_lock) });
 const mapNotification = (row) => ({ id: row.id, userId: row.user_id, type: row.type, title: row.title, message: row.message, link: row.link, isRead: Boolean(row.is_read), createdAt: row.created_at });
 const mapEscalationRule = (row) => ({ id: row.id, name: row.name, condition: row.condition, thresholdDays: row.threshold_days, managerAfterDays: row.manager_after_days, hrAfterDays: row.hr_after_days, active: Boolean(row.active), createdAt: row.created_at, updatedAt: row.updated_at });
+const mapDelivery = (row) => ({ id: row.id, eventKey: row.event_key, channel: row.channel, recipientId: row.recipient_id, recipientAddress: row.recipient_address || undefined, payload: parseJson(row.payload, {}), status: row.status, attempts: row.attempts, error: row.error || undefined, createdAt: row.created_at, updatedAt: row.updated_at });
 
 function actor(req) {
   const id = req.get('x-user-id') || 'system';
@@ -391,6 +405,288 @@ function fieldChanges(before, after) {
     .filter((field) => field !== 'updatedAt')
     .filter((field) => JSON.stringify(before[field]) !== JSON.stringify(after[field]))
     .map((field) => ({ field, before: before[field], after: after[field] }));
+}
+
+function getUserById(id) {
+  const row = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+  return row ? mapUser(row) : undefined;
+}
+
+function managerForEmployee(employeeId) {
+  const employee = getUserById(employeeId);
+  return employee?.managerId ? getUserById(employee.managerId) : undefined;
+}
+
+function absoluteAppUrl(pathName) {
+  if (/^https?:\/\//i.test(pathName)) return pathName;
+  return `${appBaseUrl}${pathName.startsWith('/') ? pathName : `/${pathName}`}`;
+}
+
+function teamsDeepLink(pathName, label) {
+  const webUrl = absoluteAppUrl(pathName);
+  if (!process.env.TEAMS_APP_ID) return webUrl;
+  const entityId = encodeURIComponent(pathName.split('?')[0].replace(/^\//, '') || 'home');
+  const params = new URLSearchParams({
+    webUrl,
+    label: label || 'Pheonix',
+  });
+  if (process.env.MS_TENANT_ID) params.set('tenantId', process.env.MS_TENANT_ID);
+  return `https://teams.microsoft.com/l/entity/${process.env.TEAMS_APP_ID}/${entityId}?${params.toString()}`;
+}
+
+function addNotification({ eventKey, userId, type, title, message, link }) {
+  const id = `notif-${eventKey}-${userId}`.replace(/[^a-zA-Z0-9_-]/g, '-');
+  db.prepare('INSERT OR IGNORE INTO notifications VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(id, userId, type, title, message, link, 0, nowIso());
+  return id;
+}
+
+function emailPayload({ subject, body, link, recipient }) {
+  return {
+    subject,
+    body,
+    link: absoluteAppUrl(link),
+    message: {
+      subject,
+      body: {
+        contentType: 'HTML',
+        content: `<p>${body}</p><p><a href="${absoluteAppUrl(link)}">Open in Pheonix</a></p>`,
+      },
+      toRecipients: [{ emailAddress: { address: recipient.email, name: recipient.name } }],
+    },
+    saveToSentItems: false,
+  };
+}
+
+function teamsCardPayload({ title, body, link, facts = [] }) {
+  const url = teamsDeepLink(link, title);
+  return {
+    type: 'message',
+    attachments: [{
+      contentType: 'application/vnd.microsoft.card.adaptive',
+      content: {
+        $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+        type: 'AdaptiveCard',
+        version: '1.5',
+        body: [
+          { type: 'TextBlock', text: title, weight: 'Bolder', size: 'Medium', wrap: true },
+          { type: 'TextBlock', text: body, wrap: true },
+          ...(facts.length ? [{ type: 'FactSet', facts }] : []),
+        ],
+        actions: [{ type: 'Action.OpenUrl', title: 'Open in Pheonix', url }],
+      },
+    }],
+  };
+}
+
+function enqueueDelivery({ eventKey, channel, recipient, payload }) {
+  if (!validDeliveryChannels.has(channel) || !recipient?.id) return undefined;
+  const id = `delivery-${eventKey}-${channel}-${recipient.id}`.replace(/[^a-zA-Z0-9_-]/g, '-');
+  const createdAt = nowIso();
+  db.prepare(`
+    INSERT OR IGNORE INTO delivery_outbox VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(id, eventKey, channel, recipient.id, recipient.email || null, json(payload), 'queued', 0, null, createdAt, createdAt);
+  const row = db.prepare('SELECT * FROM delivery_outbox WHERE id = ?').get(id);
+  if (row?.status === 'queued') {
+    prepareDeliveryAttempt(mapDelivery(row));
+  }
+  return id;
+}
+
+function markDelivery(id, status, attempts, error = null) {
+  db.prepare('UPDATE delivery_outbox SET status = ?, attempts = ?, error = ?, updated_at = ? WHERE id = ?').run(status, attempts, error, nowIso(), id);
+}
+
+async function graphAccessToken() {
+  if (!process.env.MS_TENANT_ID || !process.env.MS_CLIENT_ID || !process.env.MS_CLIENT_SECRET) {
+    throw new Error('Microsoft Graph credentials are not configured.');
+  }
+  const response = await fetch(`https://login.microsoftonline.com/${process.env.MS_TENANT_ID}/oauth2/v2.0/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: process.env.MS_CLIENT_ID,
+      client_secret: process.env.MS_CLIENT_SECRET,
+      scope: 'https://graph.microsoft.com/.default',
+      grant_type: 'client_credentials',
+    }),
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload.error_description || payload.error || 'Unable to get Microsoft Graph token.');
+  return payload.access_token;
+}
+
+async function botAccessToken() {
+  if (!process.env.TEAMS_BOT_ID || !process.env.TEAMS_BOT_PASSWORD) {
+    throw new Error('Teams bot credentials are not configured.');
+  }
+  const response = await fetch('https://login.microsoftonline.com/botframework.com/oauth2/v2.0/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: process.env.TEAMS_BOT_ID,
+      client_secret: process.env.TEAMS_BOT_PASSWORD,
+      scope: 'https://api.botframework.com/.default',
+      grant_type: 'client_credentials',
+    }),
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload.error_description || payload.error || 'Unable to get Bot Framework token.');
+  return payload.access_token;
+}
+
+async function deliverEmail(delivery) {
+  if (!process.env.MS_MAIL_SENDER_UPN) throw new Error('MS_MAIL_SENDER_UPN is not configured.');
+  const token = await graphAccessToken();
+  const response = await fetch(`https://graph.microsoft.com/v1.0/users/${encodeURIComponent(process.env.MS_MAIL_SENDER_UPN)}/sendMail`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: delivery.payload.message, saveToSentItems: false }),
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || `Graph sendMail failed with ${response.status}.`);
+  }
+}
+
+async function deliverTeams(delivery) {
+  const ref = db.prepare('SELECT * FROM teams_conversation_refs WHERE user_id = ?').get(delivery.recipientId);
+  if (!ref) throw new Error('No Teams conversation reference found. The manager must install or message the bot first.');
+  const token = await botAccessToken();
+  const base = ref.service_url.replace(/\/$/, '');
+  const response = await fetch(`${base}/v3/conversations/${encodeURIComponent(ref.conversation_id)}/activities`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(delivery.payload),
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || `Teams proactive send failed with ${response.status}.`);
+  }
+}
+
+function prepareDeliveryAttempt(delivery) {
+  if (delivery.channel === 'teams' && !db.prepare('SELECT 1 FROM teams_conversation_refs WHERE user_id = ?').get(delivery.recipientId)) {
+    markDelivery(delivery.id, 'failed', delivery.attempts + 1, 'No Teams conversation reference found. The manager must install or message the bot first.');
+    return;
+  }
+  if (delivery.channel === 'email' && (!process.env.MS_MAIL_SENDER_UPN || !process.env.MS_TENANT_ID || !process.env.MS_CLIENT_ID || !process.env.MS_CLIENT_SECRET)) {
+    db.prepare('UPDATE delivery_outbox SET error = ?, updated_at = ? WHERE id = ?').run('Microsoft Graph mail credentials are not configured; delivery remains queued.', nowIso(), delivery.id);
+    return;
+  }
+  const attempt = delivery.channel === 'email' ? deliverEmail(delivery) : deliverTeams(delivery);
+  attempt
+    .then(() => markDelivery(delivery.id, 'sent', delivery.attempts + 1, null))
+    .catch((error) => {
+      const attempts = delivery.attempts + 1;
+      markDelivery(delivery.id, attempts >= notificationRetryLimit ? 'failed' : 'queued', attempts, error.message);
+    });
+}
+
+function queueEmail(eventKey, recipient, subject, body, link) {
+  return enqueueDelivery({ eventKey, channel: 'email', recipient, payload: emailPayload({ subject, body, link, recipient }) });
+}
+
+function queueTeamsCard(eventKey, recipient, title, body, link, facts = []) {
+  return enqueueDelivery({ eventKey, channel: 'teams', recipient, payload: teamsCardPayload({ title, body, link, facts }) });
+}
+
+function notifyGoalSubmitted(employeeId, cycleId) {
+  const employee = getUserById(employeeId);
+  const manager = managerForEmployee(employeeId);
+  if (!employee || !manager) return;
+  const link = `/manager/approvals?employeeId=${encodeURIComponent(employeeId)}${cycleId ? `&cycleId=${encodeURIComponent(cycleId)}` : ''}`;
+  const eventKey = `goal-submitted-${employeeId}-${cycleId || 'active'}`;
+  const message = `${employee.name} submitted a goal sheet for review.`;
+  addNotification({ eventKey, userId: manager.id, type: 'submission', title: 'Goal sheet submitted', message, link });
+  queueEmail(eventKey, manager, 'Goal sheet submitted', message, link);
+  queueTeamsCard(eventKey, manager, 'Goal sheet submitted', message, link, [{ title: 'Employee', value: employee.name }]);
+}
+
+function notifyGoalDecision(employeeId, cycleId, approved) {
+  const employee = getUserById(employeeId);
+  if (!employee) return;
+  const link = `/employee/my-goals${cycleId ? `?cycleId=${encodeURIComponent(cycleId)}` : ''}`;
+  const eventKey = `goal-${approved ? 'approved' : 'returned'}-${employeeId}-${cycleId || 'active'}`;
+  const title = approved ? 'Goal sheet approved' : 'Goal sheet returned for rework';
+  const message = approved ? 'Your goal sheet has been approved and locked.' : 'Your manager returned your goal sheet for updates.';
+  addNotification({ eventKey, userId: employee.id, type: approved ? 'approval' : 'rework', title, message, link });
+  queueEmail(eventKey, employee, title, message, link);
+}
+
+function notifyGoalUpdatedForManager(goal) {
+  const manager = managerForEmployee(goal.employeeId);
+  if (!manager) return;
+  const link = `/manager/approvals?employeeId=${encodeURIComponent(goal.employeeId)}&cycleId=${encodeURIComponent(goal.cycleId)}`;
+  const eventKey = `goal-updated-${goal.id}-${Date.now()}`;
+  const message = `${goal.employeeName} updated "${goal.title}".`;
+  queueEmail(eventKey, manager, 'Goal updated', message, link);
+  queueTeamsCard(eventKey, manager, 'Goal updated', message, link, [{ title: 'Employee', value: goal.employeeName }, { title: 'Goal', value: goal.title }]);
+}
+
+function notifyCheckInSubmitted(goal, quarter) {
+  const manager = managerForEmployee(goal.employeeId);
+  if (!manager) return;
+  const link = `/manager/checkin?employeeId=${encodeURIComponent(goal.employeeId)}&goalId=${encodeURIComponent(goal.id)}&quarter=${encodeURIComponent(quarter)}`;
+  const eventKey = `checkin-submitted-${goal.id}-${quarter}`;
+  const message = `${goal.employeeName} submitted a ${quarter} check-in for "${goal.title}".`;
+  queueEmail(eventKey, manager, `${quarter} check-in submitted`, message, link);
+  queueTeamsCard(eventKey, manager, `${quarter} check-in submitted`, message, link, [{ title: 'Employee', value: goal.employeeName }, { title: 'Goal', value: goal.title }]);
+}
+
+function runCheckInReminders() {
+  const today = new Date();
+  const dateKey = today.toISOString().slice(0, 10);
+  const activeCycles = db.prepare('SELECT * FROM cycles WHERE is_active = 1').all().map(mapCycle);
+  const inserted = [];
+  activeCycles.forEach((cycle) => {
+    Object.entries(quarterPhaseMap).forEach(([quarter, phaseKey]) => {
+      const phase = cycle.phases?.[phaseKey];
+      if (!phase?.isOpen) return;
+      const start = new Date(phase.start);
+      const end = new Date(phase.end);
+      if (today < start || today > end) return;
+      const daysRemaining = Math.ceil((end.getTime() - today.getTime()) / 86400000);
+      if (daysRemaining > reminderWindowDays) return;
+      const rows = db.prepare(`
+        SELECT g.employee_id AS employeeId, COUNT(*) AS missingCount
+        FROM goals g
+        WHERE g.status = 'approved' AND g.cycle_id = ?
+          AND NOT EXISTS (SELECT 1 FROM check_ins ci WHERE ci.goal_id = g.id AND ci.quarter = ? AND ci.submitted_at IS NOT NULL)
+        GROUP BY g.employee_id
+      `).all(cycle.id, quarter);
+      rows.forEach((row) => {
+        const employee = getUserById(row.employeeId);
+        if (!employee) return;
+        const link = `/employee/checkin?quarter=${encodeURIComponent(quarter)}`;
+        const eventKey = `checkin-reminder-${dateKey}-${quarter}-${employee.id}`;
+        const id = queueEmail(eventKey, employee, `${quarter} check-in reminder`, `${row.missingCount} approved goal check-in(s) are still incomplete.`, link);
+        if (id) inserted.push(id);
+      });
+    });
+  });
+  return inserted;
+}
+
+function integrationStatus() {
+  const failedDeliveries = db.prepare("SELECT COUNT(*) AS count FROM delivery_outbox WHERE status = 'failed'").get().count;
+  const queuedDeliveries = db.prepare("SELECT COUNT(*) AS count FROM delivery_outbox WHERE status = 'queued'").get().count;
+  const conversationReferences = db.prepare('SELECT COUNT(*) AS count FROM teams_conversation_refs').get().count;
+  return {
+    graphMail: {
+      configured: Boolean(process.env.MS_TENANT_ID && process.env.MS_CLIENT_ID && process.env.MS_CLIENT_SECRET && process.env.MS_MAIL_SENDER_UPN),
+      sender: process.env.MS_MAIL_SENDER_UPN || null,
+    },
+    teamsBot: {
+      configured: Boolean(process.env.TEAMS_BOT_ID && process.env.TEAMS_BOT_PASSWORD),
+      appIdConfigured: Boolean(process.env.TEAMS_APP_ID),
+      conversationReferences,
+    },
+    deliveryOutbox: {
+      queued: queuedDeliveries,
+      failed: failedDeliveries,
+      retryLimit: notificationRetryLimit,
+    },
+  };
 }
 
 function managerName(managerId) {
@@ -804,19 +1100,72 @@ function bootstrap(user = { role: 'admin' }) {
     escalations,
     escalationRules: user.role === 'admin' ? getEscalationRules() : [],
     escalationStatusOverrides: getStatusOverrides(),
+    deliveryOutbox: user.role === 'admin' ? db.prepare('SELECT * FROM delivery_outbox ORDER BY created_at DESC').all().map(mapDelivery) : [],
   };
 }
 
 migrate();
 
 export const app = express();
-export const closeDb = () => db.close();
+const reminderIntervalMs = Number(process.env.CHECKIN_REMINDER_CRON || 86400000);
+const reminderTimer = setInterval(() => {
+  try {
+    runCheckInReminders();
+  } catch (error) {
+    console.error('Check-in reminder job failed', error);
+  }
+}, Number.isFinite(reminderIntervalMs) && reminderIntervalMs > 0 ? reminderIntervalMs : 86400000);
+reminderTimer.unref?.();
+
+export const closeDb = () => {
+  clearInterval(reminderTimer);
+  db.close();
+};
 app.use(cors());
 app.use(express.json());
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 app.get('/api/bootstrap', (req, res) => res.json(bootstrap(actor(req))));
 app.get('/api/goal-sheets/:employeeId/validate', (req, res) => res.json(validateGoalSheet(req.params.employeeId, req.query.cycleId)));
+
+app.get('/api/integrations/status', (req, res) => {
+  requireRole(req, ['admin']);
+  res.json(integrationStatus());
+});
+
+app.post('/api/notifications/reminders/run', (req, res) => {
+  const user = requireRole(req, ['admin']);
+  const inserted = runCheckInReminders();
+  addAudit({ userId: user.id, userName: user.name, action: 'Ran Check-in Reminders', after: { inserted: inserted.length } });
+  res.json({ inserted: inserted.length, deliveryIds: inserted });
+});
+
+app.post('/api/teams/messages', (req, res) => {
+  const activity = req.body || {};
+  const aadObjectId = activity.from?.aadObjectId || activity.channelData?.from?.aadObjectId || activity.channelData?.user?.id || null;
+  const email = activity.from?.email || activity.channelData?.user?.email || activity.value?.email || null;
+  const appUserId = activity.value?.userId || activity.userId || (email ? db.prepare('SELECT id FROM users WHERE lower(email) = lower(?)').get(email)?.id : null);
+  const userId = appUserId || activity.from?.id;
+  if (!userId || !activity.conversation?.id || !activity.serviceUrl) {
+    return res.status(202).json({ ok: true, stored: false, reason: 'Teams activity did not include a mappable user, conversation id, or serviceUrl.' });
+  }
+  const now = nowIso();
+  db.prepare(`
+    INSERT INTO teams_conversation_refs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(user_id) DO UPDATE SET aad_object_id = excluded.aad_object_id, conversation_id = excluded.conversation_id, service_url = excluded.service_url, tenant_id = excluded.tenant_id, bot_id = excluded.bot_id, reference_json = excluded.reference_json, updated_at = excluded.updated_at
+  `).run(
+    userId,
+    aadObjectId,
+    activity.conversation.id,
+    activity.serviceUrl,
+    activity.conversation?.tenantId || activity.channelData?.tenant?.id || null,
+    activity.recipient?.id || process.env.TEAMS_BOT_ID || null,
+    json(activity),
+    now,
+    now
+  );
+  res.json({ ok: true, stored: true, userId });
+});
 
 app.get('/api/reports/achievement', (req, res) => {
   const user = requireRole(req, ['manager', 'admin']);
@@ -1096,6 +1445,9 @@ app.patch('/api/goals/:id', (req, res) => {
   }
   const changes = fieldChanges(goal, updates);
   addAudit({ userId: user.id, userName: user.name, action: goal.lockedAt ? 'Updated Locked Goal' : 'Updated Goal', goalId: goal.id, goalTitle: goal.title, before: Object.fromEntries(changes.map((item) => [item.field, item.before])), after: Object.fromEntries(changes.map((item) => [item.field, item.after])), fieldChanges: changes, changedAfterLock: Boolean(goal.lockedAt && changes.length) });
+  if (!adminOverride && !achievementUpdate && changes.length && ['pending', 'rework'].includes(goal.status)) {
+    notifyGoalUpdatedForManager(next);
+  }
   res.json(bootstrap(user));
 });
 
@@ -1129,6 +1481,7 @@ app.post('/api/goal-sheets/:employeeId/submit', (req, res) => {
   if (!validation.canSubmit) return res.status(422).json({ error: 'Goal sheet validation failed.', validation });
   db.prepare("UPDATE goals SET status = 'pending', updated_at = ? WHERE employee_id = ? AND (? IS NULL OR cycle_id = ?) AND status IN ('draft', 'rework')").run(nowIso(), req.params.employeeId, cycleId || null, cycleId || null);
   addAudit({ userId: user.id, userName: user.name, action: 'Submitted Goal Sheet', after: { status: 'pending', totalWeightage: validation.totalWeightage } });
+  notifyGoalSubmitted(req.params.employeeId, cycleId);
   res.json(bootstrap(user));
 });
 
@@ -1152,6 +1505,7 @@ app.post('/api/goal-sheets/:employeeId/approve', (req, res) => {
   });
   tx();
   addAudit({ userId: user.id, userName: user.name, action: 'Approved Goal Sheet', after: { status: 'approved', totalWeightage: validation.totalWeightage } });
+  notifyGoalDecision(req.params.employeeId, cycleId, true);
   res.json(bootstrap(user));
 });
 
@@ -1166,6 +1520,7 @@ app.post('/api/goal-sheets/:employeeId/return', (req, res) => {
   if (!isGoalSettingOpen(cycleId)) return res.status(409).json({ error: 'Goal setting window is closed.' });
   db.prepare("UPDATE goals SET status = 'rework', updated_at = ? WHERE employee_id = ? AND (? IS NULL OR cycle_id = ?) AND status = 'pending'").run(nowIso(), req.params.employeeId, cycleId || null, cycleId || null);
   addAudit({ userId: user.id, userName: user.name, action: 'Requested Goal Sheet Rework', after: { status: 'rework', employeeId: req.params.employeeId } });
+  notifyGoalDecision(req.params.employeeId, cycleId, false);
   res.json(bootstrap(user));
 });
 
@@ -1232,6 +1587,7 @@ app.post('/api/check-ins', (req, res) => {
     db.prepare('UPDATE goals SET progress = ?, updated_at = ? WHERE shared_goal_id = ?').run(progressScore, nowIso(), goal.sharedGoalId);
   }
   addAudit({ userId: user.id, userName: user.name, action: 'Submitted Quarterly Check-in', goalId: goal.id, goalTitle: goal.title, after: { quarter: data.quarter, actualValue: data.actualValue, progressScore, status: data.status } });
+  notifyCheckInSubmitted(goal, data.quarter);
   res.json(bootstrap(user));
 });
 

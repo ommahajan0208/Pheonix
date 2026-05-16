@@ -45,7 +45,7 @@ export default function ContextPanel() {
         width: 320,
         borderLeft: '1px solid #dfe5ee',
         bgcolor: '#fbfcfe',
-        display: { xs: 'none', xl: 'flex' },
+        display: { xs: 'none', md: 'flex' },
         flexDirection: 'column',
         overflow: 'auto',
       }}

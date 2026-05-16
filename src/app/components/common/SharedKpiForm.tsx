@@ -55,17 +55,19 @@ export default function SharedKpiForm() {
         {getWindowMessage(activeCycle, 'goalSetting')} Shared KPIs can be pushed only during goal setting.
       </Alert>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr' }, gap: 2, mb: 2 }}>
-        <TextField label="Shared KPI Title" size="small" value={title} onChange={(event) => setTitle(event.target.value)} />
-        <TextField select label="Thrust Area" size="small" value={thrustArea} onChange={(event) => setThrustArea(event.target.value as ThrustArea)}>
+        <TextField id="shared-kpi-title" name="sharedKpiTitle" label="Shared KPI Title" size="small" value={title} onChange={(event) => setTitle(event.target.value)} />
+        <TextField id="shared-kpi-thrust-area" name="sharedKpiThrustArea" select label="Thrust Area" size="small" value={thrustArea} onChange={(event) => setThrustArea(event.target.value as ThrustArea)}>
           {THRUST_AREAS.map(area => <MenuItem key={area} value={area}>{area}</MenuItem>)}
         </TextField>
-        <TextField select label="Primary Owner" size="small" value={primaryOwnerId} onChange={(event) => setPrimaryOwnerId(event.target.value)}>
+        <TextField id="shared-kpi-primary-owner" name="sharedKpiPrimaryOwner" select label="Primary Owner" size="small" value={primaryOwnerId} onChange={(event) => setPrimaryOwnerId(event.target.value)}>
           {teamMembers.map(member => <MenuItem key={member.id} value={member.id}>{member.name}</MenuItem>)}
         </TextField>
       </Box>
 
       <TextField
         label="Description"
+        id="shared-kpi-description"
+        name="sharedKpiDescription"
         size="small"
         fullWidth
         multiline
@@ -78,6 +80,8 @@ export default function SharedKpiForm() {
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr 1fr' }, gap: 2, mb: 2 }}>
         <TextField
           select
+          id="shared-kpi-uom"
+          name="sharedKpiUom"
           label="UoM"
           size="small"
           value={unitOfMeasure}
@@ -91,6 +95,8 @@ export default function SharedKpiForm() {
         </TextField>
         <TextField
           select
+          id="shared-kpi-scoring"
+          name="sharedKpiScoring"
           label="Scoring"
           size="small"
           value={scoringDirection}
@@ -103,8 +109,8 @@ export default function SharedKpiForm() {
               : direction === 'higher-is-better' || direction === 'lower-is-better')
             .map(direction => <MenuItem key={direction} value={direction}>{getScoringDirectionLabel(direction)}</MenuItem>)}
         </TextField>
-        <TextField label="Target" type="number" size="small" value={target} onChange={(event) => setTarget(Number(event.target.value))} />
-        <TextField label="Default Weightage (%)" type="number" size="small" value={weightage} inputProps={{ min: 10 }} onChange={(event) => setWeightage(Number(event.target.value))} />
+        <TextField id="shared-kpi-target" name="sharedKpiTarget" label="Target" type="number" size="small" value={target} onChange={(event) => setTarget(Number(event.target.value))} />
+        <TextField id="shared-kpi-default-weightage" name="sharedKpiDefaultWeightage" label="Default Weightage (%)" type="number" size="small" value={weightage} inputProps={{ min: 10 }} onChange={(event) => setWeightage(Number(event.target.value))} />
       </Box>
 
       <Box sx={{ mb: 2 }}>
@@ -113,7 +119,7 @@ export default function SharedKpiForm() {
           {teamMembers.map(member => (
             <FormControlLabel
               key={member.id}
-              control={<Checkbox checked={selectedIds.includes(member.id)} onChange={() => toggleEmployee(member.id)} size="small" />}
+              control={<Checkbox checked={selectedIds.includes(member.id)} onChange={() => toggleEmployee(member.id)} size="small" inputProps={{ id: `shared-kpi-recipient-${member.id}`, name: 'sharedKpiRecipients', 'aria-label': `Select ${member.name}` }} />}
               label={<Chip label={member.name} size="small" variant={selectedIds.includes(member.id) ? 'filled' : 'outlined'} />}
             />
           ))}

@@ -154,6 +154,8 @@ export default function EscalationCenter() {
                       <TableCell>
                         <TextField
                           select
+                          id={`escalation-status-${log.id}`}
+                          name={`escalationStatus-${log.id}`}
                           size="small"
                           value={log.status}
                           onChange={(event) => updateEscalationLogStatus(log.id, event.target.value as EscalationLog['status'])}

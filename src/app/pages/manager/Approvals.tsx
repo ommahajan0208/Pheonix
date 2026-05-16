@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useData } from '../../context/DataContext';
 import {
   Box,
@@ -23,6 +24,7 @@ import { getActiveCycle, getWindowMessage, isPhaseOpen } from '../../utils/cycle
 
 export default function Approvals() {
   const { goals, teamMembers, approveGoalSheet, returnGoalSheetForRework, validateGoalSheet, cycles } = useData();
+  const [searchParams] = useSearchParams();
   const [selectedEmployee, setSelectedEmployee] = useState<string>('emp-001');
   const [editedGoals, setEditedGoals] = useState<Record<string, Partial<Goal>>>({});
 
@@ -33,6 +35,15 @@ export default function Approvals() {
   const reviewGoals = cycleGoals.filter(g => ['pending', 'rework', 'approved'].includes(g.status));
   const pendingGoals = cycleGoals.filter(g => g.status === 'pending');
   const employees = teamMembers.map(member => ({ id: member.id, name: member.name }));
+
+  useEffect(() => {
+    const employeeId = searchParams.get('employeeId');
+    if (employeeId && employees.some(employee => employee.id === employeeId)) {
+      setSelectedEmployee(employeeId);
+    } else if (!employees.some(employee => employee.id === selectedEmployee) && employees[0]) {
+      setSelectedEmployee(employees[0].id);
+    }
+  }, [employees, searchParams, selectedEmployee]);
 
   const employeeGoals = reviewGoals.filter(g => g.employeeId === selectedEmployee);
   const previewGoals = goals.map(goal => editedGoals[goal.id] ? { ...goal, ...editedGoals[goal.id] } : goal);
@@ -207,6 +218,8 @@ export default function Approvals() {
                           Target
                         </Box>
                         <TextField
+                          id={`approval-target-${goal.id}`}
+                          name={`approvalTarget-${goal.id}`}
                           type="number"
                           size="small"
                           value={edits.target ?? goal.target}
@@ -220,6 +233,8 @@ export default function Approvals() {
                           Weightage (%)
                         </Box>
                         <TextField
+                          id={`approval-weightage-${goal.id}`}
+                          name={`approvalWeightage-${goal.id}`}
                           type="number"
                           size="small"
                           value={edits.weightage ?? goal.weightage}

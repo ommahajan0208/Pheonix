@@ -131,6 +131,13 @@ export default function CycleManagement() {
                       <Switch
                         checked={phaseData?.isOpen}
                         onChange={(event) => updateCyclePhase(selectedCycle.id, phase, { isOpen: event.target.checked })}
+                        slotProps={{
+                          input: {
+                            id: `cycle-phase-open-${phase}`,
+                            name: `cyclePhaseOpen-${phase}`,
+                            'aria-label': `${meta.label} open status`,
+                          },
+                        }}
                       />
                     </Box>
                   </Box>
@@ -142,7 +149,14 @@ export default function CycleManagement() {
                           label="Start Date"
                           value={toDate(phaseData?.start)}
                           onChange={(date) => date && updateCyclePhase(selectedCycle.id, phase, { start: date })}
-                          slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                          slotProps={{
+                            textField: {
+                              id: `cycle-phase-start-${phase}`,
+                              name: `cyclePhaseStart-${phase}`,
+                              size: 'small',
+                              fullWidth: true,
+                            },
+                          }}
                         />
                       </Grid>
                       <Grid size={6}>
@@ -150,7 +164,14 @@ export default function CycleManagement() {
                           label="End Date"
                           value={toDate(phaseData?.end)}
                           onChange={(date) => date && updateCyclePhase(selectedCycle.id, phase, { end: date })}
-                          slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                          slotProps={{
+                            textField: {
+                              id: `cycle-phase-end-${phase}`,
+                              name: `cyclePhaseEnd-${phase}`,
+                              size: 'small',
+                              fullWidth: true,
+                            },
+                          }}
                         />
                       </Grid>
                     </Grid>

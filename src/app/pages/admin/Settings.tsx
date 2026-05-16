@@ -25,6 +25,8 @@ export default function Settings() {
               </Box>
               <Box sx={{ mb: 2 }}>
                 <TextField
+                  id="max-goals-per-employee"
+                  name="maxGoalsPerEmployee"
                   type="number"
                   label="Maximum Goals per Employee"
                   defaultValue={8}
@@ -34,6 +36,8 @@ export default function Settings() {
               </Box>
               <Box sx={{ mb: 2 }}>
                 <TextField
+                  id="minimum-weightage-per-goal"
+                  name="minimumWeightagePerGoal"
                   type="number"
                   label="Minimum Weightage per Goal (%)"
                   defaultValue={10}
@@ -43,6 +47,8 @@ export default function Settings() {
               </Box>
               <Box sx={{ mb: 2 }}>
                 <TextField
+                  id="required-total-weightage"
+                  name="requiredTotalWeightage"
                   type="number"
                   label="Required Total Weightage (%)"
                   defaultValue={100}
@@ -52,11 +58,11 @@ export default function Settings() {
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Box sx={{ fontSize: 14 }}>Allow Shared Goals</Box>
-                <Switch defaultChecked />
+                <Switch defaultChecked slotProps={{ input: { id: 'allow-shared-goals', name: 'allowSharedGoals', 'aria-label': 'Allow shared goals' } }} />
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box sx={{ fontSize: 14 }}>Require Manager Approval</Box>
-                <Switch defaultChecked />
+                <Switch defaultChecked slotProps={{ input: { id: 'require-manager-approval', name: 'requireManagerApproval', 'aria-label': 'Require manager approval' } }} />
               </Box>
             </CardContent>
           </Card>
@@ -121,18 +127,20 @@ export default function Settings() {
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Box sx={{ fontSize: 14 }}>Email Notifications</Box>
-                <Switch defaultChecked />
+                <Switch defaultChecked slotProps={{ input: { id: 'email-notifications', name: 'emailNotifications', 'aria-label': 'Email notifications' } }} />
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Box sx={{ fontSize: 14 }}>Deadline Reminders</Box>
-                <Switch defaultChecked />
+                <Switch defaultChecked slotProps={{ input: { id: 'deadline-reminders', name: 'deadlineReminders', 'aria-label': 'Deadline reminders' } }} />
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Box sx={{ fontSize: 14 }}>Approval Alerts</Box>
-                <Switch defaultChecked />
+                <Switch defaultChecked slotProps={{ input: { id: 'approval-alerts', name: 'approvalAlerts', 'aria-label': 'Approval alerts' } }} />
               </Box>
               <Box sx={{ mb: 2 }}>
                 <TextField
+                  id="reminder-days-before-deadline"
+                  name="reminderDaysBeforeDeadline"
                   type="number"
                   label="Reminder Days Before Deadline"
                   defaultValue={7}
@@ -152,6 +160,8 @@ export default function Settings() {
               </Box>
               <Box sx={{ mb: 2 }}>
                 <TextField
+                  id="review-frequency"
+                  name="reviewFrequency"
                   select
                   label="Review Frequency"
                   defaultValue="quarterly"
@@ -166,6 +176,8 @@ export default function Settings() {
               </Box>
               <Box sx={{ mb: 2 }}>
                 <TextField
+                  id="check-in-window-days"
+                  name="checkInWindowDays"
                   type="number"
                   label="Check-in Window (Days)"
                   defaultValue={15}
@@ -175,11 +187,11 @@ export default function Settings() {
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Box sx={{ fontSize: 14 }}>Self-Assessment Required</Box>
-                <Switch defaultChecked />
+                <Switch defaultChecked slotProps={{ input: { id: 'self-assessment-required', name: 'selfAssessmentRequired', 'aria-label': 'Self-assessment required' } }} />
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box sx={{ fontSize: 14 }}>Peer Feedback Enabled</Box>
-                <Switch />
+                <Switch slotProps={{ input: { id: 'peer-feedback-enabled', name: 'peerFeedbackEnabled', 'aria-label': 'Peer feedback enabled' } }} />
               </Box>
             </CardContent>
           </Card>
@@ -193,14 +205,16 @@ export default function Settings() {
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Box sx={{ fontSize: 14 }}>Audit Logging</Box>
-                <Switch defaultChecked />
+                <Switch defaultChecked slotProps={{ input: { id: 'audit-logging', name: 'auditLogging', 'aria-label': 'Audit logging' } }} />
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Box sx={{ fontSize: 14 }}>Data Encryption</Box>
-                <Switch defaultChecked />
+                <Switch defaultChecked slotProps={{ input: { id: 'data-encryption', name: 'dataEncryption', 'aria-label': 'Data encryption' } }} />
               </Box>
               <Box sx={{ mb: 2 }}>
                 <TextField
+                  id="session-timeout-minutes"
+                  name="sessionTimeoutMinutes"
                   type="number"
                   label="Session Timeout (Minutes)"
                   defaultValue={60}
@@ -210,6 +224,8 @@ export default function Settings() {
               </Box>
               <Box sx={{ mb: 2 }}>
                 <TextField
+                  id="data-retention-days"
+                  name="dataRetentionDays"
                   type="number"
                   label="Data Retention (Days)"
                   defaultValue={365}
@@ -230,6 +246,8 @@ export default function Settings() {
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, md: 4 }}>
                   <TextField
+                    id="smtp-server"
+                    name="smtpServer"
                     label="SMTP Server"
                     defaultValue="smtp.company.com"
                     fullWidth
@@ -238,6 +256,8 @@ export default function Settings() {
                 </Grid>
                 <Grid size={{ xs: 12, md: 4 }}>
                   <TextField
+                    id="smtp-port"
+                    name="smtpPort"
                     label="SMTP Port"
                     defaultValue="587"
                     fullWidth
@@ -246,6 +266,8 @@ export default function Settings() {
                 </Grid>
                 <Grid size={{ xs: 12, md: 4 }}>
                   <TextField
+                    id="from-email"
+                    name="fromEmail"
                     label="From Email"
                     defaultValue="noreply@company.com"
                     fullWidth
@@ -259,6 +281,8 @@ export default function Settings() {
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
+                    id="sso-provider-url"
+                    name="ssoProviderUrl"
                     label="SSO Provider URL"
                     placeholder="https://sso.company.com"
                     fullWidth
@@ -267,8 +291,9 @@ export default function Settings() {
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
+                    id="api-key"
+                    name="apiKey"
                     label="API Key"
-                    type="password"
                     placeholder="****************"
                     fullWidth
                     size="small"

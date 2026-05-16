@@ -120,12 +120,43 @@ export interface AuditFieldChange {
 export interface Notification {
   id: string;
   userId: string;
-  type: 'approval' | 'rework' | 'deadline' | 'checkin' | 'comment';
+  type: 'submission' | 'approval' | 'rework' | 'deadline' | 'checkin' | 'comment';
   title: string;
   message: string;
   link: string;
   isRead: boolean;
   createdAt: Date;
+}
+
+export interface DeliveryOutboxItem {
+  id: string;
+  eventKey: string;
+  channel: 'email' | 'teams';
+  recipientId: string;
+  recipientAddress?: string;
+  payload: any;
+  status: 'queued' | 'sent' | 'failed';
+  attempts: number;
+  error?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IntegrationStatus {
+  graphMail: {
+    configured: boolean;
+    sender?: string | null;
+  };
+  teamsBot: {
+    configured: boolean;
+    appIdConfigured: boolean;
+    conversationReferences: number;
+  };
+  deliveryOutbox: {
+    queued: number;
+    failed: number;
+    retryLimit: number;
+  };
 }
 
 export interface TeamMember {

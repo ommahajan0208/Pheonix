@@ -60,6 +60,8 @@ export default function SharedGoals() {
                           <Box sx={{ fontSize: 13, color: '#9c27b0', fontWeight: 800 }}>{goal.weightage}%</Box>
                         </Box>
                         <Slider
+                          aria-label={`Weightage for ${goal.title}`}
+                          name={`sharedGoalWeightage-${goal.id}`}
                           value={goal.weightage}
                           min={10}
                           max={30}

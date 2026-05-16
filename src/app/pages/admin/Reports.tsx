@@ -153,18 +153,18 @@ export default function Reports() {
               <Box sx={{ fontSize: 13, color: 'text.secondary' }}>Planned target vs. actual achievement for all employees.</Box>
             </Box>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              <TextField select size="small" label="Quarter" value={quarter} onChange={(e) => setQuarter(e.target.value as Quarter)} sx={{ width: 120 }}>
+              <TextField id="report-quarter" name="reportQuarter" select size="small" label="Quarter" value={quarter} onChange={(e) => setQuarter(e.target.value as Quarter)} sx={{ width: 120 }}>
                 {QUARTERS.map(item => <MenuItem key={item} value={item}>{item}</MenuItem>)}
               </TextField>
-              <TextField select size="small" label="Department" value={department} onChange={(e) => setDepartment(e.target.value)} sx={{ width: 170 }}>
+              <TextField id="report-department" name="reportDepartment" select size="small" label="Department" value={department} onChange={(e) => setDepartment(e.target.value)} sx={{ width: 170 }}>
                 <MenuItem value="all">All departments</MenuItem>
                 {departments.map(item => <MenuItem key={item} value={item}>{item}</MenuItem>)}
               </TextField>
-              <TextField select size="small" label="Manager" value={manager} onChange={(e) => setManager(e.target.value)} sx={{ width: 170 }}>
+              <TextField id="report-manager" name="reportManager" select size="small" label="Manager" value={manager} onChange={(e) => setManager(e.target.value)} sx={{ width: 170 }}>
                 <MenuItem value="all">All managers</MenuItem>
                 {managers.map(item => <MenuItem key={item} value={item}>{item}</MenuItem>)}
               </TextField>
-              <TextField select size="small" label="Status" value={status} onChange={(e) => setStatus(e.target.value as GoalStatus | 'all')} sx={{ width: 150 }}>
+              <TextField id="report-status" name="reportStatus" select size="small" label="Status" value={status} onChange={(e) => setStatus(e.target.value as GoalStatus | 'all')} sx={{ width: 150 }}>
                 <MenuItem value="all">All statuses</MenuItem>
                 {['draft', 'pending', 'approved', 'rework', 'completed'].map(item => <MenuItem key={item} value={item}>{item}</MenuItem>)}
               </TextField>

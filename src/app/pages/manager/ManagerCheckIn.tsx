@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import {
@@ -43,6 +44,7 @@ const emptyComment: ManagerCommentDraft = {
 export default function ManagerCheckIn() {
   const { user } = useAuth();
   const { goals, checkIns, teamMembers, saveManagerCheckInComment, cycles } = useData();
+  const [searchParams] = useSearchParams();
   const [selectedEmployee, setSelectedEmployee] = useState<string>(teamMembers[0]?.id || '');
   const [selectedQuarter, setSelectedQuarter] = useState<Quarter>('Q1');
   const [selectedGoal, setSelectedGoal] = useState<string>('');
@@ -67,8 +69,19 @@ export default function ManagerCheckIn() {
   const firstEmployeeGoalId = employeeGoals[0]?.id || '';
 
   useEffect(() => {
-    setSelectedGoal(firstEmployeeGoalId);
-  }, [firstEmployeeGoalId, selectedEmployee, selectedQuarter]);
+    const employeeId = searchParams.get('employeeId');
+    const goalId = searchParams.get('goalId');
+    const quarter = searchParams.get('quarter') as Quarter | null;
+    if (employeeId && employees.some(employee => employee.id === employeeId)) setSelectedEmployee(employeeId);
+    if (quarter && QUARTERS.includes(quarter)) setSelectedQuarter(quarter);
+    if (goalId && goals.some(goal => goal.id === goalId)) setSelectedGoal(goalId);
+  }, [employees, goals, searchParams]);
+
+  useEffect(() => {
+    if (!selectedGoal || !employeeGoals.some(goal => goal.id === selectedGoal)) {
+      setSelectedGoal(firstEmployeeGoalId);
+    }
+  }, [employeeGoals, firstEmployeeGoalId, selectedGoal]);
 
   useEffect(() => {
     setCommentDraft(selectedCheckIn?.managerComment || emptyComment);
@@ -107,6 +120,8 @@ export default function ManagerCheckIn() {
                   <TextField
                     select
                     fullWidth
+                    id="manager-checkin-employee"
+                    name="managerCheckinEmployee"
                     label="Employee"
                     value={selectedEmployee}
                     onChange={(e) => {
@@ -125,6 +140,8 @@ export default function ManagerCheckIn() {
                   <TextField
                     select
                     fullWidth
+                    id="manager-checkin-quarter"
+                    name="managerCheckinQuarter"
                     label="Quarter"
                     value={selectedQuarter}
                     onChange={(e) => {
@@ -215,6 +232,8 @@ export default function ManagerCheckIn() {
 
               <TextField
                 fullWidth
+                id="manager-discussion-summary"
+                name="managerDiscussionSummary"
                 multiline
                 rows={4}
                 label="Discussion Summary"
@@ -226,6 +245,8 @@ export default function ManagerCheckIn() {
 
               <TextField
                 fullWidth
+                id="manager-blockers-support-needed"
+                name="managerBlockersSupportNeeded"
                 multiline
                 rows={4}
                 label="Blockers / Support Needed"
@@ -237,6 +258,8 @@ export default function ManagerCheckIn() {
 
               <TextField
                 fullWidth
+                id="manager-next-actions"
+                name="managerNextActions"
                 multiline
                 rows={4}
                 label="Next Actions"

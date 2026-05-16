@@ -24,6 +24,8 @@ export default function TeamGoals() {
         </Box>
         <TextField
           select
+          id="team-goals-employee-filter"
+          name="teamGoalsEmployeeFilter"
           size="small"
           label="Filter by Employee"
           value={selectedEmployee}
