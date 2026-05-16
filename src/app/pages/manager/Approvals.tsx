@@ -1,0 +1,228 @@
+import { useState } from 'react';
+import { useData } from '../../context/DataContext';
+import {
+  Box,
+  Card,
+  CardContent,
+  Grid,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  TextField,
+  Button,
+  Alert,
+  Divider,
+} from '@mui/material';
+import { CheckCircle, XCircle, RotateCcw, Lock } from 'lucide-react';
+import { Goal } from '../../types';
+import StatusPill from '../../components/common/StatusPill';
+import ProgressBar from '../../components/common/ProgressBar';
+
+export default function Approvals() {
+  const { goals, updateGoal } = useData();
+  const [selectedEmployee, setSelectedEmployee] = useState<string>('emp-001');
+  const [editedGoals, setEditedGoals] = useState<Record<string, Partial<Goal>>>({});
+
+  const pendingGoals = goals.filter(g => g.status === 'pending');
+  const employees = Array.from(new Set(pendingGoals.map(g => ({ id: g.employeeId, name: g.employeeName }))));
+
+  const employeeGoals = pendingGoals.filter(g => g.employeeId === selectedEmployee);
+
+  const handleEdit = (goalId: string, field: 'target' | 'weightage', value: number) => {
+    setEditedGoals(prev => ({
+      ...prev,
+      [goalId]: {
+        ...prev[goalId],
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleApprove = (goalId: string) => {
+    const edits = editedGoals[goalId] || {};
+    updateGoal(goalId, { ...edits, status: 'approved' });
+    setEditedGoals(prev => {
+      const newEdits = { ...prev };
+      delete newEdits[goalId];
+      return newEdits;
+    });
+  };
+
+  const handleReject = (goalId: string) => {
+    updateGoal(goalId, { status: 'rework' });
+  };
+
+  const handleRework = (goalId: string) => {
+    updateGoal(goalId, { status: 'rework' });
+  };
+
+  return (
+    <Box>
+      <Box sx={{ mb: 3 }}>
+        <Box sx={{ fontSize: 24, fontWeight: 700, mb: 0.5 }}>Goal Approvals</Box>
+        <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
+          Review and approve team member goals
+        </Box>
+      </Box>
+
+      {pendingGoals.length === 0 && (
+        <Alert severity="success" sx={{ mb: 3 }}>
+          All goals have been reviewed! No pending approvals.
+        </Alert>
+      )}
+
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={3}>
+          <Card sx={{ boxShadow: 2 }}>
+            <CardContent>
+              <Box sx={{ fontSize: 16, fontWeight: 600, mb: 2 }}>
+                Team Members ({employees.length})
+              </Box>
+              <List>
+                {employees.map((employee) => {
+                  const employeePendingCount = pendingGoals.filter(
+                    g => g.employeeId === employee.id
+                  ).length;
+
+                  return (
+                    <ListItem key={employee.id} disablePadding>
+                      <ListItemButton
+                        selected={selectedEmployee === employee.id}
+                        onClick={() => setSelectedEmployee(employee.id)}
+                        sx={{
+                          borderRadius: 1,
+                          mb: 0.5,
+                        }}
+                      >
+                        <ListItemText
+                          primary={employee.name}
+                          secondary={`${employeePendingCount} pending`}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  );
+                })}
+              </List>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={9}>
+          {employeeGoals.length === 0 ? (
+            <Card sx={{ boxShadow: 2 }}>
+              <CardContent>
+                <Box sx={{ py: 6, textAlign: 'center', color: 'text.secondary' }}>
+                  No pending goals for this employee
+                </Box>
+              </CardContent>
+            </Card>
+          ) : (
+            employeeGoals.map((goal) => {
+              const edits = editedGoals[goal.id] || {};
+              const isApproved = goal.status === 'approved';
+
+              return (
+                <Card key={goal.id} sx={{ boxShadow: 2, mb: 2 }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                      <Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                          <Box sx={{ fontSize: 18, fontWeight: 600 }}>{goal.title}</Box>
+                          {isApproved && <Lock size={16} color="#2e7d32" />}
+                        </Box>
+                        <Box sx={{ fontSize: 14, color: 'text.secondary', mb: 1 }}>
+                          {goal.description}
+                        </Box>
+                      </Box>
+                      <StatusPill status={goal.status} />
+                    </Box>
+
+                    <Divider sx={{ my: 2 }} />
+
+                    <Grid container spacing={2} sx={{ mb: 2 }}>
+                      <Grid item xs={3}>
+                        <Box sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>
+                          Thrust Area
+                        </Box>
+                        <Box sx={{ fontSize: 14, fontWeight: 600 }}>{goal.thrustArea}</Box>
+                      </Grid>
+                      <Grid item xs={3}>
+                        <Box sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>
+                          Unit of Measure
+                        </Box>
+                        <Box sx={{ fontSize: 14, fontWeight: 600 }}>{goal.unitOfMeasure}</Box>
+                      </Grid>
+                      <Grid item xs={3}>
+                        <Box sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>
+                          Target
+                        </Box>
+                        <TextField
+                          type="number"
+                          size="small"
+                          value={edits.target ?? goal.target}
+                          onChange={(e) => handleEdit(goal.id, 'target', Number(e.target.value))}
+                          disabled={isApproved}
+                          sx={{ width: '100%' }}
+                        />
+                      </Grid>
+                      <Grid item xs={3}>
+                        <Box sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>
+                          Weightage (%)
+                        </Box>
+                        <TextField
+                          type="number"
+                          size="small"
+                          value={edits.weightage ?? goal.weightage}
+                          onChange={(e) => handleEdit(goal.id, 'weightage', Number(e.target.value))}
+                          disabled={isApproved}
+                          sx={{ width: '100%' }}
+                        />
+                      </Grid>
+                    </Grid>
+
+                    <Box sx={{ mb: 2 }}>
+                      <Box sx={{ fontSize: 12, color: 'text.secondary', mb: 1 }}>
+                        Progress
+                      </Box>
+                      <ProgressBar value={goal.progress} />
+                    </Box>
+
+                    {!isApproved && (
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                          variant="contained"
+                          color="success"
+                          startIcon={<CheckCircle size={18} />}
+                          onClick={() => handleApprove(goal.id)}
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          color="warning"
+                          startIcon={<RotateCcw size={18} />}
+                          onClick={() => handleRework(goal.id)}
+                        >
+                          Request Rework
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          startIcon={<XCircle size={18} />}
+                          onClick={() => handleReject(goal.id)}
+                        >
+                          Reject
+                        </Button>
+                      </Box>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })
+          )}
+        </Grid>
+      </Grid>
+    </Box>
+  );
+}
