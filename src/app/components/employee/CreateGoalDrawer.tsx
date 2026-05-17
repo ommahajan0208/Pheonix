@@ -17,6 +17,7 @@ import {
 import { X, Save } from 'lucide-react';
 import { ThrustArea, UnitOfMeasure, Goal, ScoringDirection } from '../../types';
 import { getDefaultScoringDirection, getScoringDirectionLabel } from '../../utils/progressScore';
+import { minimumWeightageMessage } from '../../utils/constraintGuidance';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -51,6 +52,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
   const isSharedRecipient = Boolean(existingGoal?.isShared && existingGoal.employeeId !== existingGoal.primaryOwnerId);
   const nextTotalWeightage = totalWeightage - (existingGoal?.weightage || 0) + (formData.weightage || 0);
   const directionLocked = formData.unitOfMeasure === 'Timeline' || formData.unitOfMeasure === 'Zero-based';
+  const weightageTooLow = Number(formData.weightage || 0) < 10;
 
   useEffect(() => {
     if (open) {
@@ -66,7 +68,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
     if (!formData.thrustArea) errors.push('Thrust area is required.');
     if (!formData.unitOfMeasure) errors.push('Unit of measure is required.');
     if (typeof formData.target !== 'number' || Number.isNaN(formData.target)) errors.push('Target must be a valid value.');
-    if (!formData.weightage || formData.weightage < 10) errors.push('Weightage must be at least 10%.');
+    if (!formData.weightage || formData.weightage < 10) errors.push(minimumWeightageMessage);
     if (nextTotalWeightage > 100) errors.push('Total sheet weightage cannot exceed 100%.');
     return errors;
   }, [formData, nextTotalWeightage]);
@@ -224,15 +226,20 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
               <Slider
                 aria-label="Goal weightage"
                 name="goalWeightage"
-                value={formData.weightage}
+                value={formData.weightage || 0}
                 onChange={(_, value) => setFormData({ ...formData, weightage: value as number })}
-                min={10}
+                min={0}
                 max={Math.max(10, Math.min(remainingWeightage, 100))}
                 step={5}
                 marks
                 valueLabelDisplay="on"
                 sx={{ mt: 3 }}
               />
+              {weightageTooLow && (
+                <Alert severity="warning" sx={{ mt: 2 }}>
+                  {minimumWeightageMessage}
+                </Alert>
+              )}
             </Box>
 
             <Box

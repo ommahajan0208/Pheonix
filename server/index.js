@@ -7,7 +7,7 @@ import fs from 'node:fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = path.join(__dirname, 'data');
-const dbPath = process.env.DB_FILE || path.join(dataDir, 'phoenix.sqlite');
+const dbPath = process.env.DB_FILE || path.join(dataDir, 'pheonix.sqlite');
 fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
 const db = new Database(dbPath);
@@ -1604,7 +1604,6 @@ app.post('/api/check-ins/:goalId/manager-comment', (req, res) => {
   const window = checkInWindow(goal.cycleId, quarter);
   if (!window.ok) return res.status(window.status).json({ error: window.error });
   const existing = db.prepare('SELECT * FROM check_ins WHERE goal_id = ? AND quarter = ?').get(req.params.goalId, quarter);
-  if (!existing?.submitted_at) return res.status(409).json({ error: 'Employee check-in must be submitted before manager comment.' });
   const id = existing?.id || `checkin-${Date.now()}-${req.params.goalId}`;
   db.prepare(`
     INSERT INTO check_ins VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -1625,6 +1624,34 @@ app.patch('/api/cycles/:id/phases/:phase', (req, res) => {
   if (!row) return res.status(404).json({ error: 'Cycle not found.' });
   const phases = parseJson(row.phases, {});
   phases[req.params.phase] = { ...phases[req.params.phase], ...(req.body || {}) };
+  const managedPhaseOrder = ['goalSetting', 'q1Checkin', 'q2Checkin', 'q3Checkin', 'q4Checkin'];
+  const phaseLabels = {
+    goalSetting: 'Phase 1 - Goal Setting',
+    q1Checkin: 'Q1 Check-in',
+    q2Checkin: 'Q2 Check-in',
+    q3Checkin: 'Q3 Check-in',
+    q4Checkin: 'Q4 / Annual Capture',
+  };
+  const normalizeDay = (value) => {
+    const date = new Date(value);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  };
+  for (const phase of managedPhaseOrder) {
+    const phaseData = phases[phase];
+    if (!phaseData?.start || !phaseData?.end) continue;
+    if (normalizeDay(phaseData.end) < normalizeDay(phaseData.start)) {
+      return res.status(422).json({ error: `${phaseLabels[phase]} has an invalid date range. The end date must be on or after the start date.` });
+    }
+  }
+  for (let index = 0; index < managedPhaseOrder.length - 1; index += 1) {
+    const current = managedPhaseOrder[index];
+    const next = managedPhaseOrder[index + 1];
+    if (!phases[current]?.end || !phases[next]?.start) continue;
+    if (normalizeDay(phases[next].start) <= normalizeDay(phases[current].end)) {
+      return res.status(422).json({ error: `${phaseLabels[current]} overlaps with ${phaseLabels[next]}. Each phase must start after the previous one ends.` });
+    }
+  }
   db.prepare('UPDATE cycles SET phases = ? WHERE id = ?').run(json(phases), req.params.id);
   addAudit({ userId: user.id, userName: user.name, action: req.body?.isOpen ? 'Opened Cycle Phase' : 'Updated Cycle Phase', after: { phase: req.params.phase, ...req.body } });
   res.json(bootstrap(user));
@@ -1645,6 +1672,6 @@ app.use((err, _req, res, _next) => {
 });
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const port = Number(process.env.PORT || 10000);
-  app.listen(port, '0.0.0.0', () => console.log(`Phoenix API listening on port ${port}`));
+  const port = Number(process.env.PORT || 4000);
+  app.listen(port, '0.0.0.0', () => console.log(`Pheonix API listening on port ${port}`));
 }

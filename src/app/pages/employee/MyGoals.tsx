@@ -18,14 +18,21 @@ import {
   TextField,
   Chip,
   Alert,
+  Tooltip,
 } from '@mui/material';
 import { Plus, Edit, Trash2, CheckCircle, Lock, Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 import StatusPill from '../../components/common/StatusPill';
 import ProgressBar from '../../components/common/ProgressBar';
 import CreateGoalDrawer from '../../components/employee/CreateGoalDrawer';
 import { Goal } from '../../types';
 import PageHeader from '../../components/common/PageHeader';
 import { getWindowMessage, isPhaseOpen } from '../../utils/cycleSchedule';
+import {
+  goalCreationWindowMessage,
+  lockedGoalMessage,
+  maxGoalsMessage,
+} from '../../utils/constraintGuidance';
 
 export default function MyGoals() {
   const { user } = useAuth();
@@ -41,13 +48,43 @@ export default function MyGoals() {
   const validation = validateGoalSheet(user?.id || '', selectedCycle);
   const totalWeightage = validation.totalWeightage;
   const canSubmit = goalSettingOpen && validation.canSubmit && userGoals.some(goal => ['draft', 'rework'].includes(goal.status));
+  const addGoalBlockMessage = !goalSettingOpen
+    ? goalCreationWindowMessage(selectedCycleData)
+    : userGoals.length >= 8
+      ? maxGoalsMessage
+      : '';
+
+  const getSubmitBlockMessage = () => {
+    if (!goalSettingOpen) return goalCreationWindowMessage(selectedCycleData);
+    if (!userGoals.some(goal => ['draft', 'rework'].includes(goal.status))) return 'There are no draft or rework goals available to submit.';
+    if (totalWeightage !== 100) return `Your current total weightage is ${totalWeightage}%. It must be exactly 100% before submission is possible.`;
+    if (userGoals.length === 0 || userGoals.length > 8) return 'You need 1 to 8 goals before submission is possible.';
+    if (userGoals.some(goal => goal.weightage < 10)) return 'Each goal must have at least 10% weightage before submission is possible.';
+    return 'Please resolve the validation checklist before submitting.';
+  };
 
   const handleAddGoal = () => {
+    if (addGoalBlockMessage) {
+      toast.error(addGoalBlockMessage);
+      return;
+    }
     setEditingGoal(undefined);
     setDrawerOpen(true);
   };
 
   const handleEditGoal = (goal: Goal) => {
+    if (!goalSettingOpen) {
+      toast.error(goalCreationWindowMessage(selectedCycleData));
+      return;
+    }
+    if (goal.status === 'approved') {
+      toast.error(lockedGoalMessage);
+      return;
+    }
+    if (!['draft', 'rework'].includes(goal.status)) {
+      toast.error('This goal cannot be edited while it is submitted for manager review.');
+      return;
+    }
     setEditingGoal(goal);
     setDrawerOpen(true);
   };
@@ -70,6 +107,23 @@ export default function MyGoals() {
   };
 
   const handleDeleteGoal = (goalId: string) => {
+    const goal = userGoals.find(item => item.id === goalId);
+    if (!goalSettingOpen) {
+      toast.error(goalCreationWindowMessage(selectedCycleData));
+      return;
+    }
+    if (goal?.status === 'approved') {
+      toast.error(lockedGoalMessage);
+      return;
+    }
+    if (goal?.isShared) {
+      toast.error('Shared goals cannot be deleted from your sheet. Contact your manager if a correction is needed.');
+      return;
+    }
+    if (goal?.status === 'pending') {
+      toast.error('This goal has already been submitted for manager review and cannot be deleted.');
+      return;
+    }
     if (confirm('Are you sure you want to delete this goal?')) {
       deleteGoal(goalId);
     }
@@ -80,14 +134,21 @@ export default function MyGoals() {
       <PageHeader
         title="My Goals"
         subtitle="Create, validate, and submit your FY 2026 performance goals."
-        action={<Button
-          variant="contained"
-          startIcon={<Plus size={18} />}
-          onClick={handleAddGoal}
-          disabled={!goalSettingOpen || userGoals.length >= 8}
-        >
-          Add Goal
-        </Button>}
+        action={
+          <Tooltip title={addGoalBlockMessage}>
+            <span>
+              <Button
+                variant="contained"
+                startIcon={<Plus size={18} />}
+                onClick={handleAddGoal}
+                aria-disabled={Boolean(addGoalBlockMessage)}
+                sx={addGoalBlockMessage ? { opacity: 0.55 } : undefined}
+              >
+                Add Goal
+              </Button>
+            </span>
+          </Tooltip>
+        }
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center' }}>
@@ -199,20 +260,30 @@ export default function MyGoals() {
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', gap: 0.5 }}>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleEditGoal(goal)}
-                            disabled={!goalSettingOpen || !['draft', 'rework'].includes(goal.status)}
-                          >
-                            <Edit size={16} />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleDeleteGoal(goal.id)}
-                            disabled={!goalSettingOpen || goal.status === 'approved' || goal.isShared || goal.status === 'pending'}
-                          >
-                            <Trash2 size={16} />
-                          </IconButton>
+                          <Tooltip title={!goalSettingOpen ? goalCreationWindowMessage(selectedCycleData) : goal.status === 'approved' ? lockedGoalMessage : !['draft', 'rework'].includes(goal.status) ? 'This goal cannot be edited while it is submitted for manager review.' : ''}>
+                            <span>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleEditGoal(goal)}
+                                aria-disabled={!goalSettingOpen || !['draft', 'rework'].includes(goal.status)}
+                                sx={!goalSettingOpen || !['draft', 'rework'].includes(goal.status) ? { opacity: 0.45 } : undefined}
+                              >
+                                <Edit size={16} />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                          <Tooltip title={!goalSettingOpen ? goalCreationWindowMessage(selectedCycleData) : goal.status === 'approved' ? lockedGoalMessage : goal.isShared ? 'Shared goals cannot be deleted from your sheet. Contact your manager if a correction is needed.' : goal.status === 'pending' ? 'Submitted goals cannot be deleted while they are awaiting manager review.' : ''}>
+                            <span>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDeleteGoal(goal.id)}
+                                aria-disabled={!goalSettingOpen || goal.status === 'approved' || goal.isShared || goal.status === 'pending'}
+                                sx={!goalSettingOpen || goal.status === 'approved' || goal.isShared || goal.status === 'pending' ? { opacity: 0.45 } : undefined}
+                              >
+                                <Trash2 size={16} />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -232,8 +303,15 @@ export default function MyGoals() {
           variant="contained"
           color={canSubmit ? 'primary' : 'inherit'}
           startIcon={<CheckCircle size={18} />}
-          disabled={!canSubmit}
-          onClick={() => navigate('/employee/submit-review')}
+          aria-disabled={!canSubmit}
+          sx={!canSubmit ? { opacity: 0.65 } : undefined}
+          onClick={() => {
+            if (!canSubmit) {
+              toast.error(getSubmitBlockMessage());
+              return;
+            }
+            navigate('/employee/submit-review');
+          }}
         >
           Submit for Review
         </Button>

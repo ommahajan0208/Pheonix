@@ -1,11 +1,64 @@
-import { Box, Card, CardContent, Grid, TextField, Switch, Button, Divider } from '@mui/material';
+import { useState } from 'react';
+import {
+  Box,
+  Card,
+  CardContent,
+  Grid,
+  TextField,
+  Switch,
+  Button,
+  Divider,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Alert,
+} from '@mui/material';
 import { Save, Unlock } from 'lucide-react';
+import { toast } from 'sonner';
 import { useData } from '../../context/DataContext';
 import SharedKpiForm from '../../components/common/SharedKpiForm';
+import {
+  goalPolicyConflictMessage,
+  resetSettingsConfirmationMessage,
+  unlockGoalConfirmationMessage,
+} from '../../utils/constraintGuidance';
+import { Goal } from '../../types';
 
 export default function Settings() {
   const { goals, adminUnlockGoal } = useData();
+  const [maxGoalsPerEmployee, setMaxGoalsPerEmployee] = useState(8);
+  const [minimumWeightagePerGoal, setMinimumWeightagePerGoal] = useState(10);
+  const [requiredTotalWeightage, setRequiredTotalWeightage] = useState(100);
+  const [unlockCandidate, setUnlockCandidate] = useState<Goal | null>(null);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const lockedGoals = goals.filter(goal => goal.status === 'approved');
+  const policyConflict = maxGoalsPerEmployee * minimumWeightagePerGoal > requiredTotalWeightage;
+  const policyConflictMessage = goalPolicyConflictMessage(maxGoalsPerEmployee, minimumWeightagePerGoal, requiredTotalWeightage);
+
+  const handleSaveSettings = () => {
+    if (policyConflict) {
+      toast.error(policyConflictMessage);
+      return;
+    }
+    toast.success('Settings validated for this prototype.');
+  };
+
+  const handleConfirmUnlock = async () => {
+    if (!unlockCandidate) return;
+    await adminUnlockGoal(unlockCandidate.id);
+    toast.success(`Unlocked "${unlockCandidate.title}" for ${unlockCandidate.employeeName}.`);
+    setUnlockCandidate(null);
+  };
+
+  const handleResetDefaults = () => {
+    setMaxGoalsPerEmployee(8);
+    setMinimumWeightagePerGoal(10);
+    setRequiredTotalWeightage(100);
+    setResetConfirmOpen(false);
+    toast.success('Settings reset to defaults for this prototype.');
+  };
 
   return (
     <Box>
@@ -29,9 +82,11 @@ export default function Settings() {
                   name="maxGoalsPerEmployee"
                   type="number"
                   label="Maximum Goals per Employee"
-                  defaultValue={8}
+                  value={maxGoalsPerEmployee}
+                  onChange={(event) => setMaxGoalsPerEmployee(Number(event.target.value))}
                   fullWidth
                   size="small"
+                  error={policyConflict}
                 />
               </Box>
               <Box sx={{ mb: 2 }}>
@@ -40,9 +95,11 @@ export default function Settings() {
                   name="minimumWeightagePerGoal"
                   type="number"
                   label="Minimum Weightage per Goal (%)"
-                  defaultValue={10}
+                  value={minimumWeightagePerGoal}
+                  onChange={(event) => setMinimumWeightagePerGoal(Number(event.target.value))}
                   fullWidth
                   size="small"
+                  error={policyConflict}
                 />
               </Box>
               <Box sx={{ mb: 2 }}>
@@ -51,11 +108,18 @@ export default function Settings() {
                   name="requiredTotalWeightage"
                   type="number"
                   label="Required Total Weightage (%)"
-                  defaultValue={100}
+                  value={requiredTotalWeightage}
+                  onChange={(event) => setRequiredTotalWeightage(Number(event.target.value))}
                   fullWidth
                   size="small"
+                  error={policyConflict}
                 />
               </Box>
+              {policyConflict && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  {policyConflictMessage}
+                </Alert>
+              )}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Box sx={{ fontSize: 14 }}>Allow Shared Goals</Box>
                 <Switch defaultChecked slotProps={{ input: { id: 'allow-shared-goals', name: 'allowSharedGoals', 'aria-label': 'Allow shared goals' } }} />
@@ -95,7 +159,7 @@ export default function Settings() {
                       <Box sx={{ fontSize: 13, fontWeight: 700 }}>{goal.title}</Box>
                       <Box sx={{ fontSize: 12, color: 'text.secondary' }}>{goal.employeeName} / {goal.weightage}%</Box>
                     </Box>
-                    <Button size="small" variant="outlined" startIcon={<Unlock size={14} />} onClick={() => adminUnlockGoal(goal.id)}>
+                    <Button size="small" variant="outlined" startIcon={<Unlock size={14} />} onClick={() => setUnlockCandidate(goal)}>
                       Unlock
                     </Button>
                   </Box>
@@ -306,15 +370,43 @@ export default function Settings() {
 
         <Grid size={12}>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <Button variant="outlined" size="large">
+            <Button variant="outlined" size="large" onClick={() => setResetConfirmOpen(true)}>
               Reset to Defaults
             </Button>
-            <Button variant="contained" size="large" startIcon={<Save size={18} />}>
+            <Button variant="contained" size="large" startIcon={<Save size={18} />} onClick={handleSaveSettings} color={policyConflict ? 'inherit' : 'primary'}>
               Save Settings
             </Button>
           </Box>
         </Grid>
       </Grid>
+
+      <Dialog open={Boolean(unlockCandidate)} onClose={() => setUnlockCandidate(null)}>
+        <DialogTitle>Confirm Goal Unlock</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {unlockCandidate ? unlockGoalConfirmationMessage(unlockCandidate.title, unlockCandidate.employeeName) : ''}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setUnlockCandidate(null)}>Cancel</Button>
+          <Button color="warning" variant="contained" onClick={handleConfirmUnlock}>
+            Unlock Goal
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={resetConfirmOpen} onClose={() => setResetConfirmOpen(false)}>
+        <DialogTitle>Reset System Settings?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{resetSettingsConfirmationMessage}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setResetConfirmOpen(false)}>Cancel</Button>
+          <Button color="warning" variant="contained" onClick={handleResetDefaults}>
+            Reset to Defaults
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

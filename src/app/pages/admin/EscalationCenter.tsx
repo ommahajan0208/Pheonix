@@ -17,10 +17,20 @@ import {
   Tabs,
   Tab,
   TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from '@mui/material';
 import { AlertCircle, CheckCircle, Clock, Users } from 'lucide-react';
+import { toast } from 'sonner';
 import KPICard from '../../components/common/KPICard';
 import { EscalationLog } from '../../types';
+import {
+  escalationAlreadyResolvedMessage,
+  reopenEscalationConfirmationMessage,
+} from '../../utils/constraintGuidance';
 
 const levelLabel: Record<EscalationLog['currentLevel'], string> = {
   employee: 'Employee',
@@ -31,6 +41,7 @@ const levelLabel: Record<EscalationLog['currentLevel'], string> = {
 export default function EscalationCenter() {
   const { escalationRules, escalationLogs, updateEscalationLogStatus } = useData();
   const [selectedStatus, setSelectedStatus] = useState<EscalationLog['status'] | 'all'>('all');
+  const [reopenCandidate, setReopenCandidate] = useState<EscalationLog | null>(null);
 
   const filteredLogs = escalationLogs.filter(log => selectedStatus === 'all' || log.status === selectedStatus);
   const openCount = escalationLogs.filter(log => log.status === 'open').length;
@@ -47,6 +58,28 @@ export default function EscalationCenter() {
     if (level === 'hr') return 'error';
     if (level === 'manager') return 'warning';
     return 'primary';
+  };
+
+  const handleStatusChange = (log: EscalationLog, status: EscalationLog['status']) => {
+    if (log.status === 'resolved' && status === 'open') {
+      setReopenCandidate(log);
+      return;
+    }
+    updateEscalationLogStatus(log.id, status);
+  };
+
+  const handleMarkResolved = (log: EscalationLog) => {
+    if (log.status === 'resolved') {
+      toast.info(escalationAlreadyResolvedMessage);
+      return;
+    }
+    updateEscalationLogStatus(log.id, 'resolved');
+  };
+
+  const confirmReopen = () => {
+    if (!reopenCandidate) return;
+    updateEscalationLogStatus(reopenCandidate.id, 'open');
+    setReopenCandidate(null);
   };
 
   return (
@@ -158,7 +191,7 @@ export default function EscalationCenter() {
                           name={`escalationStatus-${log.id}`}
                           size="small"
                           value={log.status}
-                          onChange={(event) => updateEscalationLogStatus(log.id, event.target.value as EscalationLog['status'])}
+                          onChange={(event) => handleStatusChange(log, event.target.value as EscalationLog['status'])}
                           sx={{ width: 140 }}
                         >
                           <MenuItem value="open">Open</MenuItem>
@@ -170,8 +203,8 @@ export default function EscalationCenter() {
                         <Button
                           variant="outlined"
                           size="small"
-                          disabled={log.status === 'resolved'}
-                          onClick={() => updateEscalationLogStatus(log.id, 'resolved')}
+                          onClick={() => handleMarkResolved(log)}
+                          sx={log.status === 'resolved' ? { opacity: 0.65 } : undefined}
                         >
                           Mark Resolved
                         </Button>
@@ -187,6 +220,19 @@ export default function EscalationCenter() {
           </TableContainer>
         </CardContent>
       </Card>
+
+      <Dialog open={Boolean(reopenCandidate)} onClose={() => setReopenCandidate(null)}>
+        <DialogTitle>Reopen Escalation?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{reopenEscalationConfirmationMessage}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setReopenCandidate(null)}>Cancel</Button>
+          <Button variant="contained" color="warning" onClick={confirmReopen}>
+            Reopen Escalation
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

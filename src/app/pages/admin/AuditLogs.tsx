@@ -14,9 +14,12 @@ import {
   MenuItem,
   Button,
   Chip,
+  Alert,
 } from '@mui/material';
 import { Download, Lock } from 'lucide-react';
+import { toast } from 'sonner';
 import { downloadCsv, toCsv } from '../../utils/governanceAnalytics';
+import { emptyAuditExportMessage } from '../../utils/constraintGuidance';
 
 export default function AuditLogs() {
   const { auditLogs } = useData();
@@ -42,6 +45,10 @@ export default function AuditLogs() {
   };
 
   const handleExport = () => {
+    if (filteredLogs.length === 0) {
+      toast.error(emptyAuditExportMessage);
+      return;
+    }
     const csv = toCsv(
       ['Timestamp', 'User', 'Action', 'Goal', 'Changed After Lock', 'Fields Changed', 'Before', 'After'],
       filteredLogs.map(log => [
@@ -98,6 +105,12 @@ export default function AuditLogs() {
               {actionOptions.map(action => <MenuItem key={action} value={action}>{action}</MenuItem>)}
             </TextField>
           </Box>
+
+          {filteredLogs.length === 0 && (
+            <Alert severity="info" sx={{ mb: 3 }}>
+              {emptyAuditExportMessage}
+            </Alert>
+          )}
 
           <TableContainer>
             <Table>

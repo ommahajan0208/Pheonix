@@ -1,10 +1,12 @@
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { Box, Card, CardContent, Alert, Chip, Grid, Slider, Button } from '@mui/material';
-import { Share2, Sparkles } from 'lucide-react';
+import { Box, Card, CardContent, Alert, Chip, Grid, Slider, Button, Tooltip } from '@mui/material';
+import { Share2, Sparkles, Lock } from 'lucide-react';
+import { toast } from 'sonner';
 import ProgressBar from '../../components/common/ProgressBar';
 import StatusPill from '../../components/common/StatusPill';
 import PageHeader from '../../components/common/PageHeader';
+import { sharedWeightageLockedMessage } from '../../utils/constraintGuidance';
 
 export default function SharedGoals() {
   const { user } = useAuth();
@@ -55,26 +57,35 @@ export default function SharedGoals() {
                       </Box>
                       <ProgressBar value={goal.progress} />
                       <Box sx={{ mt: 2 }}>
+                        {!['draft', 'rework'].includes(goal.status) && (
+                          <Alert severity="warning" icon={<Lock size={18} />} sx={{ mb: 1.5 }}>
+                            {sharedWeightageLockedMessage}
+                          </Alert>
+                        )}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                           <Box sx={{ fontSize: 13, fontWeight: 700 }}>My Weightage</Box>
                           <Box sx={{ fontSize: 13, color: '#9c27b0', fontWeight: 800 }}>{goal.weightage}%</Box>
                         </Box>
-                        <Slider
-                          aria-label={`Weightage for ${goal.title}`}
-                          name={`sharedGoalWeightage-${goal.id}`}
-                          value={goal.weightage}
-                          min={10}
-                          max={30}
-                          step={5}
-                          disabled={!['draft', 'rework'].includes(goal.status)}
-                          onChange={(_, value) => updateGoal(goal.id, { weightage: value as number })}
-                          sx={{ color: '#9c27b0' }}
-                        />
-                        {!['draft', 'rework'].includes(goal.status) && (
-                          <Box sx={{ fontSize: 12, color: 'text.secondary' }}>
-                            Weightage is locked while this goal is submitted or approved.
+                        <Tooltip title={!['draft', 'rework'].includes(goal.status) ? sharedWeightageLockedMessage : ''}>
+                          <Box
+                            onClick={() => {
+                              if (!['draft', 'rework'].includes(goal.status)) toast.error(sharedWeightageLockedMessage);
+                            }}
+                            sx={!['draft', 'rework'].includes(goal.status) ? { cursor: 'not-allowed' } : undefined}
+                          >
+                            <Slider
+                              aria-label={`Weightage for ${goal.title}`}
+                              name={`sharedGoalWeightage-${goal.id}`}
+                              value={goal.weightage}
+                              min={10}
+                              max={30}
+                              step={5}
+                              disabled={!['draft', 'rework'].includes(goal.status)}
+                              onChange={(_, value) => updateGoal(goal.id, { weightage: value as number })}
+                              sx={{ color: '#9c27b0' }}
+                            />
                           </Box>
-                        )}
+                        </Tooltip>
                       </Box>
                       <Button variant="outlined" size="small" fullWidth sx={{ mt: 1, borderColor: '#9c27b0', color: '#9c27b0' }}>
                         View Shared Contributions

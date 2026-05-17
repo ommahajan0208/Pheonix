@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
+import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import {
   Box,
@@ -15,14 +16,22 @@ import {
   Alert,
   Divider,
   Chip,
+  Tooltip,
 } from '@mui/material';
 import { CheckCircle, RotateCcw, Lock } from 'lucide-react';
+import { toast } from 'sonner';
 import { Goal } from '../../types';
 import StatusPill from '../../components/common/StatusPill';
 import ProgressBar from '../../components/common/ProgressBar';
 import { getActiveCycle, getWindowMessage, isPhaseOpen } from '../../utils/cycleSchedule';
+import {
+  managerApprovalWindowClosedMessage,
+  managerDirectReportOnlyMessage,
+  managerInlineEditClosedMessage,
+} from '../../utils/constraintGuidance';
 
 export default function Approvals() {
+  const { user } = useAuth();
   const { goals, teamMembers, approveGoalSheet, returnGoalSheetForRework, validateGoalSheet, cycles } = useData();
   const [searchParams] = useSearchParams();
   const [selectedEmployee, setSelectedEmployee] = useState<string>('emp-001');
@@ -34,7 +43,10 @@ export default function Approvals() {
   const cycleGoals = goals.filter(g => !activeCycleId || g.cycleId === activeCycleId);
   const reviewGoals = cycleGoals.filter(g => ['pending', 'rework', 'approved'].includes(g.status));
   const pendingGoals = cycleGoals.filter(g => g.status === 'pending');
-  const employees = teamMembers.map(member => ({ id: member.id, name: member.name }));
+  const employees = teamMembers
+    .filter(member => user?.role === 'admin' || member.managerId === user?.id)
+    .map(member => ({ id: member.id, name: member.name }));
+  const isDirectReport = employees.some(employee => employee.id === selectedEmployee);
 
   useEffect(() => {
     const employeeId = searchParams.get('employeeId');
@@ -51,6 +63,10 @@ export default function Approvals() {
   const hasPendingGoals = employeeGoals.some(goal => goal.status === 'pending');
 
   const handleEdit = (goalId: string, field: 'target' | 'weightage', value: number) => {
+    if (!goalSettingOpen) {
+      toast.error(managerInlineEditClosedMessage);
+      return;
+    }
     setEditedGoals(prev => ({
       ...prev,
       [goalId]: {
@@ -61,10 +77,61 @@ export default function Approvals() {
   };
 
   const handleApproveSheet = async () => {
+    if (!goalSettingOpen) {
+      toast.error(managerApprovalWindowClosedMessage);
+      return;
+    }
+    if (!isDirectReport) {
+      toast.error(managerDirectReportOnlyMessage);
+      return;
+    }
+    if (!hasPendingGoals) {
+      toast.error('There are no pending goals to approve for this employee.');
+      return;
+    }
+    if (!validation.canSubmit) {
+      toast.error(`This sheet cannot be approved yet. Total weightage is ${validation.totalWeightage}/100%.`);
+      return;
+    }
     if (await approveGoalSheet(selectedEmployee, activeCycleId, editedGoals)) {
       setEditedGoals({});
     }
   };
+
+  const handleReturnForRework = async () => {
+    if (!goalSettingOpen) {
+      toast.error(managerApprovalWindowClosedMessage);
+      return;
+    }
+    if (!isDirectReport) {
+      toast.error(managerDirectReportOnlyMessage);
+      return;
+    }
+    if (!hasPendingGoals) {
+      toast.error('There are no pending goals to return for rework for this employee.');
+      return;
+    }
+    await returnGoalSheetForRework(selectedEmployee, activeCycleId);
+    setEditedGoals({});
+  };
+
+  const approvalBlockMessage = !goalSettingOpen
+    ? managerApprovalWindowClosedMessage
+    : !isDirectReport
+      ? managerDirectReportOnlyMessage
+      : !hasPendingGoals
+        ? 'There are no pending goals to approve or return for this employee.'
+        : !validation.canSubmit
+          ? `This sheet cannot be approved yet. Total weightage is ${validation.totalWeightage}/100%.`
+          : '';
+
+  const returnBlockMessage = !goalSettingOpen
+    ? managerApprovalWindowClosedMessage
+    : !isDirectReport
+      ? managerDirectReportOnlyMessage
+      : !hasPendingGoals
+        ? 'There are no pending goals to return for rework for this employee.'
+        : '';
 
   return (
     <Box>
@@ -150,27 +217,34 @@ export default function Approvals() {
                   </Box>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Button
-                    variant="contained"
-                    color="success"
-                    startIcon={<CheckCircle size={18} />}
-                    onClick={handleApproveSheet}
-                    disabled={!goalSettingOpen || !hasPendingGoals || !validation.canSubmit}
-                  >
-                    Approve Sheet
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    color="warning"
-                    startIcon={<RotateCcw size={18} />}
-                    onClick={async () => {
-                      await returnGoalSheetForRework(selectedEmployee, activeCycleId);
-                      setEditedGoals({});
-                    }}
-                    disabled={!goalSettingOpen || !hasPendingGoals}
-                  >
-                    Return for Rework
-                  </Button>
+                  <Tooltip title={approvalBlockMessage}>
+                    <span>
+                      <Button
+                        variant="contained"
+                        color="success"
+                        startIcon={<CheckCircle size={18} />}
+                        onClick={handleApproveSheet}
+                        aria-disabled={Boolean(approvalBlockMessage)}
+                        sx={approvalBlockMessage ? { opacity: 0.65 } : undefined}
+                      >
+                        Approve Sheet
+                      </Button>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title={returnBlockMessage}>
+                    <span>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        startIcon={<RotateCcw size={18} />}
+                        onClick={handleReturnForRework}
+                        aria-disabled={Boolean(returnBlockMessage)}
+                        sx={returnBlockMessage ? { opacity: 0.65 } : undefined}
+                      >
+                        Return for Rework
+                      </Button>
+                    </span>
+                  </Tooltip>
                 </Box>
               </CardContent>
             </Card>
@@ -180,6 +254,18 @@ export default function Approvals() {
               const isApproved = goal.status === 'approved';
               const isEditable = goalSettingOpen && goal.status === 'pending';
               const isSharedRecipient = goal.isShared && goal.employeeId !== goal.primaryOwnerId;
+              const targetEditBlockMessage = !goalSettingOpen
+                ? managerInlineEditClosedMessage
+                : isSharedRecipient
+                  ? 'Shared KPI recipient targets are read-only during approval review.'
+                  : goal.status !== 'pending'
+                    ? 'Inline edits are available only for pending goals.'
+                    : '';
+              const weightageEditBlockMessage = !goalSettingOpen
+                ? managerInlineEditClosedMessage
+                : goal.status !== 'pending'
+                  ? 'Inline edits are available only for pending goals.'
+                  : '';
 
               return (
                 <Card key={goal.id} sx={{ boxShadow: 2, mb: 2 }}>
@@ -217,32 +303,48 @@ export default function Approvals() {
                         <Box sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>
                           Target
                         </Box>
-                        <TextField
-                          id={`approval-target-${goal.id}`}
-                          name={`approvalTarget-${goal.id}`}
-                          type="number"
-                          size="small"
-                          value={edits.target ?? goal.target}
-                          onChange={(e) => handleEdit(goal.id, 'target', Number(e.target.value))}
-                          disabled={!isEditable || isSharedRecipient}
-                          sx={{ width: '100%' }}
-                        />
+                        <Tooltip title={targetEditBlockMessage}>
+                          <Box
+                            onClick={() => {
+                              if (targetEditBlockMessage) toast.error(targetEditBlockMessage);
+                            }}
+                          >
+                            <TextField
+                              id={`approval-target-${goal.id}`}
+                              name={`approvalTarget-${goal.id}`}
+                              type="number"
+                              size="small"
+                              value={edits.target ?? goal.target}
+                              onChange={(e) => handleEdit(goal.id, 'target', Number(e.target.value))}
+                              disabled={!isEditable || isSharedRecipient}
+                              sx={{ width: '100%', pointerEvents: targetEditBlockMessage ? 'none' : undefined }}
+                            />
+                          </Box>
+                        </Tooltip>
                       </Grid>
                       <Grid size={3}>
                         <Box sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>
                           Weightage (%)
                         </Box>
-                        <TextField
-                          id={`approval-weightage-${goal.id}`}
-                          name={`approvalWeightage-${goal.id}`}
-                          type="number"
-                          size="small"
-                          value={edits.weightage ?? goal.weightage}
-                          onChange={(e) => handleEdit(goal.id, 'weightage', Number(e.target.value))}
-                          disabled={!isEditable}
-                          inputProps={{ min: 10 }}
-                          sx={{ width: '100%' }}
-                        />
+                        <Tooltip title={weightageEditBlockMessage}>
+                          <Box
+                            onClick={() => {
+                              if (weightageEditBlockMessage) toast.error(weightageEditBlockMessage);
+                            }}
+                          >
+                            <TextField
+                              id={`approval-weightage-${goal.id}`}
+                              name={`approvalWeightage-${goal.id}`}
+                              type="number"
+                              size="small"
+                              value={edits.weightage ?? goal.weightage}
+                              onChange={(e) => handleEdit(goal.id, 'weightage', Number(e.target.value))}
+                              disabled={!isEditable}
+                              inputProps={{ min: 10 }}
+                              sx={{ width: '100%', pointerEvents: weightageEditBlockMessage ? 'none' : undefined }}
+                            />
+                          </Box>
+                        </Tooltip>
                       </Grid>
                     </Grid>
 

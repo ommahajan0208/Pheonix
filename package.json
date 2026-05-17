@@ -6,9 +6,11 @@
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "build": "vite build",
-    "dev": "vite",
+    "dev": "concurrently \"npm run server\" \"npm run dev:client\"",
+    "dev:client": "vite",
     "server": "node server/index.js",
-    "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
+    "start": "node server/index.js",
+    "dev:full": "npm run dev",
     "test:backend": "node server/phase1.test.js"
   },
   "dependencies": {

@@ -18,12 +18,18 @@ import {
   TableRow,
   Chip,
   Alert,
+  Tooltip,
 } from '@mui/material';
-import { Save } from 'lucide-react';
+import { Save, Lock } from 'lucide-react';
+import { toast } from 'sonner';
 import PageHeader from '../../components/common/PageHeader';
 import { CheckIn, CheckInStatus, Quarter } from '../../types';
 import { getScoringDirectionLabel } from '../../utils/progressScore';
 import { getActiveCycle, getPhaseForQuarter, getWindowMessage, isPhaseOpen } from '../../utils/cycleSchedule';
+import {
+  employeeCheckInNotSubmittedMessage,
+  managerCheckInWindowClosedMessage,
+} from '../../utils/constraintGuidance';
 
 type ManagerCommentDraft = NonNullable<CheckIn['managerComment']>;
 
@@ -54,7 +60,8 @@ export default function ManagerCheckIn() {
   const activeCycle = getActiveCycle(cycles);
   const selectedPhase = getPhaseForQuarter(selectedQuarter);
   const checkInOpen = isPhaseOpen(activeCycle, selectedPhase);
-  const employees = teamMembers.filter(member => member.managerId === user?.id || user?.role === 'manager');
+  const closedWindowMessage = managerCheckInWindowClosedMessage(activeCycle, selectedQuarter, selectedPhase);
+  const employees = teamMembers.filter(member => member.managerId === user?.id || user?.role === 'admin');
   const employeeGoals = goals.filter(g => g.employeeId === selectedEmployee && g.status === 'approved' && (!activeCycle?.id || g.cycleId === activeCycle.id));
 
   const checkInByGoal = useMemo(() => {
@@ -67,6 +74,7 @@ export default function ManagerCheckIn() {
   const selectedCheckIn = selectedGoal ? checkInByGoal[selectedGoal] : undefined;
   const selectedGoalData = goals.find(goal => goal.id === selectedGoal);
   const firstEmployeeGoalId = employeeGoals[0]?.id || '';
+  const employeeSubmittedSelectedCheckIn = Boolean(selectedCheckIn?.submittedAt);
 
   useEffect(() => {
     const employeeId = searchParams.get('employeeId');
@@ -92,20 +100,38 @@ export default function ManagerCheckIn() {
   };
 
   const handleSaveComment = () => {
-    if (!selectedGoal || !checkInOpen) return;
+    if (!selectedGoal) {
+      toast.error('Select a goal before saving a manager check-in comment.');
+      return;
+    }
+    if (!checkInOpen) {
+      toast.error(closedWindowMessage);
+      return;
+    }
+    if (!hasComment) {
+      toast.error('Add a manager comment before saving.');
+      return;
+    }
 
     saveManagerCheckInComment(selectedGoal, selectedQuarter, user?.id || 'mgr-001', commentDraft);
     setNotice(`Manager check-in comment saved for ${selectedGoalData?.title || 'selected goal'}.`);
   };
 
   const hasComment = Object.values(commentDraft).some(value => value.trim());
+  const saveBlockMessage = !selectedGoal
+    ? 'Select a goal before saving a manager check-in comment.'
+    : !checkInOpen
+      ? closedWindowMessage
+      : !hasComment
+        ? 'Add a manager comment before saving.'
+        : '';
 
   return (
     <Box>
       <PageHeader title="Manager Check-in" subtitle="Review quarterly planned vs achievement data and document check-in discussions." />
       {notice && <Alert severity="success" sx={{ mb: 2 }}>{notice}</Alert>}
-      <Alert severity={checkInOpen ? 'success' : 'info'} sx={{ mb: 2 }}>
-        {getWindowMessage(activeCycle, selectedPhase)} Manager feedback can be saved only while this window is open.
+      <Alert severity={checkInOpen ? 'success' : 'warning'} sx={{ mb: 2 }} icon={!checkInOpen ? <Lock size={20} /> : undefined}>
+        {checkInOpen ? getWindowMessage(activeCycle, selectedPhase) : closedWindowMessage} Manager feedback can be saved only while this window is open.
       </Alert>
 
       <Grid container spacing={3}>
@@ -175,7 +201,8 @@ export default function ManagerCheckIn() {
                 <TableBody>
                   {employeeGoals.map(goal => {
                     const checkIn = checkInByGoal[goal.id];
-                    const status = checkIn?.status || 'not-started';
+                    const hasEmployeeSubmission = Boolean(checkIn?.submittedAt);
+                    const status = hasEmployeeSubmission ? checkIn?.status || 'not-started' : 'not-started';
 
                     return (
                       <TableRow
@@ -195,11 +222,11 @@ export default function ManagerCheckIn() {
                           </Box>
                         </TableCell>
                         <TableCell>{goal.target}</TableCell>
-                        <TableCell>{checkIn?.plannedValue ?? '-'}</TableCell>
-                        <TableCell>{checkIn?.actualValue ?? '-'}</TableCell>
+                        <TableCell>{hasEmployeeSubmission ? checkIn?.plannedValue ?? '-' : '-'}</TableCell>
+                        <TableCell>{hasEmployeeSubmission ? checkIn?.actualValue ?? '-' : '-'}</TableCell>
                         <TableCell>
                           <Chip
-                            label={`${checkIn?.progressScore ?? 0}%`}
+                            label={`${hasEmployeeSubmission ? checkIn?.progressScore ?? 0 : 0}%`}
                             size="small"
                             sx={{ bgcolor: '#e3f2fd', color: '#1976d2', fontWeight: 700 }}
                           />
@@ -230,6 +257,12 @@ export default function ManagerCheckIn() {
                 {selectedGoalData ? selectedGoalData.title : 'Select a goal'}
               </Box>
 
+              {selectedGoal && !employeeSubmittedSelectedCheckIn && (
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  {employeeCheckInNotSubmittedMessage}
+                </Alert>
+              )}
+
               <TextField
                 fullWidth
                 id="manager-discussion-summary"
@@ -241,6 +274,7 @@ export default function ManagerCheckIn() {
                 onChange={(e) => handleCommentChange('discussionSummary', e.target.value)}
                 sx={{ mb: 2 }}
                 disabled={!selectedGoal || !checkInOpen}
+                helperText={!checkInOpen ? closedWindowMessage : undefined}
               />
 
               <TextField
@@ -254,6 +288,7 @@ export default function ManagerCheckIn() {
                 onChange={(e) => handleCommentChange('blockersSupportNeeded', e.target.value)}
                 sx={{ mb: 2 }}
                 disabled={!selectedGoal || !checkInOpen}
+                helperText={!checkInOpen ? closedWindowMessage : undefined}
               />
 
               <TextField
@@ -267,6 +302,7 @@ export default function ManagerCheckIn() {
                 onChange={(e) => handleCommentChange('nextActions', e.target.value)}
                 sx={{ mb: 2 }}
                 disabled={!selectedGoal || !checkInOpen}
+                helperText={!checkInOpen ? closedWindowMessage : undefined}
               />
 
               <Divider sx={{ my: 2 }} />
@@ -275,15 +311,20 @@ export default function ManagerCheckIn() {
                 Last saved: {selectedCheckIn?.managerCommentedAt ? new Date(selectedCheckIn.managerCommentedAt).toLocaleString() : 'Not saved yet'}
               </Box>
 
-              <Button
-                fullWidth
-                variant="contained"
-                startIcon={<Save size={18} />}
-                disabled={!selectedGoal || !checkInOpen || !hasComment}
-                onClick={handleSaveComment}
-              >
-                Save Check-in Comment
-              </Button>
+              <Tooltip title={saveBlockMessage}>
+                <span>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    startIcon={<Save size={18} />}
+                    aria-disabled={Boolean(saveBlockMessage)}
+                    sx={saveBlockMessage ? { opacity: 0.65 } : undefined}
+                    onClick={handleSaveComment}
+                  >
+                    Save Check-in Comment
+                  </Button>
+                </span>
+              </Tooltip>
             </CardContent>
           </Card>
         </Grid>

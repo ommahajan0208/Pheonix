@@ -1,10 +1,16 @@
 import { useState } from 'react';
-import { Box, Button, Checkbox, Chip, FormControlLabel, MenuItem, TextField, Alert } from '@mui/material';
+import { Box, Button, Checkbox, Chip, FormControlLabel, MenuItem, TextField, Alert, Tooltip } from '@mui/material';
 import { Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useData } from '../../context/DataContext';
 import { ScoringDirection, ThrustArea, UnitOfMeasure } from '../../types';
 import { getDefaultScoringDirection, getScoringDirectionLabel } from '../../utils/progressScore';
 import { getActiveCycle, getWindowMessage, isPhaseOpen } from '../../utils/cycleSchedule';
+import {
+  minimumWeightageMessage,
+  sharedKpiRecipientRequiredMessage,
+  sharedKpiWindowClosedMessage,
+} from '../../utils/constraintGuidance';
 
 const THRUST_AREAS: ThrustArea[] = ['Revenue', 'Customer Success', 'Innovation', 'Efficiency', 'Team Development'];
 const UNITS: UnitOfMeasure[] = ['Numeric', '%', 'Timeline', 'Zero-based'];
@@ -26,13 +32,29 @@ export default function SharedKpiForm() {
   const [notice, setNotice] = useState('');
 
   const canPush = goalSettingOpen && title.trim() && description.trim() && primaryOwnerId && selectedIds.length > 0 && weightage >= 10;
+  const pushBlockMessage = !goalSettingOpen
+    ? sharedKpiWindowClosedMessage
+    : selectedIds.length === 0
+      ? sharedKpiRecipientRequiredMessage
+      : !title.trim()
+        ? 'Enter a shared KPI title before pushing.'
+        : !description.trim()
+          ? 'Enter a shared KPI description before pushing.'
+          : !primaryOwnerId
+            ? 'Select a primary owner before pushing a shared KPI.'
+            : weightage < 10
+              ? minimumWeightageMessage
+              : '';
 
   const toggleEmployee = (id: string) => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(employeeId => employeeId !== id) : [...prev, id]);
   };
 
   const handlePush = () => {
-    if (!canPush) return;
+    if (pushBlockMessage) {
+      toast.error(pushBlockMessage);
+      return;
+    }
     addSharedGoal({
       title,
       description,
@@ -115,6 +137,11 @@ export default function SharedKpiForm() {
 
       <Box sx={{ mb: 2 }}>
         <Box sx={{ fontSize: 13, fontWeight: 700, mb: 1 }}>Recipients</Box>
+        {selectedIds.length === 0 && (
+          <Alert severity="warning" sx={{ mb: 1.5 }}>
+            {sharedKpiRecipientRequiredMessage}
+          </Alert>
+        )}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {teamMembers.map(member => (
             <FormControlLabel
@@ -126,9 +153,19 @@ export default function SharedKpiForm() {
         </Box>
       </Box>
 
-      <Button variant="contained" startIcon={<Share2 size={18} />} onClick={handlePush} disabled={!canPush}>
-        Push Shared KPI
-      </Button>
+      <Tooltip title={pushBlockMessage}>
+        <span>
+          <Button
+            variant="contained"
+            startIcon={<Share2 size={18} />}
+            onClick={handlePush}
+            aria-disabled={!canPush}
+            sx={!canPush ? { opacity: 0.65 } : undefined}
+          >
+            Push Shared KPI
+          </Button>
+        </span>
+      </Tooltip>
     </Box>
   );
 }

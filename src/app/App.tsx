@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
 import { router } from './routes';
 import { ThemeProvider, createTheme } from '@mui/material';
+import { Toaster } from 'sonner';
 
 const theme = createTheme({
   shape: {
@@ -40,6 +41,7 @@ export default function App() {
       <AuthProvider>
         <DataProvider>
           <RouterProvider router={router} />
+          <Toaster position="top-right" richColors closeButton />
         </DataProvider>
       </AuthProvider>
     </ThemeProvider>

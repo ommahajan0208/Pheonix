@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
 
-const tmpDb = path.join(os.tmpdir(), `phoenix-phase1-${Date.now()}.sqlite`);
+const tmpDb = path.join(os.tmpdir(), `pheonix-phase1-${Date.now()}.sqlite`);
 process.env.DB_FILE = tmpDb;
 
 const { app, closeDb } = await import(`./index.js?test=${Date.now()}`);
@@ -51,11 +51,16 @@ const setPhase = (phase, updates) => api(`/api/cycles/cycle-2026/phases/${phase}
   body: JSON.stringify(updates),
 });
 
-const openQ1Window = () => setPhase('q1Checkin', {
-  start: isoDaysFromNow(-1),
-  end: isoDaysFromNow(1),
-  isOpen: true,
-});
+const openQ1Window = async () => {
+  await setPhase('goalSetting', {
+    end: isoDaysFromNow(-2),
+  });
+  return setPhase('q1Checkin', {
+    start: isoDaysFromNow(-1),
+    end: isoDaysFromNow(1),
+    isOpen: true,
+  });
+};
 
 const submitCheckIn = (goalId, overrides = {}) => api('/api/check-ins', {
   method: 'POST',
@@ -93,6 +98,33 @@ test('rejects invalid goal sheet submission when total weightage is not 100', as
   assert.equal(response.status, 422);
   assert.equal(body.validation.totalWeightage, 40);
   assert.equal(body.validation.canSubmit, false);
+});
+
+test('rejects invalid and overlapping cycle phase windows while preserving valid updates', async () => {
+  const invalidRange = await setPhase('q2Checkin', {
+    start: '2026-10-31T00:00:00.000Z',
+    end: '2026-10-01T00:00:00.000Z',
+  });
+  assert.equal(invalidRange.response.status, 422);
+  assert.match(invalidRange.body.error, /Q2 Check-in/i);
+  assert.match(invalidRange.body.error, /end date/i);
+
+  const overlapping = await setPhase('q2Checkin', {
+    start: '2026-07-15T00:00:00.000Z',
+    end: '2026-10-31T00:00:00.000Z',
+  });
+  assert.equal(overlapping.response.status, 422);
+  assert.match(overlapping.body.error, /Q1 Check-in/i);
+  assert.match(overlapping.body.error, /Q2 Check-in/i);
+
+  const valid = await setPhase('q2Checkin', {
+    start: '2026-11-01T00:00:00.000Z',
+    end: '2026-11-30T00:00:00.000Z',
+  });
+  assert.equal(valid.response.status, 200);
+  const updated = valid.body.cycles.find((cycle) => cycle.id === 'cycle-2026');
+  assert.equal(new Date(updated.phases.q2Checkin.start).toISOString(), '2026-11-01T00:00:00.000Z');
+  assert.equal(new Date(updated.phases.q2Checkin.end).toISOString(), '2026-11-30T00:00:00.000Z');
 });
 
 test('rejects ninth goal for an employee in a cycle', async () => {
@@ -336,7 +368,7 @@ test('rejects manager comment for a non-report goal', async () => {
   assert.match(body.error, /direct reports/i);
 });
 
-test('rejects manager comment before employee check-in exists', async () => {
+test('accepts manager comment before employee check-in exists and preserves it after employee submission', async () => {
   await openQ1Window();
 
   const { response, body } = await api('/api/check-ins/goal-007/manager-comment', {
@@ -353,8 +385,23 @@ test('rejects manager comment before employee check-in exists', async () => {
     }),
   });
 
-  assert.equal(response.status, 409);
-  assert.match(body.error, /must be submitted/i);
+  assert.equal(response.status, 200);
+  const advanceComment = body.checkIns.find((item) => item.goalId === 'goal-007' && item.quarter === 'Q1');
+  assert.equal(advanceComment.submittedAt, undefined);
+  assert.equal(advanceComment.managerId, 'mgr-001');
+  assert.equal(advanceComment.managerComment.nextActions, 'Employee to submit progress.');
+
+  const submitted = await submitCheckIn('goal-007', {
+    userId: 'emp-002',
+    role: 'employee',
+    body: { actualValue: 6, plannedValue: 6 },
+  });
+
+  assert.equal(submitted.response.status, 200);
+  const afterEmployeeSubmit = submitted.body.checkIns.find((item) => item.goalId === 'goal-007' && item.quarter === 'Q1');
+  assert.ok(afterEmployeeSubmit.submittedAt);
+  assert.equal(afterEmployeeSubmit.managerId, 'mgr-001');
+  assert.equal(afterEmployeeSubmit.managerComment.nextActions, 'Employee to submit progress.');
 });
 
 test('accepts structured manager comment for a direct report during the open window', async () => {
@@ -650,6 +697,15 @@ test('computes escalation logs for all configured conditions and persists resolu
     userId: 'admin-001',
     role: 'admin',
     body: JSON.stringify({ status: 'pending', adminOverride: true }),
+  });
+  await setPhase('goalSetting', {
+    start: isoDaysFromNow(-20),
+    end: isoDaysFromNow(-10),
+  });
+  await setPhase('q1Checkin', {
+    start: isoDaysFromNow(-9),
+    end: isoDaysFromNow(-7),
+    isOpen: false,
   });
   await setPhase('q2Checkin', {
     start: isoDaysFromNow(-5),

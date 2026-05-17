@@ -20,13 +20,16 @@ import {
   Grid,
   Alert,
   Chip,
+  Tooltip,
 } from '@mui/material';
-import { Save, Upload } from 'lucide-react';
+import { Save, Upload, Lock } from 'lucide-react';
+import { toast } from 'sonner';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
 import PageHeader from '../../components/common/PageHeader';
 import { CheckInStatus, Goal, Quarter } from '../../types';
 import { getScoringDirectionLabel } from '../../utils/progressScore';
 import { getActiveCycle, getPhaseForQuarter, getWindowMessage, isPhaseOpen } from '../../utils/cycleSchedule';
+import { checkInWindowClosedMessage } from '../../utils/constraintGuidance';
 
 type CheckInDraft = {
   plannedValue: number;
@@ -65,6 +68,7 @@ export default function QuarterlyCheckIn() {
   const activeCycle = getActiveCycle(cycles);
   const selectedPhase = getPhaseForQuarter(selectedQuarter);
   const checkInOpen = isPhaseOpen(activeCycle, selectedPhase);
+  const closedWindowMessage = checkInWindowClosedMessage(activeCycle, selectedQuarter, selectedPhase);
   const userGoals = goals.filter(g => g.employeeId === user?.id && g.status === 'approved');
 
   const existingCheckInFor = (goalId: string) => (
@@ -114,10 +118,21 @@ export default function QuarterlyCheckIn() {
     color: STATUS_COLORS[option.value],
   }));
 
-  const handleSaveDraft = () => setNotice(`${selectedQuarter} draft saved locally.`);
+  const showClosedWindowToast = () => toast.error(closedWindowMessage);
+
+  const handleSaveDraft = () => {
+    if (!checkInOpen) {
+      showClosedWindowToast();
+      return;
+    }
+    setNotice(`${selectedQuarter} draft saved locally.`);
+  };
 
   const handleSubmit = () => {
-    if (!checkInOpen) return;
+    if (!checkInOpen) {
+      showClosedWindowToast();
+      return;
+    }
 
     userGoals.forEach(goal => {
       const draft = getDraftForGoal(goal);
@@ -140,8 +155,8 @@ export default function QuarterlyCheckIn() {
     <Box>
       <PageHeader title="Quarterly Check-in" subtitle="Track actual achievement against planned targets for each approved goal." />
       {notice && <Alert severity="success" sx={{ mb: 2 }}>{notice}</Alert>}
-      <Alert severity={checkInOpen ? 'success' : 'info'} sx={{ mb: 2 }}>
-        {getWindowMessage(activeCycle, selectedPhase)} Achievement capture is available only while this window is open.
+      <Alert severity={checkInOpen ? 'success' : 'warning'} sx={{ mb: 2 }} icon={!checkInOpen ? <Lock size={20} /> : undefined}>
+        {checkInOpen ? getWindowMessage(activeCycle, selectedPhase) : closedWindowMessage} Achievement capture is available only while this window is open.
       </Alert>
 
       <Card sx={{ boxShadow: 2, mb: 3 }}>
@@ -269,9 +284,21 @@ export default function QuarterlyCheckIn() {
                             />
                           </TableCell>
                           <TableCell>
-                            <Button size="small" startIcon={<Upload size={14} />} disabled={!checkInOpen}>
-                              Upload
-                            </Button>
+                            <Tooltip title={checkInOpen ? '' : closedWindowMessage}>
+                              <span>
+                                <Button
+                                  size="small"
+                                  startIcon={<Upload size={14} />}
+                                  onClick={() => {
+                                    if (!checkInOpen) showClosedWindowToast();
+                                  }}
+                                  aria-disabled={!checkInOpen}
+                                  sx={!checkInOpen ? { opacity: 0.6 } : undefined}
+                                >
+                                  Upload
+                                </Button>
+                              </span>
+                            </Tooltip>
                           </TableCell>
                         </TableRow>
                       );
@@ -281,10 +308,31 @@ export default function QuarterlyCheckIn() {
               </TableContainer>
 
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3 }}>
-                <Button variant="outlined" onClick={handleSaveDraft} disabled={!checkInOpen}>Save Draft</Button>
-                <Button variant="contained" startIcon={<Save size={18} />} onClick={handleSubmit} disabled={!checkInOpen}>
-                  Submit Check-in
-                </Button>
+                <Tooltip title={checkInOpen ? '' : closedWindowMessage}>
+                  <span>
+                    <Button
+                      variant="outlined"
+                      onClick={handleSaveDraft}
+                      aria-disabled={!checkInOpen}
+                      sx={!checkInOpen ? { opacity: 0.65 } : undefined}
+                    >
+                      Save Draft
+                    </Button>
+                  </span>
+                </Tooltip>
+                <Tooltip title={checkInOpen ? '' : closedWindowMessage}>
+                  <span>
+                    <Button
+                      variant="contained"
+                      startIcon={<Save size={18} />}
+                      onClick={handleSubmit}
+                      aria-disabled={!checkInOpen}
+                      sx={!checkInOpen ? { opacity: 0.65 } : undefined}
+                    >
+                      Submit Check-in
+                    </Button>
+                  </span>
+                </Tooltip>
               </Box>
             </CardContent>
           </Card>

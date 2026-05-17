@@ -8,20 +8,100 @@ import {
   Button,
   Switch,
   Chip,
+  Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from '@mui/material';
 import { Plus, Lock, Unlock } from 'lucide-react';
+import { toast } from 'sonner';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { CyclePhaseKey, PHASE_METADATA, isDateInPhaseWindow } from '../../utils/cycleSchedule';
+import {
+  invalidPhaseDateRangeMessage,
+  overlappingPhaseWindowMessage,
+  simultaneousOpenPhaseMessage,
+} from '../../utils/constraintGuidance';
 
 export default function CycleManagement() {
   const { cycles, updateCyclePhase } = useData();
   const [selectedCycleId] = useState(cycles[0]?.id || '');
+  const [pendingOpenPhase, setPendingOpenPhase] = useState<CyclePhaseKey | null>(null);
   const selectedCycle = cycles.find(cycle => cycle.id === selectedCycleId) || cycles[0];
 
   const phases: CyclePhaseKey[] = ['goalSetting', 'q1Checkin', 'q2Checkin', 'q3Checkin', 'q4Checkin'];
   const toDate = (value?: string | Date | null) => (value instanceof Date ? value : value ? new Date(value) : null);
+  const normalizeDay = (date: Date) => {
+    const next = new Date(date);
+    next.setHours(0, 0, 0, 0);
+    return next;
+  };
+  const getValidationMessage = (targetPhase: CyclePhaseKey, updates: Partial<NonNullable<typeof selectedCycle>['phases'][CyclePhaseKey]> = {}) => {
+    if (!selectedCycle) return '';
+    const nextPhases = {
+      ...selectedCycle.phases,
+      [targetPhase]: {
+        ...selectedCycle.phases[targetPhase],
+        ...updates,
+      },
+    };
+
+    for (const phase of phases) {
+      const phaseData = nextPhases[phase];
+      const start = toDate(phaseData.start);
+      const end = toDate(phaseData.end);
+      if (start && end && normalizeDay(end) < normalizeDay(start)) {
+        return invalidPhaseDateRangeMessage(PHASE_METADATA[phase].label);
+      }
+    }
+
+    for (let index = 0; index < phases.length - 1; index += 1) {
+      const current = phases[index];
+      const next = phases[index + 1];
+      const currentEnd = toDate(nextPhases[current].end);
+      const nextStart = toDate(nextPhases[next].start);
+      if (currentEnd && nextStart && normalizeDay(nextStart) <= normalizeDay(currentEnd)) {
+        return overlappingPhaseWindowMessage(PHASE_METADATA[current].label, PHASE_METADATA[next].label);
+      }
+    }
+
+    return '';
+  };
+
+  const updatePhaseWithValidation = (phase: CyclePhaseKey, updates: Partial<NonNullable<typeof selectedCycle>['phases'][CyclePhaseKey]>) => {
+    const validationMessage = getValidationMessage(phase, updates);
+    if (validationMessage) {
+      toast.error(validationMessage);
+      return;
+    }
+    updateCyclePhase(selectedCycle.id, phase, updates);
+  };
+
+  const handleTogglePhase = (phase: CyclePhaseKey, isOpen: boolean) => {
+    if (!isOpen) {
+      updatePhaseWithValidation(phase, { isOpen: false });
+      return;
+    }
+    const openPhase = phases.find(item => item !== phase && selectedCycle?.phases[item]?.isOpen);
+    if (openPhase) {
+      setPendingOpenPhase(phase);
+      return;
+    }
+    updatePhaseWithValidation(phase, { isOpen: true });
+  };
+
+  const confirmOpenPhase = () => {
+    if (!pendingOpenPhase) return;
+    updatePhaseWithValidation(pendingOpenPhase, { isOpen: true });
+    setPendingOpenPhase(null);
+  };
+  const currentOpenPhase = pendingOpenPhase
+    ? phases.find(item => item !== pendingOpenPhase && selectedCycle?.phases[item]?.isOpen)
+    : undefined;
 
   return (
     <Box>
@@ -113,6 +193,7 @@ export default function CycleManagement() {
           const phaseData = selectedCycle?.phases[phase];
           const meta = PHASE_METADATA[phase];
           const inDateWindow = isDateInPhaseWindow(selectedCycle, phase);
+          const validationMessage = getValidationMessage(phase);
           return (
             <Grid size={{ xs: 12, md: 6 }} key={phase}>
               <Card sx={{ boxShadow: 2 }}>
@@ -130,7 +211,7 @@ export default function CycleManagement() {
                       {phaseData?.isOpen ? <Unlock size={16} color="#2e7d32" /> : <Lock size={16} color="#d32f2f" />}
                       <Switch
                         checked={phaseData?.isOpen}
-                        onChange={(event) => updateCyclePhase(selectedCycle.id, phase, { isOpen: event.target.checked })}
+                        onChange={(event) => handleTogglePhase(phase, event.target.checked)}
                         slotProps={{
                           input: {
                             id: `cycle-phase-open-${phase}`,
@@ -148,7 +229,7 @@ export default function CycleManagement() {
                         <DatePicker
                           label="Start Date"
                           value={toDate(phaseData?.start)}
-                          onChange={(date) => date && updateCyclePhase(selectedCycle.id, phase, { start: date })}
+                          onChange={(date) => date && updatePhaseWithValidation(phase, { start: date })}
                           slotProps={{
                             textField: {
                               id: `cycle-phase-start-${phase}`,
@@ -163,7 +244,7 @@ export default function CycleManagement() {
                         <DatePicker
                           label="End Date"
                           value={toDate(phaseData?.end)}
-                          onChange={(date) => date && updateCyclePhase(selectedCycle.id, phase, { end: date })}
+                          onChange={(date) => date && updatePhaseWithValidation(phase, { end: date })}
                           slotProps={{
                             textField: {
                               id: `cycle-phase-end-${phase}`,
@@ -177,6 +258,12 @@ export default function CycleManagement() {
                     </Grid>
                   </LocalizationProvider>
 
+                  {validationMessage && (
+                    <Alert severity="error" sx={{ mt: 2 }}>
+                      {validationMessage}
+                    </Alert>
+                  )}
+
                   <Box sx={{ mt: 2, p: 1.5, bgcolor: '#f5f5f5', borderRadius: 1, fontSize: 12 }}>
                     Status: {phaseData?.isOpen ? 'Open for submissions' : 'Locked'} / Calendar window: {inDateWindow ? 'today is within the configured dates' : 'today is outside the configured dates'}
                   </Box>
@@ -186,6 +273,23 @@ export default function CycleManagement() {
           );
         })}
       </Grid>
+
+      <Dialog open={Boolean(pendingOpenPhase)} onClose={() => setPendingOpenPhase(null)}>
+        <DialogTitle>Open Another Phase?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {pendingOpenPhase && currentOpenPhase
+              ? simultaneousOpenPhaseMessage(PHASE_METADATA[pendingOpenPhase].label, PHASE_METADATA[currentOpenPhase].label)
+              : 'Opening this phase will make multiple phases active simultaneously. Confirm this is intentional before proceeding.'}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPendingOpenPhase(null)}>Cancel</Button>
+          <Button variant="contained" color="warning" onClick={confirmOpenPhase}>
+            Open Phase
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

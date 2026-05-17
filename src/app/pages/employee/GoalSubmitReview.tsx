@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { Box, Card, CardContent, Button, Alert, Stepper, Step, StepLabel, Chip } from '@mui/material';
+import { Box, Card, CardContent, Button, Alert, Stepper, Step, StepLabel, Chip, Tooltip } from '@mui/material';
 import { Send, CheckCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import GoalCard from '../../components/common/GoalCard';
 import PageHeader from '../../components/common/PageHeader';
 import { getActiveCycle, getWindowMessage, isPhaseOpen } from '../../utils/cycleSchedule';
+import { goalCreationWindowMessage } from '../../utils/constraintGuidance';
 
 export default function GoalSubmitReview() {
   const { user } = useAuth();
@@ -20,7 +22,20 @@ export default function GoalSubmitReview() {
   const validation = validateGoalSheet(user?.id || '', activeCycleId);
   const canSubmit = goalSettingOpen && validation.canSubmit && submittableGoals.length > 0;
 
+  const getSubmitBlockMessage = () => {
+    if (!goalSettingOpen) return goalCreationWindowMessage(activeCycle);
+    if (submittableGoals.length === 0) return 'There are no draft or rework goals available to submit.';
+    if (validation.totalWeightage !== 100) return `Your current total weightage is ${validation.totalWeightage}%. It must be exactly 100% before submission is possible.`;
+    if (validation.goalCount === 0 || validation.goalCount > 8) return 'You need 1 to 8 goals before submission is possible.';
+    if (userGoals.some(goal => goal.weightage < 10)) return 'Each goal must have at least 10% weightage before submission is possible.';
+    return 'Please resolve the validation checklist before submitting.';
+  };
+
   const handleSubmit = async () => {
+    if (!canSubmit) {
+      toast.error(getSubmitBlockMessage());
+      return;
+    }
     if (user && await submitGoalSheet(user.id, activeCycleId)) {
       setSubmitted(true);
     }
@@ -108,15 +123,20 @@ export default function GoalSubmitReview() {
           </Card>
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <Button
-              variant="contained"
-              size="large"
-              startIcon={<Send size={18} />}
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-            >
-              Submit to Manager
-            </Button>
+            <Tooltip title={canSubmit ? '' : getSubmitBlockMessage()}>
+              <span>
+                <Button
+                  variant="contained"
+                  size="large"
+                  startIcon={<Send size={18} />}
+                  onClick={handleSubmit}
+                  aria-disabled={!canSubmit}
+                  sx={!canSubmit ? { opacity: 0.65 } : undefined}
+                >
+                  Submit to Manager
+                </Button>
+              </span>
+            </Tooltip>
           </Box>
         </>
       )}
