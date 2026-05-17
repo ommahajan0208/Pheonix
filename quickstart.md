@@ -29,7 +29,7 @@ pnpm install
 
 ## Run (frontend + backend)
 ```bash
-npm run dev:full
+npm run dev
 ```
 - Frontend: http://localhost:5173
 - API: http://localhost:4000
@@ -40,7 +40,7 @@ npm run dev:full
 npm run server
 
 # Terminal 2
-npm run dev
+npm run dev:client
 ```
 
 ## Tests
@@ -50,7 +50,7 @@ npm run test:backend
 
 ## Configuration
 - `PORT`: backend listen port (default 4000)
-- `DB_FILE`: SQLite file path (default server/data/phoenix.sqlite)
+- `DB_FILE`: SQLite file path (default server/data/pheonix.sqlite)
 
 ## Notes
 - On first run, the backend seeds demo data into the SQLite database.

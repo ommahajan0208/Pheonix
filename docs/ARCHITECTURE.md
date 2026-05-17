@@ -1,4 +1,4 @@
-# Phoenix Architecture Documentation
+# Pheonix Architecture Documentation
 
 ## Table of Contents
 1. [System Overview](#system-overview)
@@ -16,7 +16,7 @@
 
 ## System Overview
 
-Phoenix is a multi-tier web application designed for managing employee goals, performance tracking, and organizational analytics. The system follows a client-server architecture with a React-based frontend, Node.js backend, and SQLite database.
+Pheonix is a multi-tier web application designed for managing employee goals, performance tracking, and organizational analytics. The system follows a client-server architecture with a React-based frontend, Node.js backend, and SQLite database.
 
 ### Key Characteristics
 - **Scalable**: Modular component-based design
@@ -50,7 +50,7 @@ Phoenix is a multi-tier web application designed for managing employee goals, pe
                │
 ┌──────────────▼──────────────────────────────────────────────┐
 │                  Data Layer (Database)                       │
-│              SQLite (phoenix.sqlite)                         │
+│              SQLite (pheonix.sqlite)                         │
 ├──────────────────────────────────────────────────────────────┤
 │  • Users & Roles       • Goals & Targets                     │
 │  • Check-ins           • Escalations                         │
@@ -153,9 +153,9 @@ server/
 ├── index.js              # Main server entry point
 ├── phase1.test.js        # Test suite for Phase 1
 └── data/                 # Data storage
-    ├── phoenix.sqlite
-    ├── phoenix.sqlite-shm
-    └── phoenix.sqlite-wal
+    ├── pheonix.sqlite
+    ├── pheonix.sqlite-shm
+    └── pheonix.sqlite-wal
 ```
 
 ### Server Components
@@ -231,9 +231,9 @@ server/
 ### Database Technology
 - **Type**: SQLite (Relational)
 - **Files**:
-  - `phoenix.sqlite` - Main database file
-  - `phoenix.sqlite-shm` - Shared memory file (Write-Ahead Logging)
-  - `phoenix.sqlite-wal` - Write-Ahead Logging file
+  - `pheonix.sqlite` - Main database file
+  - `pheonix.sqlite-shm` - Shared memory file (Write-Ahead Logging)
+  - `pheonix.sqlite-wal` - Write-Ahead Logging file
 
 ### Core Tables (Conceptual)
 
@@ -463,8 +463,9 @@ Completed Check-ins → Process Data → Calculate Metrics → Generate Reports 
 ### Development Environment
 ```
 Local Machine
-├── Frontend: npm run dev (Vite dev server)
-├── Backend: npm start (Node.js server)
+├── Full stack: npm run dev (starts API and Vite)
+├── Frontend only: npm run dev:client (Vite dev server)
+├── Backend only: npm run server or npm start (Node.js server)
 └── Database: SQLite (local file)
 ```
 

@@ -1,7 +1,7 @@
-# Phoenix - Goal Management & Performance Tracking System
+# Pheonix - Goal Management & Performance Tracking System
 
 ## Overview
-Phoenix is a comprehensive goal management and performance tracking system designed to manage employee goals, quarterly check-ins, and performance analytics across organizational hierarchies. The system supports goal creation, manager approval workflows, achievement tracking, and detailed governance reporting.
+Pheonix is a comprehensive goal management and performance tracking system designed to manage employee goals, quarterly check-ins, and performance analytics across organizational hierarchies. The system supports goal creation, manager approval workflows, achievement tracking, and detailed governance reporting.
 
 ## Table of Contents
 1. [Phase 1 - Goal Creation & Approval](#phase-1--goal-creation--approval-must-have)
@@ -16,7 +16,7 @@ Phoenix is a comprehensive goal management and performance tracking system desig
 
 ---
 
-## Phase 1 — Goal Creation & Approval (Must-Have)
+## Phase 1 - Goal Creation & Approval (Must-Have)
 
 ### Employee Goal Creation Interface
 - **Thrust Area Selection**: Employees select a relevant Thrust Area for each goal
@@ -48,7 +48,7 @@ Phoenix is a comprehensive goal management and performance tracking system desig
 
 ---
 
-## Phase 2 — Achievement Tracking & Quarterly Check-ins (Must-Have)
+## Phase 2 - Achievement Tracking & Quarterly Check-ins (Must-Have)
 
 ### Achievement Update Interface
 - **Quarterly Actuals Logging**: Employees enter Actual Achievement against Planned Targets each quarter
@@ -82,9 +82,9 @@ The portal enforces the following quarterly windows for achievement capture and 
 | Period | Window Opens | Action |
 |--------|--------------|--------|
 | **Q1 Check-in** | 1st May | Goal Creation, Submission & Approval |
-| **Q2 Check-in** | July | Progress Update — Planned vs. Actual |
-| **Q3 Check-in** | October | Progress Update — Planned vs. Actual |
-| **Q4 / Annual** | January | Progress Update — Planned vs. Actual |
+| **Q2 Check-in** | July | Progress Update -- Planned vs. Actual |
+| **Q3 Check-in** | October | Progress Update -- Planned vs. Actual |
+| **Q4 / Annual** | January | Progress Update -- Planned vs. Actual |
 | **Annual Close** | March / April | Final Achievement Capture |
 
 ---
@@ -234,7 +234,7 @@ Comprehensive breakdown by:
 ## Getting Started
 
 ### User Guide
-For comprehensive guidance on using the Phoenix platform, including step-by-step walkthroughs, best practices, and troubleshooting tips, please refer to the **[📖 User Guide](docs/USER_GUIDE.md)**.
+For comprehensive guidance on using the Pheonix platform, including step-by-step walkthroughs, best practices, and troubleshooting tips, please refer to the **[📖 User Guide](docs/USER_GUIDE.md)**.
 
 The User Guide covers:
 - How to navigate the portal
