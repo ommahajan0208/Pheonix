@@ -14,12 +14,12 @@ export default function OrgHierarchy() {
           type: 'department',
           children: [
             {
-              name: 'Sarah Johnson',
+              name: 'Ananya Iyer',
               type: 'manager',
               children: [
-                { name: 'John Smith', type: 'employee' },
-                { name: 'Jane Doe', type: 'employee' },
-                { name: 'Mike Johnson', type: 'employee' },
+                { name: 'Aarav Sharma', type: 'employee' },
+                { name: 'Meera Nair', type: 'employee' },
+                { name: 'Kabir Singh', type: 'employee' },
               ],
             },
           ],
@@ -29,11 +29,11 @@ export default function OrgHierarchy() {
           type: 'department',
           children: [
             {
-              name: 'Emily Chen',
+              name: 'Diya Verma',
               type: 'manager',
               children: [
-                { name: 'Alex Kim', type: 'employee' },
-                { name: 'Sam Taylor', type: 'employee' },
+                { name: 'Arjun Reddy', type: 'employee' },
+                { name: 'Priya Menon', type: 'employee' },
               ],
             },
           ],
@@ -43,11 +43,11 @@ export default function OrgHierarchy() {
           type: 'department',
           children: [
             {
-              name: 'Robert Davis',
+              name: 'Rohan Desai',
               type: 'manager',
               children: [
-                { name: 'Lisa Wong', type: 'employee' },
-                { name: 'David Lee', type: 'employee' },
+                { name: 'Saanvi Kulkarni', type: 'employee' },
+                { name: 'Sunil Gohel', type: 'employee' },
               ],
             },
           ],

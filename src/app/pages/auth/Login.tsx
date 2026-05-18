@@ -100,13 +100,13 @@ export default function Login() {
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             <Button fullWidth variant="outlined" startIcon={<User size={18} />} onClick={() => handleDemoLogin('employee')} sx={{ textTransform: 'none', justifyContent: 'flex-start', py: 1.2, borderColor: '#2e7d32', color: '#2e7d32', bgcolor: 'rgba(46,125,50,0.04)', '&:hover': { borderColor: '#2e7d32', bgcolor: 'rgba(46,125,50,0.1)' } }}>
-              Login as Employee (John Smith)
+              Login as Employee (Aarav Sharma)
             </Button>
             <Button fullWidth variant="outlined" startIcon={<Users size={18} />} onClick={() => handleDemoLogin('manager')} sx={{ textTransform: 'none', justifyContent: 'flex-start', py: 1.2, borderColor: '#1976d2', color: '#1976d2', bgcolor: 'rgba(25,118,210,0.04)', '&:hover': { borderColor: '#1976d2', bgcolor: 'rgba(25,118,210,0.1)' } }}>
-              Login as Manager (Sarah Johnson)
+              Login as Manager (Ananya Iyer)
             </Button>
             <Button fullWidth variant="outlined" startIcon={<Shield size={18} />} onClick={() => handleDemoLogin('admin')} sx={{ textTransform: 'none', justifyContent: 'flex-start', py: 1.2, borderColor: '#9c27b0', color: '#9c27b0', bgcolor: 'rgba(156,39,176,0.04)', '&:hover': { borderColor: '#9c27b0', bgcolor: 'rgba(156,39,176,0.1)' } }}>
-              Login as Admin (Alex Chen)
+              Login as Admin (Vivaan Patel)
             </Button>
           </Box>
         </SurfaceCard>

@@ -14,8 +14,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const DEMO_USERS: Record<UserRole, User> = {
   employee: {
     id: 'emp-001',
-    name: 'John Smith',
-    email: 'john.smith@company.com',
+    name: 'Aarav Sharma',
+    email: 'aarav.sharma@company.com',
     role: 'employee',
     managerId: 'mgr-001',
     departmentId: 'dept-eng',
@@ -24,8 +24,8 @@ const DEMO_USERS: Record<UserRole, User> = {
   },
   manager: {
     id: 'mgr-001',
-    name: 'Sarah Johnson',
-    email: 'sarah.johnson@company.com',
+    name: 'Ananya Iyer',
+    email: 'ananya.iyer@company.com',
     role: 'manager',
     departmentId: 'dept-eng',
     departmentName: 'Engineering',
@@ -33,8 +33,8 @@ const DEMO_USERS: Record<UserRole, User> = {
   },
   admin: {
     id: 'admin-001',
-    name: 'Alex Chen',
-    email: 'alex.chen@company.com',
+    name: 'Vivaan Patel',
+    email: 'vivaan.patel@company.com',
     role: 'admin',
     title: 'People Operations Admin',
   },

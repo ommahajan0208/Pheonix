@@ -24,9 +24,9 @@ export default function ManagerDashboard() {
   ];
 
   const teamMembers = [
-    { name: 'John Smith', goals: 4, approved: 4, avgProgress: 32 },
-    { name: 'Jane Doe', goals: 5, approved: 5, avgProgress: 48 },
-    { name: 'Mike Johnson', goals: 3, approved: 2, avgProgress: 25 },
+    { name: 'Aarav Sharma', goals: 4, approved: 4, avgProgress: 32 },
+    { name: 'Meera Nair', goals: 5, approved: 5, avgProgress: 48 },
+    { name: 'Kabir Singh', goals: 3, approved: 2, avgProgress: 25 },
   ];
 
   return (
@@ -138,9 +138,9 @@ export default function ManagerDashboard() {
           <SurfaceCard>
             <Box sx={{ fontSize: 'var(--phoenix-text-section)', fontWeight: 700, mb: 2 }}>Recent Activity</Box>
             {[
-              { action: 'John Smith submitted 4 goals', time: '2 hours ago' },
+              { action: 'Aarav Sharma submitted 4 goals', time: '2 hours ago' },
               { action: 'Q2 check-in deadline in 5 days', time: '1 day ago' },
-              { action: 'Jane Doe completed Mobile App MVP', time: '2 days ago' },
+              { action: 'Meera Nair completed Mobile App MVP', time: '2 days ago' },
             ].map((activity, idx) => (
               <Box
                 key={idx}
