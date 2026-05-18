@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { Box, Button, Divider } from '@mui/material';
-import { ArrowRight, Target, User, Users, Shield } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Target, User, Users, Shield } from 'lucide-react';
 import FormInput from '../../components/common/FormInput';
 import SurfaceCard from '../../components/common/SurfaceCard';
 
@@ -72,6 +72,10 @@ export default function Login() {
             boxShadow: 'var(--phoenix-shadow-lg)',
           }}
         >
+          <Button variant="outlined" startIcon={<ArrowLeft size={18} />} onClick={() => navigate('/')} sx={{ mb: 2.5, textTransform: 'none', color: 'var(--phoenix-text-secondary)', borderColor: 'rgba(0,0,0,0.2)', '&:hover': { borderColor: 'rgba(0,0,0,0.35)', bgcolor: 'rgba(0,0,0,0.04)' } }}>
+            Back to Home
+          </Button>
+
           <Box sx={{ textAlign: 'center', mb: 3.5 }}>
             <Box sx={{ display: 'inline-flex', p: 1.7, borderRadius: 3, bgcolor: 'rgba(25,118,210,0.1)', mb: 1.5 }}>
               <Target size={40} color="#1976d2" />
