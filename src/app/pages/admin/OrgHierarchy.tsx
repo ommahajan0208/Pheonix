@@ -1,5 +1,7 @@
-import { Box, Card, CardContent } from '@mui/material';
+import { Box } from '@mui/material';
 import { Building2, Users, User } from 'lucide-react';
+import PageHeader from '../../components/common/PageHeader';
+import SurfaceCard from '../../components/common/SurfaceCard';
 
 export default function OrgHierarchy() {
   const orgStructure = [
@@ -57,55 +59,61 @@ export default function OrgHierarchy() {
   const getIcon = (type: string) => {
     switch (type) {
       case 'company':
-        return <Building2 size={20} color="#9c27b0" />;
+        return <Building2 size={20} color="#1976d2" />;
       case 'department':
         return <Users size={18} color="#1976d2" />;
       case 'manager':
         return <User size={16} color="#2e7d32" />;
       default:
-        return <User size={16} color="#666" />;
+        return <User size={16} color="#64748b" />;
     }
   };
 
   const getColor = (type: string) => {
     switch (type) {
       case 'company':
-        return '#f3e5f5';
+        return 'var(--phoenix-surface-muted)';
       case 'department':
-        return '#e3f2fd';
+        return 'rgba(239, 246, 255, 0.9)';
       case 'manager':
-        return '#e8f5e9';
+        return 'rgba(46, 125, 50, 0.08)';
       default:
-        return '#f5f5f5';
+        return 'var(--phoenix-surface)';
     }
   };
 
-  const renderNode = (node: any, level: number = 0) => (
-    <Box key={node.name} sx={{ ml: level * 4 }}>
+  const renderNode = (node: { name: string; type: string; children?: typeof orgStructure }, level: number = 0) => (
+    <Box key={node.name} sx={{ ml: level * 3 }}>
       <Box
         sx={{
           p: 2,
-          mb: 1,
+          mb: 1.5,
           bgcolor: getColor(node.type),
-          borderRadius: 1,
-          border: '1px solid #e0e0e0',
+          borderRadius: 'var(--phoenix-radius-sm)',
+          border: '1px solid var(--phoenix-border)',
           display: 'inline-flex',
           alignItems: 'center',
           gap: 1.5,
-          minWidth: 200,
+          minWidth: 220,
+          boxShadow: 'var(--phoenix-shadow-sm)',
+          transition: 'transform var(--phoenix-transition), box-shadow var(--phoenix-transition)',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: 'var(--phoenix-shadow-md)',
+          },
         }}
       >
         {getIcon(node.type)}
         <Box>
-          <Box sx={{ fontWeight: 600, fontSize: 14 }}>{node.name}</Box>
-          <Box sx={{ fontSize: 11, color: 'text.secondary', textTransform: 'capitalize' }}>
+          <Box sx={{ fontWeight: 700, fontSize: 14, color: 'var(--phoenix-text-primary)' }}>{node.name}</Box>
+          <Box sx={{ fontSize: 11, color: 'var(--phoenix-text-tertiary)', textTransform: 'capitalize' }}>
             {node.type}
           </Box>
         </Box>
       </Box>
       {node.children && (
-        <Box sx={{ ml: 2, borderLeft: '2px solid #e0e0e0', pl: 2, mt: 1 }}>
-          {node.children.map((child: any) => renderNode(child, level + 1))}
+        <Box sx={{ ml: 2, borderLeft: '2px solid var(--phoenix-highlight)', pl: 2.5, mt: 1 }}>
+          {node.children.map((child) => renderNode(child, level + 1))}
         </Box>
       )}
     </Box>
@@ -113,23 +121,19 @@ export default function OrgHierarchy() {
 
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ fontSize: 24, fontWeight: 700, mb: 0.5 }}>Organization Hierarchy</Box>
-        <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
-          Visual representation of company structure and reporting relationships
-        </Box>
-      </Box>
+      <PageHeader
+        title="Organization Hierarchy"
+        subtitle="Visual representation of company structure and reporting relationships"
+      />
 
-      <Card sx={{ boxShadow: 2 }}>
-        <CardContent>
-          <Box sx={{ fontSize: 18, fontWeight: 600, mb: 3 }}>
-            Company Structure
-          </Box>
-          <Box sx={{ overflowX: 'auto', pb: 2 }}>
-            {orgStructure.map((node) => renderNode(node))}
-          </Box>
-        </CardContent>
-      </Card>
+      <SurfaceCard>
+        <Box sx={{ fontSize: 'var(--phoenix-text-section)', fontWeight: 700, mb: 3, color: 'var(--phoenix-text-primary)' }}>
+          Company Structure
+        </Box>
+        <Box sx={{ overflowX: 'auto', pb: 2 }}>
+          {orgStructure.map((node) => renderNode(node))}
+        </Box>
+      </SurfaceCard>
     </Box>
   );
 }

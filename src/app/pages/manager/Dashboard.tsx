@@ -1,7 +1,10 @@
 import { useData } from '../../context/DataContext';
-import { Box, Grid, Card, CardContent } from '@mui/material';
-import { Users, Target, CheckCircle, TrendingUp, AlertCircle, Clock } from 'lucide-react';
+import { Box, Grid } from '@mui/material';
+import { Users, Target, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import KPICard from '../../components/common/KPICard';
+import DashboardHero from '../../components/common/DashboardHero';
+import ChartWrapper from '../../components/common/ChartWrapper';
+import SurfaceCard from '../../components/common/SurfaceCard';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 export default function ManagerDashboard() {
@@ -11,10 +14,6 @@ export default function ManagerDashboard() {
   const pendingApprovals = teamGoals.filter(g => g.status === 'pending').length;
   const approvedGoals = teamGoals.filter(g => g.status === 'approved').length;
   const atRiskGoals = teamGoals.filter(g => g.progress < 50 && g.status === 'approved').length;
-
-  const avgProgress = teamGoals.length > 0
-    ? Math.round(teamGoals.reduce((sum, g) => sum + g.progress, 0) / teamGoals.length)
-    : 0;
 
   const thrustAreaData = [
     { name: 'Revenue', goals: teamGoals.filter(g => g.thrustArea === 'Revenue').length },
@@ -32,197 +31,130 @@ export default function ManagerDashboard() {
 
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ fontSize: 24, fontWeight: 700, mb: 0.5 }}>Manager Dashboard</Box>
-        <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
-          Overview of your team's performance and goals
-        </Box>
-      </Box>
+      <DashboardHero
+        title="Manager Dashboard"
+        subtitle="Overview of your team's performance and goals"
+        statLabel="Pending Approvals"
+        statValue={`${pendingApprovals}`}
+      />
 
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <KPICard
-            title="Team Members"
-            value={3}
-            icon={Users}
-            color="#1976d2"
-            subtitle="Direct reports"
-          />
+          <KPICard title="Team Members" value={3} icon={Users} color="#1976d2" subtitle="Direct reports" />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <KPICard
-            title="Pending Approvals"
-            value={pendingApprovals}
-            icon={Clock}
-            color="#ed6c02"
-            subtitle="Awaiting review"
-          />
+          <KPICard title="Pending Approvals" value={pendingApprovals} icon={Clock} color="#ed6c02" subtitle="Awaiting review" />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <KPICard
-            title="Approved Goals"
-            value={approvedGoals}
-            icon={CheckCircle}
-            color="#2e7d32"
-            subtitle="This cycle"
-          />
+          <KPICard title="Approved Goals" value={approvedGoals} icon={CheckCircle} color="#2e7d32" subtitle="This cycle" />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <KPICard
-            title="At Risk"
-            value={atRiskGoals}
-            icon={AlertCircle}
-            color="#d32f2f"
-            subtitle="Need attention"
-          />
+          <KPICard title="At Risk" value={atRiskGoals} icon={AlertCircle} color="#d32f2f" subtitle="Need attention" />
         </Grid>
       </Grid>
 
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 7 }}>
-          <Card sx={{ boxShadow: 2, mb: 3 }}>
-            <CardContent>
-              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 3 }}>
-                Goals by Thrust Area
-              </Box>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={thrustAreaData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" angle={-15} textAnchor="end" height={80} />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="goals" fill="#1976d2" name="Total Goals" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <ChartWrapper title="Goals by Thrust Area" sx={{ mb: 3 }}>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={thrustAreaData}>
+                <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" />
+                <XAxis dataKey="name" angle={-15} textAnchor="end" height={80} />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="goals" fill="#1976d2" radius={[8, 8, 0, 0]} name="Total Goals" />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartWrapper>
 
-          <Card sx={{ boxShadow: 2 }}>
-            <CardContent>
-              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
-                Team Performance
-              </Box>
-              <Box>
-                {teamMembers.map((member, idx) => (
-                  <Box
-                    key={idx}
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      p: 2,
-                      mb: 1,
-                      bgcolor: '#f5f5f5',
-                      borderRadius: 1,
-                    }}
-                  >
-                    <Box>
-                      <Box sx={{ fontWeight: 600 }}>{member.name}</Box>
-                      <Box sx={{ fontSize: 12, color: 'text.secondary' }}>
-                        {member.goals} goals / {member.approved} approved
-                      </Box>
-                    </Box>
-                    <Box
-                      sx={{
-                        px: 2,
-                        py: 1,
-                        borderRadius: 1,
-                        bgcolor: member.avgProgress >= 50 ? '#e8f5e9' : '#fff3e0',
-                        color: member.avgProgress >= 50 ? '#2e7d32' : '#ed6c02',
-                        fontWeight: 600,
-                      }}
-                    >
-                      {member.avgProgress}% avg
-                    </Box>
+          <SurfaceCard>
+            <Box sx={{ fontSize: 'var(--phoenix-text-section)', fontWeight: 700, mb: 2, color: 'var(--phoenix-text-primary)' }}>
+              Team Performance
+            </Box>
+            {teamMembers.map((member, idx) => (
+              <Box
+                key={idx}
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  p: 2,
+                  mb: 1,
+                  bgcolor: 'var(--phoenix-surface-muted)',
+                  borderRadius: 2,
+                  border: '1px solid var(--phoenix-border-subtle)',
+                }}
+              >
+                <Box>
+                  <Box sx={{ fontWeight: 600 }}>{member.name}</Box>
+                  <Box sx={{ fontSize: 12, color: 'var(--phoenix-text-secondary)' }}>
+                    {member.goals} goals / {member.approved} approved
                   </Box>
-                ))}
+                </Box>
+                <Box
+                  sx={{
+                    px: 2,
+                    py: 1,
+                    borderRadius: 2,
+                    bgcolor: member.avgProgress >= 50 ? 'rgba(46,125,50,0.12)' : 'rgba(237,108,2,0.12)',
+                    color: member.avgProgress >= 50 ? '#2e7d32' : '#ed6c02',
+                    fontWeight: 700,
+                  }}
+                >
+                  {member.avgProgress}% avg
+                </Box>
               </Box>
-            </CardContent>
-          </Card>
+            ))}
+          </SurfaceCard>
         </Grid>
 
         <Grid size={{ xs: 12, md: 5 }}>
-          <Card sx={{ boxShadow: 2, mb: 3 }}>
-            <CardContent>
-              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
-                Quick Actions
-              </Box>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <SurfaceCard sx={{ mb: 3 }}>
+            <Box sx={{ fontSize: 'var(--phoenix-text-section)', fontWeight: 700, mb: 2 }}>Quick Actions</Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {[
+                ['Review Pending Approvals', `${pendingApprovals} goals waiting for approval`],
+                ['Conduct Check-ins', 'Q2 check-in period active'],
+                ['View Team Analytics', 'Detailed performance reports'],
+              ].map(([title, subtitle]) => (
                 <Box
+                  key={title}
                   sx={{
                     p: 2,
-                    border: '1px solid #e0e0e0',
-                    borderRadius: 1,
+                    border: '1px solid var(--phoenix-border-subtle)',
+                    borderRadius: 2,
                     cursor: 'pointer',
-                    '&:hover': { bgcolor: '#f5f5f5' },
+                    '&:hover': { bgcolor: 'var(--phoenix-surface-muted)', transform: 'translateY(-2px)' },
                   }}
                 >
-                  <Box sx={{ fontWeight: 600, fontSize: 14 }}>Review Pending Approvals</Box>
-                  <Box sx={{ fontSize: 12, color: 'text.secondary' }}>
-                    {pendingApprovals} goals waiting for approval
-                  </Box>
+                  <Box sx={{ fontWeight: 600, fontSize: 14 }}>{title}</Box>
+                  <Box sx={{ fontSize: 12, color: 'var(--phoenix-text-secondary)' }}>{subtitle}</Box>
                 </Box>
-                <Box
-                  sx={{
-                    p: 2,
-                    border: '1px solid #e0e0e0',
-                    borderRadius: 1,
-                    cursor: 'pointer',
-                    '&:hover': { bgcolor: '#f5f5f5' },
-                  }}
-                >
-                  <Box sx={{ fontWeight: 600, fontSize: 14 }}>Conduct Check-ins</Box>
-                  <Box sx={{ fontSize: 12, color: 'text.secondary' }}>
-                    Q2 check-in period active
-                  </Box>
-                </Box>
-                <Box
-                  sx={{
-                    p: 2,
-                    border: '1px solid #e0e0e0',
-                    borderRadius: 1,
-                    cursor: 'pointer',
-                    '&:hover': { bgcolor: '#f5f5f5' },
-                  }}
-                >
-                  <Box sx={{ fontWeight: 600, fontSize: 14 }}>View Team Analytics</Box>
-                  <Box sx={{ fontSize: 12, color: 'text.secondary' }}>
-                    Detailed performance reports
-                  </Box>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
+              ))}
+            </Box>
+          </SurfaceCard>
 
-          <Card sx={{ boxShadow: 2 }}>
-            <CardContent>
-              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
-                Recent Activity
+          <SurfaceCard>
+            <Box sx={{ fontSize: 'var(--phoenix-text-section)', fontWeight: 700, mb: 2 }}>Recent Activity</Box>
+            {[
+              { action: 'John Smith submitted 4 goals', time: '2 hours ago' },
+              { action: 'Q2 check-in deadline in 5 days', time: '1 day ago' },
+              { action: 'Jane Doe completed Mobile App MVP', time: '2 days ago' },
+            ].map((activity, idx) => (
+              <Box
+                key={idx}
+                sx={{
+                  mb: 2,
+                  pb: 2,
+                  borderBottom: idx < 2 ? '1px solid var(--phoenix-border)' : 'none',
+                }}
+              >
+                <Box sx={{ fontSize: 13, mb: 0.5 }}>{activity.action}</Box>
+                <Box sx={{ fontSize: 11, color: 'var(--phoenix-text-tertiary)' }}>{activity.time}</Box>
               </Box>
-              <Box>
-                {[
-                  { action: 'John Smith submitted 4 goals', time: '2 hours ago' },
-                  { action: 'Q2 check-in deadline in 5 days', time: '1 day ago' },
-                  { action: 'Jane Doe completed Mobile App MVP', time: '2 days ago' },
-                ].map((activity, idx) => (
-                  <Box
-                    key={idx}
-                    sx={{
-                      mb: 2,
-                      pb: 2,
-                      borderBottom: idx < 2 ? '1px solid #e0e0e0' : 'none',
-                    }}
-                  >
-                    <Box sx={{ fontSize: 13, mb: 0.5 }}>{activity.action}</Box>
-                    <Box sx={{ fontSize: 11, color: 'text.secondary' }}>
-                      {activity.time}
-                    </Box>
-                  </Box>
-                ))}
-              </Box>
-            </CardContent>
-          </Card>
+            ))}
+          </SurfaceCard>
         </Grid>
       </Grid>
     </Box>

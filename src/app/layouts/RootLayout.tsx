@@ -22,12 +22,12 @@ export default function RootLayout() {
   }
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f4f7fb' }}>
+    <Box sx={{ display: 'flex', height: '100vh', bgcolor: 'var(--phoenix-bg-page)' }}>
       <Sidebar />
       <Box sx={{ flex: 1, display: 'flex', minWidth: 0 }}>
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
           <TopNavbar />
-          <Box sx={{ flex: 1, overflow: 'auto', p: { xs: 2, md: 3 } }}>
+          <Box className="phoenix-page-enter" sx={{ flex: 1, overflow: 'auto', px: { xs: 2.5, md: 4 }, py: { xs: 2.5, md: 3.5 } }}>
             <Outlet />
           </Box>
         </Box>

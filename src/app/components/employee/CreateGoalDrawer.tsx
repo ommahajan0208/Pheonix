@@ -3,7 +3,6 @@ import {
   Drawer,
   Box,
   Button,
-  TextField,
   MenuItem,
   Slider,
   Stepper,
@@ -21,6 +20,7 @@ import { minimumWeightageMessage } from '../../utils/constraintGuidance';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import FormInput from '../common/FormInput';
 
 interface CreateGoalDrawerProps {
   open: boolean;
@@ -94,7 +94,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
 
   return (
     <Drawer anchor="right" open={open} onClose={onClose}>
-      <Box sx={{ width: 500, p: 3 }}>
+      <Box sx={{ width: 520, p: 3.5, bgcolor: 'var(--phoenix-surface)' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box sx={{ fontSize: 20, fontWeight: 700 }}>
             {existingGoal ? 'Edit Goal' : 'Create New Goal'}
@@ -114,7 +114,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
 
         {activeStep === 0 && (
           <Box>
-            <TextField
+            <FormInput
               select
               fullWidth
               id="goal-thrust-area"
@@ -130,9 +130,9 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
                   {area}
                 </MenuItem>
               ))}
-            </TextField>
+            </FormInput>
 
-            <TextField
+            <FormInput
               fullWidth
               id="goal-title"
               name="goalTitle"
@@ -144,7 +144,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
               disabled={isSharedRecipient}
             />
 
-            <TextField
+            <FormInput
               fullWidth
               id="goal-description"
               name="goalDescription"
@@ -184,7 +184,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
               </ToggleButtonGroup>
             </Box>
 
-            <TextField
+            <FormInput
               select
               fullWidth
               id="goal-scoring-direction"
@@ -202,9 +202,9 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
                     {getScoringDirectionLabel(direction)}
                   </MenuItem>
                 ))}
-            </TextField>
+            </FormInput>
 
-            <TextField
+            <FormInput
               fullWidth
               id="goal-target-value"
               name="goalTargetValue"
@@ -246,7 +246,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
               sx={{
                 p: 2,
                 bgcolor: canSave ? '#e8f5e9' : '#ffebee',
-                borderRadius: 1,
+                borderRadius: 2,
                 fontSize: 13,
               }}
             >
@@ -263,7 +263,19 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
                 label="Deadline Date"
                 value={formData.deadlineDate}
                 onChange={(date) => setFormData({ ...formData, deadlineDate: date || undefined })}
-                slotProps={{ textField: { fullWidth: true, id: 'goal-deadline-date', name: 'goalDeadlineDate' } }}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    id: 'goal-deadline-date',
+                    name: 'goalDeadlineDate',
+                    sx: {
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '12px',
+                        backgroundColor: '#f8fbff',
+                      },
+                    },
+                  },
+                }}
               />
             </LocalizationProvider>
 
@@ -275,7 +287,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
               </Alert>
             )}
 
-            <Box sx={{ mt: 4, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+            <Box sx={{ mt: 4, p: 2.5, bgcolor: '#f8fbff', border: '1px solid var(--phoenix-border)', borderRadius: 2 }}>
               <Box sx={{ fontSize: 14, fontWeight: 600, mb: 2 }}>Goal Summary</Box>
               <Box sx={{ fontSize: 13, mb: 1 }}>
                 <strong>Title:</strong> {formData.title || 'Not set'}
@@ -294,7 +306,7 @@ export default function CreateGoalDrawer({ open, onClose, onSave, existingGoal, 
               </Box>
             </Box>
 
-            <Box sx={{ mt: 3, p: 1.5, bgcolor: '#e3f2fd', borderRadius: 1, fontSize: 12, color: '#1976d2' }}>
+            <Box sx={{ mt: 3, p: 1.5, bgcolor: 'rgba(25,118,210,0.1)', border: '1px solid rgba(25,118,210,0.24)', borderRadius: 2, fontSize: 12, color: '#1976d2' }}>
               Auto-save enabled. Draft changes are captured in this prototype while the drawer is open.
             </Box>
           </Box>

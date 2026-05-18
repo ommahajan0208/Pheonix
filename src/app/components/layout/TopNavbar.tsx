@@ -17,6 +17,8 @@ import {
   Divider,
 } from '@mui/material';
 import { Search, Bell, LogOut, UserCircle, RefreshCw } from 'lucide-react';
+import BadgePill from '../common/Badge';
+import FormInput from '../common/FormInput';
 
 export default function TopNavbar() {
   const navigate = useNavigate();
@@ -57,14 +59,22 @@ export default function TopNavbar() {
   };
 
   return (
-    <AppBar position="static" sx={{ bgcolor: 'white', boxShadow: 1 }}>
-      <Toolbar sx={{ gap: 2 }}>
-        <TextField
+    <AppBar
+      position="static"
+      sx={{
+        bgcolor: 'rgba(255,255,255,0.8)',
+        backdropFilter: 'blur(10px)',
+        boxShadow: '0 10px 24px rgba(15,23,42,0.08)',
+        borderBottom: '1px solid var(--phoenix-border)',
+      }}
+    >
+      <Toolbar sx={{ gap: 2, py: 0.75 }}>
+        <FormInput
           id="global-search"
           name="globalSearch"
           size="small"
           placeholder="Search goals, employees..."
-          sx={{ width: 350 }}
+          sx={{ width: 350, '& .MuiOutlinedInput-root': { bgcolor: 'rgba(248,250,252,0.88)' } }}
           slotProps={{
             input: {
               startAdornment: (
@@ -79,15 +89,9 @@ export default function TopNavbar() {
         <Box sx={{ flex: 1 }} />
 
         {activeCycle && (
-          <Chip
+          <BadgePill
             label={activeCycle.name}
-            size="small"
-            sx={{
-              bgcolor: '#e3f2fd',
-              color: '#1976d2',
-              fontWeight: 600,
-              border: '1px solid #1976d2',
-            }}
+            tone="blue"
           />
         )}
 
@@ -98,7 +102,7 @@ export default function TopNavbar() {
         </IconButton>
 
         <IconButton onClick={handleProfileClick} size="small">
-          <Avatar sx={{ width: 36, height: 36, bgcolor: '#1976d2' }}>
+          <Avatar sx={{ width: 36, height: 36, bgcolor: 'var(--phoenix-accent)' }}>
             {user?.name.charAt(0)}
           </Avatar>
         </IconButton>

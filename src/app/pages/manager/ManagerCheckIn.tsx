@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   Grid,
-  TextField,
   MenuItem,
   Button,
   Divider,
@@ -23,6 +22,7 @@ import {
 import { Save, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import PageHeader from '../../components/common/PageHeader';
+import FormInput from '../../components/common/FormInput';
 import { CheckIn, CheckInStatus, Quarter } from '../../types';
 import { getScoringDirectionLabel } from '../../utils/progressScore';
 import { getActiveCycle, getPhaseForQuarter, getWindowMessage, isPhaseOpen } from '../../utils/cycleSchedule';
@@ -143,7 +143,7 @@ export default function ManagerCheckIn() {
               </Box>
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, md: 8 }}>
-                  <TextField
+                  <FormInput
                     select
                     fullWidth
                     id="manager-checkin-employee"
@@ -160,10 +160,10 @@ export default function ManagerCheckIn() {
                         {emp.name} - {emp.title}
                       </MenuItem>
                     ))}
-                  </TextField>
+                  </FormInput>
                 </Grid>
                 <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField
+                  <FormInput
                     select
                     fullWidth
                     id="manager-checkin-quarter"
@@ -176,7 +176,7 @@ export default function ManagerCheckIn() {
                     }}
                   >
                     {QUARTERS.map(quarter => <MenuItem key={quarter} value={quarter}>{quarter}</MenuItem>)}
-                  </TextField>
+                  </FormInput>
                 </Grid>
               </Grid>
             </CardContent>
@@ -263,7 +263,7 @@ export default function ManagerCheckIn() {
                 </Alert>
               )}
 
-              <TextField
+              <FormInput
                 fullWidth
                 id="manager-discussion-summary"
                 name="managerDiscussionSummary"
@@ -277,7 +277,7 @@ export default function ManagerCheckIn() {
                 helperText={!checkInOpen ? closedWindowMessage : undefined}
               />
 
-              <TextField
+              <FormInput
                 fullWidth
                 id="manager-blockers-support-needed"
                 name="managerBlockersSupportNeeded"
@@ -291,7 +291,7 @@ export default function ManagerCheckIn() {
                 helperText={!checkInOpen ? closedWindowMessage : undefined}
               />
 
-              <TextField
+              <FormInput
                 fullWidth
                 id="manager-next-actions"
                 name="managerNextActions"

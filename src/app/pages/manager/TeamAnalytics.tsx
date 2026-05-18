@@ -1,7 +1,10 @@
 import { useData } from '../../context/DataContext';
-import { Box, Card, CardContent, Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { TrendingUp, Target, CheckCircle, AlertCircle } from 'lucide-react';
 import KPICard from '../../components/common/KPICard';
+import DashboardHero from '../../components/common/DashboardHero';
+import ChartWrapper from '../../components/common/ChartWrapper';
+import SurfaceCard from '../../components/common/SurfaceCard';
 import {
   BarChart,
   Bar,
@@ -56,12 +59,12 @@ export default function TeamAnalytics() {
 
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ fontSize: 24, fontWeight: 700, mb: 0.5 }}>Team Analytics</Box>
-        <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
-          Comprehensive performance insights and trends
-        </Box>
-      </Box>
+      <DashboardHero
+        title="Team Analytics"
+        subtitle="Comprehensive performance insights and trends"
+        statLabel="Avg Progress"
+        statValue={`${avgProgress}%`}
+      />
 
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -104,34 +107,25 @@ export default function TeamAnalytics() {
 
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 6 }}>
-          <Card sx={{ boxShadow: 2 }}>
-            <CardContent>
-              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 3 }}>
-                Progress by Team Member
-              </Box>
+          <ChartWrapper title="Progress by Team Member">
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={progressByEmployee}>
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" />
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="progress" fill="#9c27b0" name="Avg Progress %" />
+                  <Bar dataKey="progress" fill="#1976d2" radius={[8, 8, 0, 0]} name="Avg Progress %" />
                 </BarChart>
               </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          </ChartWrapper>
         </Grid>
 
         <Grid size={{ xs: 12, md: 6 }}>
-          <Card sx={{ boxShadow: 2 }}>
-            <CardContent>
-              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 3 }}>
-                Quarter-on-Quarter Achievement
-              </Box>
+          <ChartWrapper title="Quarter-on-Quarter Achievement">
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={qoqTrends}>
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" />
                   <XAxis dataKey="quarter" />
                   <YAxis />
                   <Tooltip />
@@ -153,33 +147,26 @@ export default function TeamAnalytics() {
                   <Line type="monotone" dataKey="department" stroke="#ed6c02" strokeWidth={2} name="Department Achievement %" />
                 </LineChart>
               </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          </ChartWrapper>
         </Grid>
 
         <Grid size={{ xs: 12, md: 6 }}>
-          <Card sx={{ boxShadow: 2 }}>
-            <CardContent>
-              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 3 }}>
-                Performance by Thrust Area
-              </Box>
+          <ChartWrapper title="Performance by Thrust Area">
               <ResponsiveContainer width="100%" height={350}>
                 <RadarChart data={thrustAreaData}>
                   <PolarGrid />
                   <PolarAngleAxis dataKey="thrust" />
                   <PolarRadiusAxis />
-                  <Radar name="Performance" dataKey="value" stroke="#9c27b0" fill="#9c27b0" fillOpacity={0.45} />
+                  <Radar name="Performance" dataKey="value" stroke="#1976d2" fill="#6fb2ff" fillOpacity={0.45} />
                   <Legend />
                 </RadarChart>
               </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          </ChartWrapper>
         </Grid>
 
         <Grid size={{ xs: 12, md: 6 }}>
-          <Card sx={{ boxShadow: 2 }}>
-            <CardContent>
-              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
+          <SurfaceCard>
+              <Box sx={{ fontSize: 'var(--phoenix-text-section)', fontWeight: 700, mb: 2 }}>
                 Completion Heatmap
               </Box>
               <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 1 }}>
@@ -199,24 +186,19 @@ export default function TeamAnalytics() {
                   })
                 )}
               </Box>
-              <Box sx={{ mt: 2, p: 2, bgcolor: '#f3e5f5', borderRadius: 1 }}>
-                <Box sx={{ fontSize: 14, fontWeight: 700, color: '#9c27b0', mb: 0.5 }}>
+              <Box sx={{ mt: 2, p: 2, bgcolor: 'var(--phoenix-surface-muted)', borderRadius: 2, border: '1px solid var(--phoenix-border-subtle)' }}>
+                <Box sx={{ fontSize: 14, fontWeight: 700, color: 'var(--phoenix-accent)', mb: 0.5 }}>
                   Analytics Insight
                 </Box>
                 <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
                   {atRisk} approved goal{atRisk !== 1 ? 's need' : ' needs'} intervention; Q1 employee completion is {qoqTrends[0]?.checkInCompletion || 0}%.
                 </Box>
               </Box>
-            </CardContent>
-          </Card>
+          </SurfaceCard>
         </Grid>
 
         <Grid size={{ xs: 12, md: 6 }}>
-          <Card sx={{ boxShadow: 2 }}>
-            <CardContent>
-              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 3 }}>
-                Goal Distribution
-              </Box>
+          <ChartWrapper title="Goal Distribution">
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, md: 6 }}>
                   <ResponsiveContainer width="100%" height={220}>
@@ -232,38 +214,32 @@ export default function TeamAnalytics() {
                 <Grid size={{ xs: 12, md: 6 }}>
                   <ResponsiveContainer width="100%" height={220}>
                     <BarChart data={distribution.statuses}>
-                      <CartesianGrid strokeDasharray="3 3" />
+                      <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" />
                       <XAxis dataKey="name" />
                       <YAxis />
                       <Tooltip />
-                      <Bar dataKey="value" fill="#1976d2" name="Goals" />
+                      <Bar dataKey="value" fill="#1976d2" radius={[8, 8, 0, 0]} name="Goals" />
                     </BarChart>
                   </ResponsiveContainer>
                 </Grid>
               </Grid>
-            </CardContent>
-          </Card>
+          </ChartWrapper>
         </Grid>
 
         <Grid size={{ xs: 12, md: 6 }}>
-          <Card sx={{ boxShadow: 2 }}>
-            <CardContent>
-              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 3 }}>
-                Manager Effectiveness
-              </Box>
+          <ChartWrapper title="Manager Effectiveness">
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={managerEffectiveness}>
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" />
                   <XAxis dataKey="manager" />
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="employeeCompletion" fill="#2e7d32" name="Employee Check-ins %" />
-                  <Bar dataKey="managerCompletion" fill="#ed6c02" name="Manager Comments %" />
+                  <Bar dataKey="employeeCompletion" fill="#2e7d32" radius={[8, 8, 0, 0]} name="Employee Check-ins %" />
+                  <Bar dataKey="managerCompletion" fill="#6fb2ff" radius={[8, 8, 0, 0]} name="Manager Comments %" />
                 </BarChart>
               </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          </ChartWrapper>
         </Grid>
       </Grid>
     </Box>

@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router';
-import { ReactNode } from 'react';
-import { Box, Button, Chip, Divider } from '@mui/material';
+import { ReactNode, useState } from 'react';
+import { Box, Button, Divider, Tab, Tabs } from '@mui/material';
 import { AlertCircle, Bell, CalendarClock, CheckCircle2, Clock, TrendingUp } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import Badge from '../common/Badge';
 
 const toneColor = {
   info: '#1976d2',
@@ -14,6 +15,7 @@ const toneColor = {
 };
 
 export default function ContextPanel() {
+  const [activeTab, setActiveTab] = useState(0);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { goals, notifications, activities, escalations } = useData();
@@ -43,8 +45,8 @@ export default function ContextPanel() {
     <Box
       sx={{
         width: 320,
-        borderLeft: '1px solid #dfe5ee',
-        bgcolor: '#fbfcfe',
+        borderLeft: '1px solid var(--phoenix-border)',
+        bgcolor: 'var(--phoenix-bg-page)',
         display: { xs: 'none', md: 'flex' },
         flexDirection: 'column',
         overflow: 'auto',
@@ -52,11 +54,20 @@ export default function ContextPanel() {
     >
       <Box sx={{ p: 2.5 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Box sx={{ fontSize: 15, fontWeight: 800 }}>Context</Box>
-          <Chip label={`${unread.length} new`} size="small" color={unread.length ? 'error' : 'default'} />
+          <Box sx={{ fontSize: 15, fontWeight: 800, color: 'var(--phoenix-text-primary)' }}>Activity Center</Box>
+          <Badge label={`${unread.length} new`} tone={unread.length ? 'red' : 'neutral'} />
         </Box>
+        <Tabs
+          value={activeTab}
+          onChange={(_, nextTab) => setActiveTab(nextTab)}
+          sx={{ mb: 2, minHeight: 36, '& .MuiTab-root': { minHeight: 36, textTransform: 'none', fontWeight: 600 } }}
+        >
+          <Tab label="Overview" />
+          <Tab label="Actions" />
+          <Tab label="Alerts" />
+        </Tabs>
 
-        <PanelSection title="Pending Actions" icon={<CheckCircle2 size={16} color="#1976d2" />}>
+        {(activeTab === 0 || activeTab === 1) && <PanelSection title="Pending Actions" icon={<CheckCircle2 size={16} color="#1976d2" />}>
           {pendingActions.map((action) => (
             <Button
               key={action.id}
@@ -64,14 +75,14 @@ export default function ContextPanel() {
               variant="outlined"
               size="small"
               onClick={() => navigate(action.path)}
-              sx={{ justifyContent: 'flex-start', textTransform: 'none', mb: 1, borderColor: '#d8e2ef' }}
+              sx={{ justifyContent: 'flex-start', textTransform: 'none', mb: 1, borderColor: '#d8e2ef', borderRadius: 2 }}
             >
               {action.label}
             </Button>
           ))}
-        </PanelSection>
+        </PanelSection>}
 
-        <PanelSection title="Deadlines" icon={<CalendarClock size={16} color="#ed6c02" />}>
+        {activeTab === 0 && <PanelSection title="Deadlines" icon={<CalendarClock size={16} color="#ed6c02" />}>
           {deadlines.map(goal => (
             <Box key={goal.id} sx={{ mb: 1.5 }}>
               <Box sx={{ fontSize: 13, fontWeight: 700 }}>{goal.title}</Box>
@@ -80,9 +91,9 @@ export default function ContextPanel() {
               </Box>
             </Box>
           ))}
-        </PanelSection>
+        </PanelSection>}
 
-        <PanelSection title="Activity Feed" icon={<TrendingUp size={16} color="#9c27b0" />}>
+        {(activeTab === 0 || activeTab === 2) && <PanelSection title="Activity Feed" icon={<TrendingUp size={16} color="#9c27b0" />}>
           {activities.slice(0, 4).map(item => (
             <Box key={item.id} sx={{ display: 'flex', gap: 1.2, mb: 1.75 }}>
               <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: toneColor[item.tone], mt: 0.7, flexShrink: 0 }} />
@@ -92,14 +103,14 @@ export default function ContextPanel() {
               </Box>
             </Box>
           ))}
-        </PanelSection>
+        </PanelSection>}
 
-        <PanelSection title="Notifications" icon={<Bell size={16} color="#d32f2f" />}>
+        {(activeTab === 0 || activeTab === 2) && <PanelSection title="Notifications" icon={<Bell size={16} color="#d32f2f" />}>
           {unread.length === 0 ? (
             <Box sx={{ fontSize: 13, color: 'text.secondary' }}>No unread notifications.</Box>
           ) : (
             unread.slice(0, 3).map(notif => (
-              <Box key={notif.id} sx={{ p: 1.25, mb: 1, borderRadius: 1, bgcolor: '#fff', border: '1px solid #e5eaf2' }}>
+              <Box key={notif.id} sx={{ p: 1.25, mb: 1, borderRadius: 1.5, bgcolor: 'var(--phoenix-surface)', border: '1px solid var(--phoenix-border)' }}>
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                   {notif.type === 'deadline' ? <Clock size={14} color="#ed6c02" /> : <AlertCircle size={14} color="#1976d2" />}
                   <Box sx={{ fontSize: 13, fontWeight: 700 }}>{notif.title}</Box>
@@ -108,7 +119,7 @@ export default function ContextPanel() {
               </Box>
             ))
           )}
-        </PanelSection>
+        </PanelSection>}
       </Box>
     </Box>
   );
@@ -119,7 +130,7 @@ function PanelSection({ title, icon, children }: { title: string; icon: ReactNod
     <Box sx={{ mb: 2.5 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.25 }}>
         {icon}
-        <Box sx={{ fontSize: 13, fontWeight: 800, textTransform: 'uppercase', color: '#536276' }}>{title}</Box>
+        <Box sx={{ fontSize: 13, fontWeight: 800, textTransform: 'uppercase', color: 'var(--phoenix-text-tertiary)' }}>{title}</Box>
       </Box>
       {children}
       <Divider sx={{ mt: 2 }} />

@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
-import { Box, List, ListItemButton, ListItemIcon, ListItemText, Chip, Divider } from '@mui/material';
+import { Box, List, ListItemButton, ListItemIcon, ListItemText, Divider } from '@mui/material';
 import {
   LayoutDashboard,
   Target,
@@ -15,6 +15,7 @@ import {
   Bell,
   Share2,
 } from 'lucide-react';
+import Badge from '../common/Badge';
 
 const EMPLOYEE_NAV = [
   { path: '/dashboard/employee/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -53,19 +54,19 @@ export default function Sidebar() {
   return (
     <Box sx={{
       width: 260,
-      bgcolor: '#10233f',
+      background: 'linear-gradient(180deg, var(--phoenix-hero-start) 0%, var(--phoenix-hero-end) 100%)',
       color: 'white',
       display: 'flex',
       flexDirection: 'column',
-      boxShadow: 3,
+      boxShadow: 'var(--phoenix-shadow-lg)',
     }}>
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <Target size={32} style={{ marginBottom: 8 }} />
         <Box sx={{ fontSize: 20, fontWeight: 800, letterSpacing: 0 }}>Pheonix</Box>
-        <Box sx={{ fontSize: 12, color: '#b8c5d8', mt: 0.5 }}>Goal Setting Portal</Box>
+        <Box sx={{ fontSize: 12, color: 'rgba(232,238,251,0.7)', mt: 0.5 }}>Goal Setting Portal</Box>
       </Box>
 
-      <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)' }} />
+      <Divider sx={{ borderColor: 'rgba(226,232,240,0.14)' }} />
 
       <List sx={{ flex: 1, py: 2 }}>
         {navItems.map((item) => {
@@ -79,12 +80,13 @@ export default function Sidebar() {
               sx={{
                 mx: 1,
                 mb: 0.5,
-                borderRadius: 1,
-                color: isActive ? '#fff' : '#b0b0b0',
-                bgcolor: isActive ? '#1976d2' : 'transparent',
-                borderLeft: isActive ? '3px solid #7dd3fc' : '3px solid transparent',
+                borderRadius: 2,
+                color: isActive ? '#fff' : 'rgba(232,238,251,0.8)',
+                bgcolor: isActive ? 'rgba(111,178,255,0.18)' : 'transparent',
+                border: isActive ? '1px solid rgba(111,178,255,0.42)' : '1px solid transparent',
+                backdropFilter: isActive ? 'blur(8px)' : 'none',
                 '&:hover': {
-                  bgcolor: isActive ? '#1565c0' : 'rgba(255,255,255,0.08)',
+                  bgcolor: isActive ? 'rgba(111,178,255,0.24)' : 'rgba(255,255,255,0.08)',
                   color: '#fff',
                 },
               }}
@@ -95,7 +97,7 @@ export default function Sidebar() {
               <ListItemText
                 primary={item.label}
                 primaryTypographyProps={{
-                  fontSize: 14,
+                  fontSize: 14.5,
                   fontWeight: isActive ? 600 : 400,
                 }}
               />
@@ -107,17 +109,15 @@ export default function Sidebar() {
       <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)' }} />
 
       <Box sx={{ p: 2 }}>
-        <Chip
+        <Badge
           label={user?.role.toUpperCase()}
-          size="small"
+          tone={user?.role === 'admin' ? 'violet' : user?.role === 'manager' ? 'blue' : 'green'}
           sx={{
             width: '100%',
-            bgcolor: user?.role === 'admin' ? '#9c27b0' : user?.role === 'manager' ? '#1976d2' : '#2e7d32',
-            color: 'white',
             fontWeight: 600,
           }}
         />
-        <Box sx={{ mt: 1.5, fontSize: 13, color: '#b0b0b0', textAlign: 'center' }}>
+        <Box sx={{ mt: 1.5, fontSize: 13, color: 'rgba(232,238,251,0.8)', textAlign: 'center' }}>
           {user?.name}
         </Box>
       </Box>

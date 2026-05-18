@@ -1,0 +1,42 @@
+:root {
+  --phoenix-bg-page: #f8fafc;
+  --phoenix-surface: #ffffff;
+  --phoenix-surface-muted: #eff6ff;
+  --phoenix-border: #e2e8f0;
+  --phoenix-border-subtle: rgba(15, 23, 42, 0.04);
+  --phoenix-text-primary: #0f172a;
+  --phoenix-text-secondary: #475569;
+  --phoenix-text-tertiary: #64748b;
+  --phoenix-accent: #1976d2;
+  --phoenix-accent-hover: #1565c0;
+  --phoenix-highlight: #6fb2ff;
+  --phoenix-hero-start: #0f172a;
+  --phoenix-hero-end: #1c2f53;
+  --phoenix-shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.05);
+  --phoenix-shadow-md: 0 12px 30px rgba(15, 23, 42, 0.08);
+  --phoenix-shadow-lg: 0 24px 50px rgba(15, 23, 42, 0.12);
+  --phoenix-shadow-glow: 0 0 0 1px rgba(111, 178, 255, 0.2), 0 10px 24px rgba(25, 118, 210, 0.12);
+  --phoenix-radius-sm: 10px;
+  --phoenix-radius-md: 14px;
+  --phoenix-radius-lg: 18px;
+  --phoenix-space-page: 32px;
+  --phoenix-space-card: 28px;
+  --phoenix-transition: 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --phoenix-text-title: 2.25rem;
+  --phoenix-text-section: 1.375rem;
+  --phoenix-text-metric: 3rem;
+  --phoenix-line-height: 1.6;
+  --phoenix-escalation-start: #7f1d1d;
+  --phoenix-escalation-end: #c2410c;
+}
+
+@keyframes phoenix-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

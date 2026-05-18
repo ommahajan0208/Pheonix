@@ -1,11 +1,12 @@
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { Box, Grid, Card, CardContent, Alert, Chip, LinearProgress } from '@mui/material';
+import { Box, Grid, Alert, Chip, LinearProgress } from '@mui/material';
+import SurfaceCard from '../../components/common/SurfaceCard';
+import DashboardHero from '../../components/common/DashboardHero';
 import { Target, CheckCircle, Clock, TrendingUp, AlertCircle } from 'lucide-react';
 import KPICard from '../../components/common/KPICard';
 import GoalCard from '../../components/common/GoalCard';
 import DonutRing from '../../components/common/DonutRing';
-import PageHeader from '../../components/common/PageHeader';
 
 export default function EmployeeDashboard() {
   const { user } = useAuth();
@@ -34,10 +35,11 @@ export default function EmployeeDashboard() {
 
   return (
     <Box>
-      <PageHeader
+      <DashboardHero
         title={`Welcome back, ${user?.name}`}
         subtitle="Track goal creation, approvals, progress, deadlines, and manager feedback."
-        chip={user?.departmentName || 'Engineering'}
+        statLabel="Avg Completion"
+        statValue={`${avgCompletion}%`}
       />
 
       {unreadNotifs.length > 0 && (
@@ -93,9 +95,8 @@ export default function EmployeeDashboard() {
 
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 8 }}>
-          <Card sx={{ boxShadow: 2, mb: 3 }}>
-            <CardContent>
-              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
+          <SurfaceCard sx={{ mb: 3 }}>
+              <Box sx={{ fontSize: 'var(--phoenix-text-section)', fontWeight: 700, mb: 2, color: 'var(--phoenix-text-primary)' }}>
                 My Goals
               </Box>
               {userGoals.length === 0 ? (
@@ -107,14 +108,12 @@ export default function EmployeeDashboard() {
                   <GoalCard key={goal.id} goal={goal} showActions={false} />
                 ))
               )}
-            </CardContent>
-          </Card>
+          </SurfaceCard>
         </Grid>
 
         <Grid size={{ xs: 12, md: 4 }}>
-          <Card sx={{ boxShadow: 2, mb: 3 }}>
-            <CardContent>
-              <Box sx={{ fontSize: 18, fontWeight: 700, mb: 2 }}>Progress Snapshot</Box>
+          <SurfaceCard sx={{ mb: 3 }}>
+              <Box sx={{ fontSize: 'var(--phoenix-text-section)', fontWeight: 700, mb: 2 }}>Progress Snapshot</Box>
               <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                 <DonutRing value={avgCompletion} label="Completion" color="#1976d2" />
               </Box>
@@ -132,12 +131,10 @@ export default function EmployeeDashboard() {
                   '& .MuiLinearProgress-bar': { bgcolor: totalWeightage === 100 ? '#2e7d32' : '#ed6c02' },
                 }}
               />
-            </CardContent>
-          </Card>
+          </SurfaceCard>
 
-          <Card sx={{ boxShadow: 2, mb: 3 }}>
-            <CardContent>
-              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
+          <SurfaceCard sx={{ mb: 3 }}>
+              <Box sx={{ fontSize: 'var(--phoenix-text-section)', fontWeight: 700, mb: 2 }}>
                 Upcoming Deadlines
               </Box>
               {upcomingDeadlines.length === 0 ? (
@@ -146,7 +143,7 @@ export default function EmployeeDashboard() {
                 </Box>
               ) : (
                 upcomingDeadlines.map(goal => (
-                  <Box key={goal.id} sx={{ mb: 2, pb: 2, borderBottom: '1px solid #e0e0e0', '&:last-child': { border: 0 } }}>
+                  <Box key={goal.id} sx={{ mb: 2, pb: 2, borderBottom: '1px solid var(--phoenix-border)', '&:last-child': { border: 0 } }}>
                     <Box sx={{ fontSize: 14, fontWeight: 600, mb: 0.5 }}>
                       {goal.title}
                     </Box>
@@ -156,16 +153,14 @@ export default function EmployeeDashboard() {
                   </Box>
                 ))
               )}
-            </CardContent>
-          </Card>
+          </SurfaceCard>
 
-          <Card sx={{ boxShadow: 2 }}>
-            <CardContent>
-              <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
+          <SurfaceCard>
+              <Box sx={{ fontSize: 'var(--phoenix-text-section)', fontWeight: 700, mb: 2 }}>
                 Activity Feed
               </Box>
               {recentActivity.map((activity, idx) => (
-                <Box key={idx} sx={{ mb: 2, pb: 2, borderBottom: '1px solid #e0e0e0', '&:last-child': { border: 0 } }}>
+                <Box key={idx} sx={{ mb: 2, pb: 2, borderBottom: '1px solid var(--phoenix-border)', '&:last-child': { border: 0 } }}>
                   <Box sx={{ fontSize: 13, mb: 0.5 }}>
                     {activity.action}
                   </Box>
@@ -174,8 +169,7 @@ export default function EmployeeDashboard() {
                   </Box>
                 </Box>
               ))}
-            </CardContent>
-          </Card>
+          </SurfaceCard>
         </Grid>
       </Grid>
     </Box>

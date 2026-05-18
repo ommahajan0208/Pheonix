@@ -11,10 +11,8 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
-  TextField,
   MenuItem,
   Button,
   Grid,
@@ -26,6 +24,9 @@ import { Save, Upload, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
 import PageHeader from '../../components/common/PageHeader';
+import FormInput from '../../components/common/FormInput';
+import ModernTable from '../../components/common/ModernTable';
+import SurfaceCard from '../../components/common/SurfaceCard';
 import { CheckInStatus, Goal, Quarter } from '../../types';
 import { getScoringDirectionLabel } from '../../utils/progressScore';
 import { getActiveCycle, getPhaseForQuarter, getWindowMessage, isPhaseOpen } from '../../utils/cycleSchedule';
@@ -177,7 +178,7 @@ export default function QuarterlyCheckIn() {
               <Box sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>
                 {selectedQuarter} Achievement Tracking
               </Box>
-              <TableContainer>
+              <ModernTable>
                 <Table>
                   <TableHead>
                     <TableRow>
@@ -211,7 +212,7 @@ export default function QuarterlyCheckIn() {
                             )}
                           </TableCell>
                           <TableCell>
-                            <TextField
+                            <FormInput
                               id={`checkin-planned-${goal.id}`}
                               name={`checkinPlanned-${goal.id}`}
                               type="number"
@@ -223,7 +224,7 @@ export default function QuarterlyCheckIn() {
                             />
                           </TableCell>
                           <TableCell>
-                            <TextField
+                            <FormInput
                               id={`checkin-actual-${goal.id}`}
                               name={`checkinActual-${goal.id}`}
                               type="number"
@@ -235,7 +236,7 @@ export default function QuarterlyCheckIn() {
                             />
                           </TableCell>
                           <TableCell>
-                            <TextField
+                            <FormInput
                               id={`checkin-achievement-date-${goal.id}`}
                               name={`checkinAchievementDate-${goal.id}`}
                               type="date"
@@ -255,7 +256,7 @@ export default function QuarterlyCheckIn() {
                             />
                           </TableCell>
                           <TableCell>
-                            <TextField
+                            <FormInput
                               select
                               id={`checkin-status-${goal.id}`}
                               name={`checkinStatus-${goal.id}`}
@@ -268,10 +269,10 @@ export default function QuarterlyCheckIn() {
                               {STATUS_OPTIONS.map(option => (
                                 <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
                               ))}
-                            </TextField>
+                            </FormInput>
                           </TableCell>
                           <TableCell>
-                            <TextField
+                            <FormInput
                               id={`checkin-comments-${goal.id}`}
                               name={`checkinComments-${goal.id}`}
                               size="small"
@@ -305,7 +306,7 @@ export default function QuarterlyCheckIn() {
                     })}
                   </TableBody>
                 </Table>
-              </TableContainer>
+              </ModernTable>
 
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3 }}>
                 <Tooltip title={checkInOpen ? '' : closedWindowMessage}>

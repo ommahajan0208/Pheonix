@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { useData } from '../../context/DataContext';
 import {
   Box,
-  Card,
-  CardContent,
   Grid,
   Button,
   Switch,
@@ -15,6 +13,9 @@ import {
   DialogContentText,
   DialogTitle,
 } from '@mui/material';
+import PageHeader from '../../components/common/PageHeader';
+import SurfaceCard from '../../components/common/SurfaceCard';
+import PremiumCard from '../../components/common/PremiumCard';
 import { Plus, Lock, Unlock } from 'lucide-react';
 import { toast } from 'sonner';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -105,20 +106,17 @@ export default function CycleManagement() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Box sx={{ fontSize: 24, fontWeight: 700, mb: 0.5 }}>Cycle Management</Box>
-          <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
-            Configure performance review cycles and phases
-          </Box>
-        </Box>
-        <Button variant="contained" startIcon={<Plus size={18} />}>
-          Create New Cycle
-        </Button>
-      </Box>
+      <PageHeader
+        title="Cycle Management"
+        subtitle="Configure performance review cycles and phases"
+        action={
+          <Button variant="contained" startIcon={<Plus size={18} />}>
+            Create New Cycle
+          </Button>
+        }
+      />
 
-      <Card sx={{ boxShadow: 2, mb: 3 }}>
-        <CardContent>
+      <SurfaceCard sx={{ mb: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Box>
               <Box sx={{ fontSize: 20, fontWeight: 600, mb: 0.5 }}>
@@ -185,8 +183,7 @@ export default function CycleManagement() {
               })}
             </Box>
           </Box>
-        </CardContent>
-      </Card>
+      </SurfaceCard>
 
       <Grid container spacing={3}>
         {phases.map((phase) => {
@@ -196,8 +193,7 @@ export default function CycleManagement() {
           const validationMessage = getValidationMessage(phase);
           return (
             <Grid size={{ xs: 12, md: 6 }} key={phase}>
-              <Card sx={{ boxShadow: 2 }}>
-                <CardContent>
+              <PremiumCard>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Box>
                       <Box sx={{ fontSize: 16, fontWeight: 600 }}>
@@ -264,11 +260,10 @@ export default function CycleManagement() {
                     </Alert>
                   )}
 
-                  <Box sx={{ mt: 2, p: 1.5, bgcolor: '#f5f5f5', borderRadius: 1, fontSize: 12 }}>
+                  <Box sx={{ mt: 2, p: 1.5, bgcolor: 'var(--phoenix-surface-muted)', borderRadius: 2, fontSize: 12, border: '1px solid var(--phoenix-border-subtle)' }}>
                     Status: {phaseData?.isOpen ? 'Open for submissions' : 'Locked'} / Calendar window: {inDateWindow ? 'today is within the configured dates' : 'today is outside the configured dates'}
                   </Box>
-                </CardContent>
-              </Card>
+              </PremiumCard>
             </Grid>
           );
         })}

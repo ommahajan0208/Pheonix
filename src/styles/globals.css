@@ -1,0 +1,40 @@
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background: var(--phoenix-bg-page);
+  color: var(--phoenix-text-primary);
+  line-height: 1.6;
+  font-feature-settings: 'liga' 1, 'calt' 1;
+}
+
+.phoenix-glass {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.phoenix-elevated {
+  border: 1px solid var(--phoenix-border-subtle);
+  box-shadow: var(--phoenix-shadow-md);
+  border-radius: var(--phoenix-radius-md);
+}
+
+.phoenix-page-shell {
+  background: var(--phoenix-bg-page);
+}
+
+.phoenix-page-enter {
+  animation: phoenix-fade-in 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+button,
+a,
+.MuiCard-root,
+.MuiListItemButton-root,
+.MuiChip-root {
+  transition: border-color var(--phoenix-transition), box-shadow var(--phoenix-transition), background-color var(--phoenix-transition), color var(--phoenix-transition), transform var(--phoenix-transition);
+}

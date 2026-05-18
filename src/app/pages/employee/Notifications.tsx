@@ -1,7 +1,9 @@
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { Box, Card, CardContent, List, ListItem, ListItemButton, ListItemText, Chip } from '@mui/material';
+import { Box, List, ListItem, ListItemButton, ListItemText, Chip } from '@mui/material';
+import PageHeader from '../../components/common/PageHeader';
+import SurfaceCard from '../../components/common/SurfaceCard';
 import { Bell, CheckCircle, Clock, MessageSquare, AlertCircle } from 'lucide-react';
 
 export default function Notifications() {
@@ -34,15 +36,12 @@ export default function Notifications() {
 
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ fontSize: 24, fontWeight: 700, mb: 0.5 }}>Notifications</Box>
-        <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
-          {unreadNotifications.length} unread notification{unreadNotifications.length !== 1 ? 's' : ''}
-        </Box>
-      </Box>
+      <PageHeader
+        title="Notifications"
+        subtitle={`${unreadNotifications.length} unread notification${unreadNotifications.length !== 1 ? 's' : ''}`}
+      />
 
-      <Card sx={{ boxShadow: 2 }}>
-        <CardContent>
+      <SurfaceCard>
           {userNotifications.length === 0 ? (
             <Box sx={{ py: 6, textAlign: 'center', color: 'text.secondary' }}>
               <Bell size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
@@ -92,8 +91,7 @@ export default function Notifications() {
               ))}
             </List>
           )}
-        </CardContent>
-      </Card>
+      </SurfaceCard>
     </Box>
   );
 }

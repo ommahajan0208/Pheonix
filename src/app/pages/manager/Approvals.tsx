@@ -11,7 +11,6 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
-  TextField,
   Button,
   Alert,
   Divider,
@@ -24,6 +23,8 @@ import { Goal } from '../../types';
 import StatusPill from '../../components/common/StatusPill';
 import ProgressBar from '../../components/common/ProgressBar';
 import { getActiveCycle, getWindowMessage, isPhaseOpen } from '../../utils/cycleSchedule';
+import PageHeader from '../../components/common/PageHeader';
+import FormInput from '../../components/common/FormInput';
 import {
   managerApprovalWindowClosedMessage,
   managerDirectReportOnlyMessage,
@@ -135,12 +136,7 @@ export default function Approvals() {
 
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ fontSize: 24, fontWeight: 700, mb: 0.5 }}>Goal Approvals</Box>
-        <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
-          Review and approve team member goals
-        </Box>
-      </Box>
+      <PageHeader title="Goal Approvals" subtitle="Review and approve team member goals" />
 
       {pendingGoals.length === 0 && (
         <Alert severity="success" sx={{ mb: 3 }}>
@@ -309,7 +305,7 @@ export default function Approvals() {
                               if (targetEditBlockMessage) toast.error(targetEditBlockMessage);
                             }}
                           >
-                            <TextField
+                            <FormInput
                               id={`approval-target-${goal.id}`}
                               name={`approvalTarget-${goal.id}`}
                               type="number"
@@ -332,7 +328,7 @@ export default function Approvals() {
                               if (weightageEditBlockMessage) toast.error(weightageEditBlockMessage);
                             }}
                           >
-                            <TextField
+                            <FormInput
                               id={`approval-weightage-${goal.id}`}
                               name={`approvalWeightage-${goal.id}`}
                               type="number"

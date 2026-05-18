@@ -2,15 +2,11 @@ import { useState } from 'react';
 import { useData } from '../../context/DataContext';
 import {
   Box,
-  Card,
-  CardContent,
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
-  TextField,
   MenuItem,
   Button,
   Chip,
@@ -20,6 +16,10 @@ import { Download, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { downloadCsv, toCsv } from '../../utils/governanceAnalytics';
 import { emptyAuditExportMessage } from '../../utils/constraintGuidance';
+import SurfaceCard from '../../components/common/SurfaceCard';
+import ModernTable from '../../components/common/ModernTable';
+import FormInput from '../../components/common/FormInput';
+import PageHeader from '../../components/common/PageHeader';
 
 export default function AuditLogs() {
   const { auditLogs } = useData();
@@ -67,22 +67,19 @@ export default function AuditLogs() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Box sx={{ fontSize: 24, fontWeight: 700, mb: 0.5 }}>Audit Logs</Box>
-          <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
-            Track all system changes and user actions
-          </Box>
-        </Box>
-        <Button variant="contained" startIcon={<Download size={18} />} onClick={handleExport}>
-          Export CSV
-        </Button>
-      </Box>
+      <PageHeader
+        title="Audit Logs"
+        subtitle="Track all system changes and user actions"
+        action={
+          <Button variant="contained" startIcon={<Download size={18} />} onClick={handleExport}>
+            Export CSV
+          </Button>
+        }
+      />
 
-      <Card sx={{ boxShadow: 2, mb: 3 }}>
-        <CardContent>
+      <SurfaceCard sx={{ mb: 3 }}>
           <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-            <TextField
+            <FormInput
               id="audit-log-search"
               name="auditLogSearch"
               size="small"
@@ -91,7 +88,7 @@ export default function AuditLogs() {
               onChange={(e) => setSearchQuery(e.target.value)}
               sx={{ flex: 1 }}
             />
-            <TextField
+            <FormInput
               select
               id="audit-action-filter"
               name="auditActionFilter"
@@ -103,7 +100,7 @@ export default function AuditLogs() {
             >
               <MenuItem value="all">All Actions</MenuItem>
               {actionOptions.map(action => <MenuItem key={action} value={action}>{action}</MenuItem>)}
-            </TextField>
+            </FormInput>
           </Box>
 
           {filteredLogs.length === 0 && (
@@ -112,7 +109,7 @@ export default function AuditLogs() {
             </Alert>
           )}
 
-          <TableContainer>
+          <ModernTable>
             <Table>
               <TableHead>
                 <TableRow>
@@ -215,9 +212,8 @@ export default function AuditLogs() {
                 )}
               </TableBody>
             </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
+          </ModernTable>
+      </SurfaceCard>
     </Box>
   );
 }

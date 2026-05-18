@@ -10,12 +10,10 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
   IconButton,
   MenuItem,
-  TextField,
   Chip,
   Alert,
   Tooltip,
@@ -27,6 +25,9 @@ import ProgressBar from '../../components/common/ProgressBar';
 import CreateGoalDrawer from '../../components/employee/CreateGoalDrawer';
 import { Goal } from '../../types';
 import PageHeader from '../../components/common/PageHeader';
+import FormInput from '../../components/common/FormInput';
+import ModernTable from '../../components/common/ModernTable';
+import SurfaceCard from '../../components/common/SurfaceCard';
 import { getWindowMessage, isPhaseOpen } from '../../utils/cycleSchedule';
 import {
   goalCreationWindowMessage,
@@ -152,7 +153,7 @@ export default function MyGoals() {
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center' }}>
-        <TextField
+        <FormInput
           select
           id="my-goals-cycle"
           name="myGoalsCycle"
@@ -167,7 +168,7 @@ export default function MyGoals() {
               {cycle.name}
             </MenuItem>
           ))}
-        </TextField>
+        </FormInput>
 
         <Chip
           label={`Weightage: ${totalWeightage}/100%`}
@@ -209,7 +210,7 @@ export default function MyGoals() {
               <Box sx={{ fontSize: 14 }}>Click "Add Goal" to create your first goal</Box>
             </Box>
           ) : (
-            <TableContainer>
+            <ModernTable>
               <Table>
                 <TableHead>
                   <TableRow>
@@ -290,7 +291,7 @@ export default function MyGoals() {
                   ))}
                 </TableBody>
               </Table>
-            </TableContainer>
+            </ModernTable>
           )}
         </CardContent>
       </Card>

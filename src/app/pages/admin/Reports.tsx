@@ -3,21 +3,21 @@ import { useData } from '../../context/DataContext';
 import {
   Box,
   Button,
-  Card,
-  CardContent,
   Chip,
   Grid,
   MenuItem,
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
-  TextField,
 } from '@mui/material';
 import { Download, FileSpreadsheet, Users, CheckCircle, Clock } from 'lucide-react';
 import KPICard from '../../components/common/KPICard';
+import PageHeader from '../../components/common/PageHeader';
+import SurfaceCard from '../../components/common/SurfaceCard';
+import ModernTable from '../../components/common/ModernTable';
+import FormInput from '../../components/common/FormInput';
 import { GoalStatus, Quarter } from '../../types';
 import { buildAchievementRows, buildCompletionRows, downloadCsv, toCsv } from '../../utils/governanceAnalytics';
 
@@ -80,17 +80,15 @@ export default function Reports() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Box sx={{ fontSize: 24, fontWeight: 700, mb: 0.5 }}>Reports & Governance</Box>
-          <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
-            Export achievement data and monitor quarterly check-in completion.
-          </Box>
-        </Box>
-        <Button variant="contained" startIcon={<Download size={18} />} onClick={handleExportAchievement}>
-          Export CSV
-        </Button>
-      </Box>
+      <PageHeader
+        title="Reports & Governance"
+        subtitle="Export achievement data and monitor quarterly check-in completion."
+        action={
+          <Button variant="contained" startIcon={<Download size={18} />} onClick={handleExportAchievement}>
+            Export CSV
+          </Button>
+        }
+      />
 
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, md: 4 }}>
@@ -104,11 +102,10 @@ export default function Reports() {
         </Grid>
       </Grid>
 
-      <Card sx={{ boxShadow: 2, mb: 3 }}>
-        <CardContent>
-          <Box sx={{ fontSize: 18, fontWeight: 700, mb: 2 }}>Completion Dashboard</Box>
-          <TableContainer>
-            <Table size="small">
+      <SurfaceCard sx={{ mb: 3 }}>
+          <Box sx={{ fontSize: 'var(--phoenix-text-section)', fontWeight: 700, mb: 2 }}>Completion Dashboard</Box>
+          <ModernTable>
+            <Table>
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 700 }}>Employee</TableCell>
@@ -141,38 +138,36 @@ export default function Reports() {
                 ))}
               </TableBody>
             </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
+          </ModernTable>
+      </SurfaceCard>
 
-      <Card sx={{ boxShadow: 2 }}>
-        <CardContent>
+      <SurfaceCard>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, gap: 2, flexWrap: 'wrap' }}>
             <Box>
               <Box sx={{ fontSize: 18, fontWeight: 700 }}>Achievement Report</Box>
               <Box sx={{ fontSize: 13, color: 'text.secondary' }}>Planned target vs. actual achievement for all employees.</Box>
             </Box>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              <TextField id="report-quarter" name="reportQuarter" select size="small" label="Quarter" value={quarter} onChange={(e) => setQuarter(e.target.value as Quarter)} sx={{ width: 120 }}>
+              <FormInput id="report-quarter" name="reportQuarter" select size="small" label="Quarter" value={quarter} onChange={(e) => setQuarter(e.target.value as Quarter)} sx={{ width: 120 }}>
                 {QUARTERS.map(item => <MenuItem key={item} value={item}>{item}</MenuItem>)}
-              </TextField>
-              <TextField id="report-department" name="reportDepartment" select size="small" label="Department" value={department} onChange={(e) => setDepartment(e.target.value)} sx={{ width: 170 }}>
+              </FormInput>
+              <FormInput id="report-department" name="reportDepartment" select size="small" label="Department" value={department} onChange={(e) => setDepartment(e.target.value)} sx={{ width: 170 }}>
                 <MenuItem value="all">All departments</MenuItem>
                 {departments.map(item => <MenuItem key={item} value={item}>{item}</MenuItem>)}
-              </TextField>
-              <TextField id="report-manager" name="reportManager" select size="small" label="Manager" value={manager} onChange={(e) => setManager(e.target.value)} sx={{ width: 170 }}>
+              </FormInput>
+              <FormInput id="report-manager" name="reportManager" select size="small" label="Manager" value={manager} onChange={(e) => setManager(e.target.value)} sx={{ width: 170 }}>
                 <MenuItem value="all">All managers</MenuItem>
                 {managers.map(item => <MenuItem key={item} value={item}>{item}</MenuItem>)}
-              </TextField>
-              <TextField id="report-status" name="reportStatus" select size="small" label="Status" value={status} onChange={(e) => setStatus(e.target.value as GoalStatus | 'all')} sx={{ width: 150 }}>
+              </FormInput>
+              <FormInput id="report-status" name="reportStatus" select size="small" label="Status" value={status} onChange={(e) => setStatus(e.target.value as GoalStatus | 'all')} sx={{ width: 150 }}>
                 <MenuItem value="all">All statuses</MenuItem>
                 {['draft', 'pending', 'approved', 'rework', 'completed'].map(item => <MenuItem key={item} value={item}>{item}</MenuItem>)}
-              </TextField>
+              </FormInput>
             </Box>
           </Box>
 
-          <TableContainer>
-            <Table size="small">
+          <ModernTable>
+            <Table>
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 700 }}>Employee</TableCell>
@@ -206,9 +201,8 @@ export default function Reports() {
                 ))}
               </TableBody>
             </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
+          </ModernTable>
+      </SurfaceCard>
     </Box>
   );
 }

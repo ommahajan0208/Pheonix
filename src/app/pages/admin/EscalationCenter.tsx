@@ -3,26 +3,26 @@ import { useData } from '../../context/DataContext';
 import {
   Box,
   Button,
-  Card,
-  CardContent,
   Chip,
   Grid,
   MenuItem,
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
   Tabs,
   Tab,
-  TextField,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
 } from '@mui/material';
+import SurfaceCard from '../../components/common/SurfaceCard';
+import ModernTable from '../../components/common/ModernTable';
+import FormInput from '../../components/common/FormInput';
+import PremiumCard from '../../components/common/PremiumCard';
 import { AlertCircle, CheckCircle, Clock, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import KPICard from '../../components/common/KPICard';
@@ -84,9 +84,18 @@ export default function EscalationCenter() {
 
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ fontSize: 24, fontWeight: 700, mb: 0.5 }}>Escalation Center</Box>
-        <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
+      <Box
+        sx={{
+          mb: 3.5,
+          p: 3.5,
+          borderRadius: 'var(--phoenix-radius-lg)',
+          color: '#ffffff',
+          background: 'linear-gradient(135deg, var(--phoenix-escalation-start) 0%, var(--phoenix-escalation-end) 100%)',
+          boxShadow: 'var(--phoenix-shadow-md)',
+        }}
+      >
+        <Box sx={{ fontSize: 34, fontWeight: 700, lineHeight: 1.15, letterSpacing: '-0.02em' }}>Escalation Center</Box>
+        <Box sx={{ fontSize: 14, opacity: 0.88, mt: 0.5 }}>
           Rule-based escalation tracking for goal submission, approval, and quarterly check-ins.
         </Box>
       </Box>
@@ -109,22 +118,19 @@ export default function EscalationCenter() {
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {escalationRules.map(rule => (
           <Grid size={{ xs: 12, md: 4 }} key={rule.id}>
-            <Card sx={{ boxShadow: 2, height: '100%' }}>
-              <CardContent>
+            <PremiumCard sx={{ height: '100%' }} contentSx={{ p: 2.5 }}>
                 <Chip label={rule.active ? 'ACTIVE' : 'INACTIVE'} size="small" color={rule.active ? 'success' : 'default'} sx={{ mb: 1 }} />
                 <Box sx={{ fontSize: 15, fontWeight: 800, mb: 0.5 }}>{rule.name}</Box>
-                <Box sx={{ fontSize: 12, color: 'text.secondary', mb: 1.5 }}>
+                <Box sx={{ fontSize: 12, color: 'var(--phoenix-text-secondary)', mb: 1.5 }}>
                   Trigger after {rule.thresholdDays} day(s), manager at {rule.managerAfterDays}, HR at {rule.hrAfterDays}.
                 </Box>
                 <Chip label={rule.condition.replaceAll('-', ' ')} size="small" variant="outlined" />
-              </CardContent>
-            </Card>
+            </PremiumCard>
           </Grid>
         ))}
       </Grid>
 
-      <Card sx={{ boxShadow: 2, mb: 3 }}>
-        <CardContent sx={{ pb: 0 }}>
+      <SurfaceCard sx={{ mb: 3, pb: 0 }}>
           <Tabs value={selectedStatus} onChange={(_, value) => setSelectedStatus(value)}>
             {(['all', 'open', 'monitoring', 'resolved'] as const).map(status => (
               <Tab
@@ -143,12 +149,10 @@ export default function EscalationCenter() {
               />
             ))}
           </Tabs>
-        </CardContent>
-      </Card>
+      </SurfaceCard>
 
-      <Card sx={{ boxShadow: 2 }}>
-        <CardContent>
-          <TableContainer>
+      <SurfaceCard>
+          <ModernTable>
             <Table>
               <TableHead>
                 <TableRow>
@@ -185,7 +189,7 @@ export default function EscalationCenter() {
                       </TableCell>
                       <TableCell sx={{ maxWidth: 320 }}>{log.reason}</TableCell>
                       <TableCell>
-                        <TextField
+                        <FormInput
                           select
                           id={`escalation-status-${log.id}`}
                           name={`escalationStatus-${log.id}`}
@@ -197,7 +201,7 @@ export default function EscalationCenter() {
                           <MenuItem value="open">Open</MenuItem>
                           <MenuItem value="monitoring">Monitoring</MenuItem>
                           <MenuItem value="resolved">Resolved</MenuItem>
-                        </TextField>
+                        </FormInput>
                       </TableCell>
                       <TableCell>
                         <Button
@@ -217,9 +221,8 @@ export default function EscalationCenter() {
                 )}
               </TableBody>
             </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
+          </ModernTable>
+      </SurfaceCard>
 
       <Dialog open={Boolean(reopenCandidate)} onClose={() => setReopenCandidate(null)}>
         <DialogTitle>Reopen Escalation?</DialogTitle>

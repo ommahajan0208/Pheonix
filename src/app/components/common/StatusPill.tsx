@@ -6,11 +6,11 @@ interface StatusPillProps {
 }
 
 const STATUS_CONFIG: Record<GoalStatus, { label: string; color: string; bgcolor: string }> = {
-  draft: { label: 'Draft', color: '#666', bgcolor: '#f0f0f0' },
-  pending: { label: 'Pending', color: '#ed6c02', bgcolor: '#fff3e0' },
-  approved: { label: 'Approved', color: '#2e7d32', bgcolor: '#e8f5e9' },
-  rework: { label: 'Rework', color: '#d32f2f', bgcolor: '#ffebee' },
-  completed: { label: 'Completed', color: '#2e7d32', bgcolor: '#e8f5e9' },
+  draft: { label: 'Draft', color: '#475569', bgcolor: 'rgba(71,85,105,0.12)' },
+  pending: { label: 'Pending', color: '#b45309', bgcolor: 'rgba(245,158,11,0.14)' },
+  approved: { label: 'Approved', color: '#2e7d32', bgcolor: 'rgba(46,125,50,0.14)' },
+  rework: { label: 'Rework', color: '#b91c1c', bgcolor: 'rgba(220,38,38,0.14)' },
+  completed: { label: 'Completed', color: '#2e7d32', bgcolor: 'rgba(46,125,50,0.14)' },
 };
 
 export default function StatusPill({ status }: StatusPillProps) {
@@ -26,6 +26,8 @@ export default function StatusPill({ status }: StatusPillProps) {
         fontWeight: 600,
         fontSize: 12,
         height: 24,
+        border: `1px solid ${config.color}33`,
+        boxShadow: `0 0 0 1px ${config.color}14 inset`,
       }}
     />
   );

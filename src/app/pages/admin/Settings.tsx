@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   Grid,
-  TextField,
   Switch,
   Button,
   Divider,
@@ -19,6 +18,9 @@ import { Save, Unlock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useData } from '../../context/DataContext';
 import SharedKpiForm from '../../components/common/SharedKpiForm';
+import PageHeader from '../../components/common/PageHeader';
+import FormInput from '../../components/common/FormInput';
+import SurfaceCard from '../../components/common/SurfaceCard';
 import {
   goalPolicyConflictMessage,
   resetSettingsConfirmationMessage,
@@ -62,12 +64,10 @@ export default function Settings() {
 
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ fontSize: 24, fontWeight: 700, mb: 0.5 }}>System Settings</Box>
-        <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
-          Configure global system preferences and policies
-        </Box>
-      </Box>
+      <PageHeader
+        title="System Settings"
+        subtitle="Configure global system preferences and policies"
+      />
 
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 6 }}>
@@ -77,7 +77,7 @@ export default function Settings() {
                 Goal Settings
               </Box>
               <Box sx={{ mb: 2 }}>
-                <TextField
+                <FormInput
                   id="max-goals-per-employee"
                   name="maxGoalsPerEmployee"
                   type="number"
@@ -90,7 +90,7 @@ export default function Settings() {
                 />
               </Box>
               <Box sx={{ mb: 2 }}>
-                <TextField
+                <FormInput
                   id="minimum-weightage-per-goal"
                   name="minimumWeightagePerGoal"
                   type="number"
@@ -103,7 +103,7 @@ export default function Settings() {
                 />
               </Box>
               <Box sx={{ mb: 2 }}>
-                <TextField
+                <FormInput
                   id="required-total-weightage"
                   name="requiredTotalWeightage"
                   type="number"
@@ -202,7 +202,7 @@ export default function Settings() {
                 <Switch defaultChecked slotProps={{ input: { id: 'approval-alerts', name: 'approvalAlerts', 'aria-label': 'Approval alerts' } }} />
               </Box>
               <Box sx={{ mb: 2 }}>
-                <TextField
+                <FormInput
                   id="reminder-days-before-deadline"
                   name="reminderDaysBeforeDeadline"
                   type="number"
@@ -223,7 +223,7 @@ export default function Settings() {
                 Performance Review
               </Box>
               <Box sx={{ mb: 2 }}>
-                <TextField
+                <FormInput
                   id="review-frequency"
                   name="reviewFrequency"
                   select
@@ -236,10 +236,10 @@ export default function Settings() {
                   <option value="monthly">Monthly</option>
                   <option value="quarterly">Quarterly</option>
                   <option value="annually">Annually</option>
-                </TextField>
+                </FormInput>
               </Box>
               <Box sx={{ mb: 2 }}>
-                <TextField
+                <FormInput
                   id="check-in-window-days"
                   name="checkInWindowDays"
                   type="number"
@@ -276,7 +276,7 @@ export default function Settings() {
                 <Switch defaultChecked slotProps={{ input: { id: 'data-encryption', name: 'dataEncryption', 'aria-label': 'Data encryption' } }} />
               </Box>
               <Box sx={{ mb: 2 }}>
-                <TextField
+                <FormInput
                   id="session-timeout-minutes"
                   name="sessionTimeoutMinutes"
                   type="number"
@@ -287,7 +287,7 @@ export default function Settings() {
                 />
               </Box>
               <Box sx={{ mb: 2 }}>
-                <TextField
+                <FormInput
                   id="data-retention-days"
                   name="dataRetentionDays"
                   type="number"
@@ -309,7 +309,7 @@ export default function Settings() {
               </Box>
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField
+                  <FormInput
                     id="smtp-server"
                     name="smtpServer"
                     label="SMTP Server"
@@ -319,7 +319,7 @@ export default function Settings() {
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField
+                  <FormInput
                     id="smtp-port"
                     name="smtpPort"
                     label="SMTP Port"
@@ -329,7 +329,7 @@ export default function Settings() {
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField
+                  <FormInput
                     id="from-email"
                     name="fromEmail"
                     label="From Email"
@@ -344,7 +344,7 @@ export default function Settings() {
 
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
+                  <FormInput
                     id="sso-provider-url"
                     name="ssoProviderUrl"
                     label="SSO Provider URL"
@@ -354,7 +354,7 @@ export default function Settings() {
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
+                  <FormInput
                     id="api-key"
                     name="apiKey"
                     label="API Key"
