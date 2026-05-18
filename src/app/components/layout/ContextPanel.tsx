@@ -27,15 +27,15 @@ export default function ContextPanel() {
     ? goals
       .filter(g => g.status === 'pending')
       .slice(0, 3)
-      .map(g => ({ id: g.id, label: `Review ${g.employeeName}`, path: '/manager/approvals' }))
+      .map(g => ({ id: g.id, label: `Review ${g.employeeName}`, path: '/dashboard/manager/approvals' }))
     : user?.role === 'admin'
       ? escalations
         .filter(e => e.status !== 'resolved')
         .slice(0, 3)
-        .map(e => ({ id: e.id, label: e.title, path: '/admin/escalations' }))
+        .map(e => ({ id: e.id, label: e.title, path: '/dashboard/admin/escalations' }))
       : [
-        { id: 'employee-checkin', label: 'Complete Q2 check-in', path: '/employee/checkin' },
-        { id: 'employee-weightage', label: 'Review goal weightage', path: '/employee/my-goals' },
+        { id: 'employee-checkin', label: 'Complete Q2 check-in', path: '/dashboard/employee/checkin' },
+        { id: 'employee-weightage', label: 'Review goal weightage', path: '/dashboard/employee/my-goals' },
       ];
   const unread = notifications.filter(n => !n.isRead && (!user || n.userId === user.id));
 

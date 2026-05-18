@@ -310,7 +310,7 @@ export default function MyGoals() {
               toast.error(getSubmitBlockMessage());
               return;
             }
-            navigate('/employee/submit-review');
+            navigate('/dashboard/employee/submit-review');
           }}
         >
           Submit for Review

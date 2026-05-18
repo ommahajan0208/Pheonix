@@ -17,30 +17,30 @@ import {
 } from 'lucide-react';
 
 const EMPLOYEE_NAV = [
-  { path: '/employee/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/employee/my-goals', label: 'My Goals', icon: Target },
-  { path: '/employee/submit-review', label: 'Submit Review', icon: CheckCircle },
-  { path: '/employee/checkin', label: 'Quarterly Check-in', icon: Calendar },
-  { path: '/employee/shared-goals', label: 'Shared Goals', icon: Share2 },
-  { path: '/employee/notifications', label: 'Notifications', icon: Bell },
+  { path: '/dashboard/employee/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/dashboard/employee/my-goals', label: 'My Goals', icon: Target },
+  { path: '/dashboard/employee/submit-review', label: 'Submit Review', icon: CheckCircle },
+  { path: '/dashboard/employee/checkin', label: 'Quarterly Check-in', icon: Calendar },
+  { path: '/dashboard/employee/shared-goals', label: 'Shared Goals', icon: Share2 },
+  { path: '/dashboard/employee/notifications', label: 'Notifications', icon: Bell },
 ];
 
 const MANAGER_NAV = [
-  { path: '/manager/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/manager/team-goals', label: 'Team Goals', icon: Target },
-  { path: '/manager/approvals', label: 'Approvals', icon: CheckCircle },
-  { path: '/manager/checkin', label: 'Manager Check-in', icon: Calendar },
-  { path: '/manager/analytics', label: 'Team Analytics', icon: TrendingUp },
+  { path: '/dashboard/manager/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/dashboard/manager/team-goals', label: 'Team Goals', icon: Target },
+  { path: '/dashboard/manager/approvals', label: 'Approvals', icon: CheckCircle },
+  { path: '/dashboard/manager/checkin', label: 'Manager Check-in', icon: Calendar },
+  { path: '/dashboard/manager/analytics', label: 'Team Analytics', icon: TrendingUp },
 ];
 
 const ADMIN_NAV = [
-  { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/admin/cycles', label: 'Cycle Management', icon: Calendar },
-  { path: '/admin/org-hierarchy', label: 'Org Hierarchy', icon: Network },
-  { path: '/admin/audit-logs', label: 'Audit Logs', icon: FileText },
-  { path: '/admin/reports', label: 'Reports', icon: TrendingUp },
-  { path: '/admin/escalations', label: 'Escalation Center', icon: AlertCircle },
-  { path: '/admin/settings', label: 'Settings', icon: Settings },
+  { path: '/dashboard/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/dashboard/admin/cycles', label: 'Cycle Management', icon: Calendar },
+  { path: '/dashboard/admin/org-hierarchy', label: 'Org Hierarchy', icon: Network },
+  { path: '/dashboard/admin/audit-logs', label: 'Audit Logs', icon: FileText },
+  { path: '/dashboard/admin/reports', label: 'Reports', icon: TrendingUp },
+  { path: '/dashboard/admin/escalations', label: 'Escalation Center', icon: AlertCircle },
+  { path: '/dashboard/admin/settings', label: 'Settings', icon: Settings },
 ];
 
 export default function Sidebar() {

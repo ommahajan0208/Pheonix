@@ -13,9 +13,12 @@ export default function RootLayout() {
     return <Navigate to="/login" replace />;
   }
 
-  const routeRole = location.pathname.split('/')[1];
-  if (['employee', 'manager', 'admin'].includes(routeRole) && routeRole !== user.role) {
-    return <Navigate to={`/${user.role}/dashboard`} replace />;
+  const routeRole = location.pathname.split('/')[2];
+  if (!['employee', 'manager', 'admin'].includes(routeRole)) {
+    return <Navigate to={`/dashboard/${user.role}/dashboard`} replace />;
+  }
+  if (routeRole !== user.role) {
+    return <Navigate to={`/dashboard/${user.role}/dashboard`} replace />;
   }
 
   return (

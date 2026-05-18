@@ -1,6 +1,8 @@
 import { createBrowserRouter, Navigate } from 'react-router';
 import RootLayout from './layouts/RootLayout';
+import PublicLayout from './layouts/PublicLayout';
 import Login from './pages/auth/Login';
+import Landing from './pages/home/Landing';
 
 // Employee pages
 import EmployeeDashboard from './pages/employee/Dashboard';
@@ -28,21 +30,28 @@ import Settings from './pages/admin/Settings';
 
 export const router = createBrowserRouter([
   {
+    path: '/',
+    Component: PublicLayout,
+    children: [
+      {
+        index: true,
+        Component: Landing,
+      },
+    ],
+  },
+  {
     path: '/login',
     Component: Login,
   },
   {
-    path: '/',
+    path: '/dashboard',
     Component: RootLayout,
     children: [
-      {
-        index: true,
-        element: <Navigate to="/employee/dashboard" replace />,
-      },
       // Employee routes
       {
         path: 'employee',
         children: [
+          { index: true, element: <Navigate to="dashboard" replace /> },
           { path: 'dashboard', Component: EmployeeDashboard },
           { path: 'my-goals', Component: MyGoals },
           { path: 'submit-review', Component: GoalSubmitReview },
@@ -55,6 +64,7 @@ export const router = createBrowserRouter([
       {
         path: 'manager',
         children: [
+          { index: true, element: <Navigate to="dashboard" replace /> },
           { path: 'dashboard', Component: ManagerDashboard },
           { path: 'team-goals', Component: TeamGoals },
           { path: 'approvals', Component: Approvals },
@@ -66,6 +76,7 @@ export const router = createBrowserRouter([
       {
         path: 'admin',
         children: [
+          { index: true, element: <Navigate to="dashboard" replace /> },
           { path: 'dashboard', Component: AdminDashboard },
           { path: 'cycles', Component: CycleManagement },
           { path: 'org-hierarchy', Component: OrgHierarchy },

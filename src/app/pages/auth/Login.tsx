@@ -13,13 +13,13 @@ export default function Login() {
   const handleLogin = () => {
     if (email && password) {
       login(email, password);
-      navigate('/employee/dashboard');
+      navigate('/dashboard/employee/dashboard');
     }
   };
 
   const handleDemoLogin = (role: 'employee' | 'manager' | 'admin') => {
     loginAsRole(role);
-    navigate(`/${role}/dashboard`);
+    navigate(`/dashboard/${role}/dashboard`);
   };
 
   return (

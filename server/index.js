@@ -136,19 +136,19 @@ const escalationRuleSeeds = [
 ];
 
 const notificationSeeds = [
-  ['notif-001', 'emp-001', 'approval', 'Goal Approved', 'Your goal "Increase API Response Time by 25%" has been approved', '/employee/my-goals', 0, '2026-05-15T00:00:00.000Z'],
-  ['notif-002', 'emp-001', 'deadline', 'Deadline Approaching', 'Q2 Check-in deadline is in 3 days', '/employee/checkin', 0, '2026-05-14T00:00:00.000Z'],
-  ['notif-003', 'mgr-001', 'approval', 'Approvals waiting', '3 submitted goals need manager review', '/manager/approvals', 0, '2026-05-16T00:00:00.000Z'],
-  ['notif-004', 'admin-001', 'deadline', 'Escalations increased', '2 goals are overdue or at risk this cycle', '/admin/escalations', 0, '2026-05-16T00:00:00.000Z'],
-  ['notif-005', 'mgr-002', 'checkin', 'Product check-ins ready', '3 product team check-ins are ready for manager comments', '/manager/checkin', 0, '2026-07-19T00:00:00.000Z'],
-  ['notif-006', 'mgr-003', 'comment', 'Sales feedback pending', '2 sales team check-ins still need feedback notes', '/manager/checkin', 0, '2026-07-20T00:00:00.000Z'],
-  ['notif-007', 'admin-002', 'deadline', 'Governance review', 'Review completion heatmap and unresolved escalations', '/admin/reports', 0, '2026-07-21T00:00:00.000Z'],
-  ['notif-008', 'emp-001', 'comment', 'Manager feedback added', 'Sarah added Q1 feedback on your engineering efficiency goal', '/employee/checkin', 0, '2026-07-22T00:00:00.000Z'],
-  ['notif-009', 'emp-001', 'checkin', 'Shared KPI needs attention', 'Update evidence for the shared engineering efficiency KPI before Q2 closes', '/employee/shared-goals', 0, '2026-07-23T00:00:00.000Z'],
-  ['notif-010', 'mgr-001', 'checkin', 'Priya check-in reviewed', 'Release readiness feedback was saved for Priya Nair', '/manager/checkin', 1, '2026-07-22T00:00:00.000Z'],
-  ['notif-011', 'mgr-001', 'approval', 'Rework returned', 'Priya Nair has one goal in rework and one pending review', '/manager/approvals', 0, '2026-05-25T00:00:00.000Z'],
-  ['notif-012', 'admin-001', 'comment', 'Locked goal edited', 'Admin override changed the AI Triage Pilot target after lock', '/admin/audit-logs', 0, '2026-07-25T00:00:00.000Z'],
-  ['notif-013', 'admin-001', 'checkin', 'Manager comments lagging', 'Several approved goals have employee check-ins without manager comments', '/admin/reports', 0, '2026-07-26T00:00:00.000Z'],
+  ['notif-001', 'emp-001', 'approval', 'Goal Approved', 'Your goal \"Increase API Response Time by 25%\" has been approved', '/dashboard/employee/my-goals', 0, '2026-05-15T00:00:00.000Z'],
+  ['notif-002', 'emp-001', 'deadline', 'Deadline Approaching', 'Q2 Check-in deadline is in 3 days', '/dashboard/employee/checkin', 0, '2026-05-14T00:00:00.000Z'],
+  ['notif-003', 'mgr-001', 'approval', 'Approvals waiting', '3 submitted goals need manager review', '/dashboard/manager/approvals', 0, '2026-05-16T00:00:00.000Z'],
+  ['notif-004', 'admin-001', 'deadline', 'Escalations increased', '2 goals are overdue or at risk this cycle', '/dashboard/admin/escalations', 0, '2026-05-16T00:00:00.000Z'],
+  ['notif-005', 'mgr-002', 'checkin', 'Product check-ins ready', '3 product team check-ins are ready for manager comments', '/dashboard/manager/checkin', 0, '2026-07-19T00:00:00.000Z'],
+  ['notif-006', 'mgr-003', 'comment', 'Sales feedback pending', '2 sales team check-ins still need feedback notes', '/dashboard/manager/checkin', 0, '2026-07-20T00:00:00.000Z'],
+  ['notif-007', 'admin-002', 'deadline', 'Governance review', 'Review completion heatmap and unresolved escalations', '/dashboard/admin/reports', 0, '2026-07-21T00:00:00.000Z'],
+  ['notif-008', 'emp-001', 'comment', 'Manager feedback added', 'Sarah added Q1 feedback on your engineering efficiency goal', '/dashboard/employee/checkin', 0, '2026-07-22T00:00:00.000Z'],
+  ['notif-009', 'emp-001', 'checkin', 'Shared KPI needs attention', 'Update evidence for the shared engineering efficiency KPI before Q2 closes', '/dashboard/employee/shared-goals', 0, '2026-07-23T00:00:00.000Z'],
+  ['notif-010', 'mgr-001', 'checkin', 'Priya check-in reviewed', 'Release readiness feedback was saved for Priya Nair', '/dashboard/manager/checkin', 1, '2026-07-22T00:00:00.000Z'],
+  ['notif-011', 'mgr-001', 'approval', 'Rework returned', 'Priya Nair has one goal in rework and one pending review', '/dashboard/manager/approvals', 0, '2026-05-25T00:00:00.000Z'],
+  ['notif-012', 'admin-001', 'comment', 'Locked goal edited', 'Admin override changed the AI Triage Pilot target after lock', '/dashboard/admin/audit-logs', 0, '2026-07-25T00:00:00.000Z'],
+  ['notif-013', 'admin-001', 'checkin', 'Manager comments lagging', 'Several approved goals have employee check-ins without manager comments', '/dashboard/admin/reports', 0, '2026-07-26T00:00:00.000Z'],
 ];
 
 const auditLogSeeds = [
@@ -595,7 +595,7 @@ function notifyGoalSubmitted(employeeId, cycleId) {
   const employee = getUserById(employeeId);
   const manager = managerForEmployee(employeeId);
   if (!employee || !manager) return;
-  const link = `/manager/approvals?employeeId=${encodeURIComponent(employeeId)}${cycleId ? `&cycleId=${encodeURIComponent(cycleId)}` : ''}`;
+  const link = `/dashboard/manager/approvals?employeeId=${encodeURIComponent(employeeId)}${cycleId ? `&cycleId=${encodeURIComponent(cycleId)}` : ''}`;
   const eventKey = `goal-submitted-${employeeId}-${cycleId || 'active'}`;
   const message = `${employee.name} submitted a goal sheet for review.`;
   addNotification({ eventKey, userId: manager.id, type: 'submission', title: 'Goal sheet submitted', message, link });
@@ -606,7 +606,7 @@ function notifyGoalSubmitted(employeeId, cycleId) {
 function notifyGoalDecision(employeeId, cycleId, approved) {
   const employee = getUserById(employeeId);
   if (!employee) return;
-  const link = `/employee/my-goals${cycleId ? `?cycleId=${encodeURIComponent(cycleId)}` : ''}`;
+  const link = `/dashboard/employee/my-goals${cycleId ? `?cycleId=${encodeURIComponent(cycleId)}` : ''}`;
   const eventKey = `goal-${approved ? 'approved' : 'returned'}-${employeeId}-${cycleId || 'active'}`;
   const title = approved ? 'Goal sheet approved' : 'Goal sheet returned for rework';
   const message = approved ? 'Your goal sheet has been approved and locked.' : 'Your manager returned your goal sheet for updates.';
@@ -617,7 +617,7 @@ function notifyGoalDecision(employeeId, cycleId, approved) {
 function notifyGoalUpdatedForManager(goal) {
   const manager = managerForEmployee(goal.employeeId);
   if (!manager) return;
-  const link = `/manager/approvals?employeeId=${encodeURIComponent(goal.employeeId)}&cycleId=${encodeURIComponent(goal.cycleId)}`;
+  const link = `/dashboard/manager/approvals?employeeId=${encodeURIComponent(goal.employeeId)}&cycleId=${encodeURIComponent(goal.cycleId)}`;
   const eventKey = `goal-updated-${goal.id}-${Date.now()}`;
   const message = `${goal.employeeName} updated "${goal.title}".`;
   queueEmail(eventKey, manager, 'Goal updated', message, link);
@@ -627,7 +627,7 @@ function notifyGoalUpdatedForManager(goal) {
 function notifyCheckInSubmitted(goal, quarter) {
   const manager = managerForEmployee(goal.employeeId);
   if (!manager) return;
-  const link = `/manager/checkin?employeeId=${encodeURIComponent(goal.employeeId)}&goalId=${encodeURIComponent(goal.id)}&quarter=${encodeURIComponent(quarter)}`;
+  const link = `/dashboard/manager/checkin?employeeId=${encodeURIComponent(goal.employeeId)}&goalId=${encodeURIComponent(goal.id)}&quarter=${encodeURIComponent(quarter)}`;
   const eventKey = `checkin-submitted-${goal.id}-${quarter}`;
   const message = `${goal.employeeName} submitted a ${quarter} check-in for "${goal.title}".`;
   queueEmail(eventKey, manager, `${quarter} check-in submitted`, message, link);
@@ -658,7 +658,7 @@ function runCheckInReminders() {
       rows.forEach((row) => {
         const employee = getUserById(row.employeeId);
         if (!employee) return;
-        const link = `/employee/checkin?quarter=${encodeURIComponent(quarter)}`;
+        const link = `/dashboard/employee/checkin?quarter=${encodeURIComponent(quarter)}`;
         const eventKey = `checkin-reminder-${dateKey}-${quarter}-${employee.id}`;
         const id = queueEmail(eventKey, employee, `${quarter} check-in reminder`, `${row.missingCount} approved goal check-in(s) are still incomplete.`, link);
         if (id) inserted.push(id);
@@ -1075,10 +1075,10 @@ function getAuditLogs(filters = {}) {
 
 function bootstrap(user = { role: 'admin' }) {
   const activities = [
-    { id: 'activity-001', title: 'Goal approved', description: 'Increase API Response Time by 25% was approved by Sarah Johnson.', tone: 'success', createdAt: '2026-05-16T09:15:00.000Z', link: '/employee/my-goals' },
-    { id: 'activity-002', title: 'Q2 check-in window', description: 'Employee check-ins are due in 5 days.', tone: 'warning', createdAt: '2026-05-15T12:00:00.000Z', link: '/employee/checkin' },
-    { id: 'activity-003', title: 'Analytics refreshed', description: 'Team completion trends were recalculated for FY 2026.', tone: 'analytics', createdAt: '2026-05-15T08:00:00.000Z', link: '/manager/analytics' },
-    { id: 'activity-004', title: 'Escalation opened', description: 'Cloud Cost Guardrails is overdue and below target progress.', tone: 'error', createdAt: '2026-05-14T15:00:00.000Z', link: '/admin/escalations' },
+    { id: 'activity-001', title: 'Goal approved', description: 'Increase API Response Time by 25% was approved by Sarah Johnson.', tone: 'success', createdAt: '2026-05-16T09:15:00.000Z', link: '/dashboard/employee/my-goals' },
+    { id: 'activity-002', title: 'Q2 check-in window', description: 'Employee check-ins are due in 5 days.', tone: 'warning', createdAt: '2026-05-15T12:00:00.000Z', link: '/dashboard/employee/checkin' },
+    { id: 'activity-003', title: 'Analytics refreshed', description: 'Team completion trends were recalculated for FY 2026.', tone: 'analytics', createdAt: '2026-05-15T08:00:00.000Z', link: '/dashboard/manager/analytics' },
+    { id: 'activity-004', title: 'Escalation opened', description: 'Cloud Cost Guardrails is overdue and below target progress.', tone: 'error', createdAt: '2026-05-14T15:00:00.000Z', link: '/dashboard/admin/escalations' },
   ];
   const escalationLogs = user.role === 'admin' ? buildEscalationLogs() : [];
   const escalations = escalationLogs.slice(0, 5).map((log) => ({
@@ -1343,7 +1343,7 @@ app.post('/api/escalations/run', (req, res) => {
         'deadline',
         `Escalation: ${log.ruleName}`,
         log.reason,
-        '/admin/escalations',
+        '/dashboard/admin/escalations',
         0,
         nowIso()
       );

@@ -53,7 +53,7 @@ export default function TopNavbar() {
   const handleSwitchRole = (role: 'employee' | 'manager' | 'admin') => {
     switchRole(role);
     handleClose();
-    navigate(`/${role}/dashboard`);
+    navigate(`/dashboard/${role}/dashboard`);
   };
 
   return (
