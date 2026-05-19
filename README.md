@@ -3,9 +3,35 @@
 ## Overview
 Pheonix is a comprehensive goal management and performance tracking system designed to manage employee goals, quarterly check-ins, and performance analytics across organizational hierarchies. The system supports goal creation, manager approval workflows, achievement tracking, and detailed governance reporting.
 
+---
+
+### Landing Page
+
+![Pheonix Landing Page Hero](docs/images/Screenshot%202026-05-18%20120653.png)
+![How Pheonix Works](docs/images/Screenshot%202026-05-18%20120705.png)
+![Admin Platform Showcase](docs/images/Screenshot%202026-05-18%20120718.png)
+
+---
+
+### A Glimpse Inside the System
+
+| Employee Dashboard | Manager Dashboard | Admin Dashboard |
+|---|---|---|
+| ![Employee Dashboard](docs/images/Screenshot%202026-05-18%20190058.png) | ![Manager Dashboard](docs/images/Screenshot%202026-05-18%20190156.png) | ![Admin Dashboard](docs/images/Screenshot%202026-05-18%20190256.png) |
+
+| My Goals | Goal Approvals | Team Analytics |
+|---|---|---|
+| ![My Goals](docs/images/Screenshot%202026-05-18%20190109.png) | ![Goal Approvals](docs/images/Screenshot%202026-05-18%20190213.png) | ![Team Analytics](docs/images/Screenshot%202026-05-18%20190232.png) |
+
+| Reports & Governance | Escalation Center | Audit Logs |
+|---|---|---|
+| ![Reports](docs/images/Screenshot%202026-05-18%20190333.png) | ![Escalation Center](docs/images/Screenshot%202026-05-18%20190340.png) | ![Audit Logs](docs/images/Screenshot%202026-05-18%20190325.png) |
+
+---
+
 ## Table of Contents
-1. [Phase 1 - Goal Creation & Approval](#phase-1--goal-creation--approval-must-have)
-2. [Phase 2 - Achievement Tracking & Quarterly Check-ins](#phase-2--achievement-tracking--quarterly-check-ins-must-have)
+1. [Goal Creation & Approval](#goal-creation--approval)
+2. [Achievement Tracking & Quarterly Check-ins](#achievement-tracking--quarterly-check-ins)
 3. [Check-in Schedule](#check-in-schedule)
 4. [User Roles & Personas](#user-roles--personas)
 5. [Escalation Module](#escalation-module-rule-based)
@@ -16,7 +42,7 @@ Pheonix is a comprehensive goal management and performance tracking system desig
 
 ---
 
-## Phase 1 - Goal Creation & Approval (Must-Have)
+## Goal Creation & Approval 
 
 ### Employee Goal Creation Interface
 - **Thrust Area Selection**: Employees select a relevant Thrust Area for each goal
@@ -48,7 +74,7 @@ Pheonix is a comprehensive goal management and performance tracking system desig
 
 ---
 
-## Phase 2 - Achievement Tracking & Quarterly Check-ins (Must-Have)
+## Achievement Tracking & Quarterly Check-ins 
 
 ### Achievement Update Interface
 - **Quarterly Actuals Logging**: Employees enter Actual Achievement against Planned Targets each quarter
@@ -82,9 +108,9 @@ The portal enforces the following quarterly windows for achievement capture and 
 | Period | Window Opens | Action |
 |--------|--------------|--------|
 | **Q1 Check-in** | 1st May | Goal Creation, Submission & Approval |
-| **Q2 Check-in** | July | Progress Update -- Planned vs. Actual |
-| **Q3 Check-in** | October | Progress Update -- Planned vs. Actual |
-| **Q4 / Annual** | January | Progress Update -- Planned vs. Actual |
+| **Q2 Check-in** | July | Progress Update - Planned vs. Actual |
+| **Q3 Check-in** | October | Progress Update - Planned vs. Actual |
+| **Q4 / Annual** | January | Progress Update - Planned vs. Actual |
 | **Annual Close** | March / April | Final Achievement Capture |
 
 ---
@@ -234,7 +260,7 @@ Comprehensive breakdown by:
 ## Getting Started
 
 ### User Guide
-For comprehensive guidance on using the Pheonix platform, including step-by-step walkthroughs, best practices, and troubleshooting tips, please refer to the **[📖 User Guide](docs/USER_GUIDE.md)**.
+For comprehensive guidance on using the Pheonix platform, including step-by-step walkthroughs, best practices, and troubleshooting tips, please refer to the 📖**[User Guide](docs/USER_GUIDE.md)**.
 
 The User Guide covers:
 - How to navigate the portal
@@ -251,4 +277,3 @@ The User Guide covers:
 - **Backend**: Node.js
 - **Database**: SQLite
 - **Styling**: Tailwind CSS, Shadcn UI Components
-
