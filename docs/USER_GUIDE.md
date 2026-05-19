@@ -35,7 +35,7 @@
 
 ### Login
 
-![Login Screen](images/Screenshot%202026-05-17%20105734.png)
+![Login Screen](images/Screenshot%202026-05-18%20125953.png)
 
 The login screen is your entry point to Pheonix. You can sign in with your company credentials (email + password), or use one of the **Demo Access** shortcuts at the bottom to instantly enter the portal as a specific role such as Employee (John Smith), Manager (Sarah Johnson), or Admin (Alex Chen).
 
@@ -69,7 +69,7 @@ The **Context panel** is persistent across all pages - keep an eye on it for dea
 
 ### 2.1 Employee Dashboard
 
-![Employee Dashboard](images/Screenshot%202026-05-17%20105746.png)
+![Employee Dashboard](images/Screenshot%202026-05-18%20190058.png)
 
 Your personal home screen. At the top you'll see four KPI tiles: Goals Created, Approved, Weightage status, and Avg Completion - giving you an instant health check on your cycle performance. Below that, your goal cards scroll down the left, and the **Progress Snapshot** donut ring on the right shows overall completion at a glance. The **Upcoming Deadlines** panel keeps your nearest due dates visible without leaving the page.
 
@@ -82,7 +82,7 @@ Your personal home screen. At the top you'll see four KPI tiles: Goals Created, 
 
 ### 2.2 My Goals
 
-![My Goals](images/Screenshot%202026-05-17%20105756.png)
+![My Goals](images/Screenshot%202026-05-18%20190109.png)
 
 This is your primary workspace during the goal-setting phase. Each goal appears as a table row showing its title, thrust area, unit of measure (UoM), target, weightage badge, progress bar, status pill, and edit/delete actions. The **Weightage: 100/100%** chip at the top turns green when your allocation is valid. The **+ Add Goal** button opens the goal creation drawer.
 
@@ -102,7 +102,7 @@ This is your primary workspace during the goal-setting phase. Each goal appears 
 
 ### 2.3 Goal Submission Review
 
-![Goal Submission Review](images/Screenshot%202026-05-17%20105806.png)
+![Goal Submission Review](images/Screenshot%202026-05-18%20190117.png)
 
 A read-only summary of your complete goal sheet before you formally submit it to your manager. The **Validation Checklist** at the top confirms three rules in green - total weightage equals 100%, goal count is within the 8-goal limit, and every goal meets the 10% minimum. Below that, all goals are listed as cards with their thrust area, target, weightage, status, progress, and deadline.
 
@@ -117,7 +117,7 @@ A read-only summary of your complete goal sheet before you formally submit it to
 
 ### 2.4 Quarterly Check-in
 
-![Quarterly Check-in](images/Screenshot%202026-05-17%20105816.png)
+![Quarterly Check-in](images/Screenshot%202026-05-18%20190129.png)
 
 The achievement logging form for each quarter. Switch between Q1, Q2, Q3, and Q4 using the tab bar. For each approved goal, you fill in a **Planned** figure, an **Actual** figure, and (where applicable) a **Completion Date**. The **Q1 Status Overview** donut ring on the right shows how many goals are Not Started, On Track, or Completed.
 
@@ -132,7 +132,7 @@ The achievement logging form for each quarter. Switch between Q1, Q2, Q3, and Q4
 
 ### 2.5 Shared Goals
 
-![Shared Goals](images/Screenshot%202026-05-17%20105824.png)
+![Shared Goals](images/Screenshot%202026-05-18%20190137.png)
 
 Goals that were pushed to you by your manager or admin as departmental KPIs. The goal title, description, and target are **read-only**, you can only adjust the **My Weightage** slider to reflect your relative contribution. The **primary owner** field tells you who is responsible for the overall achievement, and the progress bar syncs automatically when the owner updates their actuals.
 
@@ -145,8 +145,7 @@ Goals that were pushed to you by your manager or admin as departmental KPIs. The
 
 ### 2.6 Notifications
 
-![Notifications](images/Screenshot%202026-05-17%20105832.png)
-![Role Switch Menu](images/Screenshot%202026-05-17%20105852.png)
+![Notifications](images/Screenshot%202026-05-18%20190145.png)
 
 The notifications page lists all system alerts in reverse chronological order. Each item shows an icon (bell for system alerts, chat bubble for comments, tick for approvals, clock for deadlines), a title, a brief description, the date and time, and a **New** badge until read.
 
@@ -158,7 +157,7 @@ The notifications page lists all system alerts in reverse chronological order. E
   - **Goal Approved** - one of your goals was approved and locked
   - **Deadline Approaching** - a check-in or goal deadline is within a few days
 
-The second screenshot above shows the **role-switch dropdown** that appears when you click your avatar - use this to switch between Employee, Manager, and Admin views in demo mode without logging out.
+We also have a **role-switch dropdown** that appears when you click your avatar - use this to switch between Employee, Manager, and Admin views in demo mode without logging out.
 
 ---
 
@@ -166,7 +165,7 @@ The second screenshot above shows the **role-switch dropdown** that appears when
 
 ### 3.1 Manager Dashboard
 
-![Manager Dashboard](images/Screenshot%202026-05-17%20105906.png)
+![Manager Dashboard](images/Screenshot%202026-05-18%20190156.png)
 
 Your team overview. Four KPI tiles show Team Members (direct reports), Pending Approvals, Approved Goals, and At-Risk count. The **Goals by Thrust Area** bar chart gives a quick distribution view. **Team Performance** cards list each direct report with their goal count and average completion percentage. The **Quick Actions** panel on the right lets you jump directly to Review Pending Approvals, Conduct Check-ins, or View Team Analytics. The **Recent Activity** feed logs the latest submissions, deadline notices, and completions.
 
@@ -179,7 +178,7 @@ Your team overview. Four KPI tiles show Team Members (direct reports), Pending A
 
 ### 3.2 Team Goals
 
-![Team Goals](images/Screenshot%202026-05-17%20105918.png)
+![Team Goals](images/Screenshot%202026-05-18%20190205.png)
 
 Two things live on this page. At the top is the **Push Shared Department KPI** form - fill in the KPI title, thrust area, primary owner, description, UoM, scoring direction, target, default weightage, and tick the recipient checkboxes, then click **Push Shared KPI** to distribute it to selected team members' goal sheets. Below the form, the full list of team goals is visible, filterable by employee.
 
@@ -194,7 +193,7 @@ Two things live on this page. At the top is the **Push Shared Department KPI** f
 
 ### 3.3 Goal Approvals
 
-![Goal Approvals](images/Screenshot%202026-05-17%20105926.png)
+![Goal Approvals](images/Screenshot%202026-05-18%20190213.png)
 
 Your primary approval workspace. The left panel lists team members with a pending count badge. Click a name to load their goal sheet on the right. Each goal card shows the thrust area, UoM, target, weightage, progress bar, and current status. Approved goals display a lock icon and a note that admin intervention is required for further edits. At the top of the sheet, **Approve Sheet** and **Return for Rework** buttons control the outcome.
 
@@ -210,7 +209,7 @@ Your primary approval workspace. The left panel lists team members with a pendin
 
 ### 3.4 Manager Check-in
 
-![Manager Check-in](images/Screenshot%202026-05-17%20105934.png)
+![Manager Check-in](images/Screenshot%202026-05-18%20190222.png)
 
 The check-in review and documentation screen. Select a team member from the **Employee** dropdown and a quarter from the **Quarter** dropdown to load their planned vs. actual data in a table (Goal, Target, Planned, Actual, Score, Status). On the right, the **Structured Check-in Comment** panel has three text areas: Discussion Summary, Blockers / Support Needed, and Next Actions. Click **Save Check-in Comment** when done.
 
@@ -225,7 +224,9 @@ The check-in review and documentation screen. Select a team member from the **Em
 
 ### 3.5 Team Analytics
 
-![Team Analytics](images/Screenshot%202026-05-17%20105941.png)
+![Team Analytics1](images/Screenshot%202026-05-18%20190232.png)
+![Team Analytics2](images/Screenshot%202026-05-18%20190246.png)
+
 
 A full analytics view of your team's performance. Four KPI tiles show Total Goals, Approved count, Avg Progress percentage, and at risk count. Below that, four charts give deeper insight:
 
@@ -248,7 +249,7 @@ A full analytics view of your team's performance. Four KPI tiles show Total Goal
 
 ### 4.1 Admin Dashboard
 
-![Admin Dashboard](images/Screenshot%202026-05-17%20105951.png)
+![Admin Dashboard](images/Screenshot%202026-05-18%20190256.png)
 
 The organization-level control center. Four KPI tiles show Total Employees, Total Goals for the cycle, Pending Approvals awaiting manager review, and Active Cycles. The **Cycle Phase Completion** bar chart shows completion % across Q1 Check-in, Q3 Check-in, and Final Review. **Goals by Department** gives a breakdown of goal count by department. **System Health** progress bars show Goal Completion Rate, Manager Engagement, and Employee Participation. The **Quick Actions** panel links directly to Manage Cycles, View Audit Logs, Generate Reports, and Escalation Center.
 
@@ -261,7 +262,7 @@ The organization-level control center. Four KPI tiles show Total Employees, Tota
 
 ### 4.2 Cycle Management
 
-![Cycle Management](images/Screenshot%202026-05-17%20110002.png)
+![Cycle Management](images/Screenshot%202026-05-18%20190304.png)
 
 Configure the performance cycle and its phases. The top section shows the active cycle (e.g. FY 2026, running 1/5/2026–30/4/2027) with an **Active** badge. A **Cycle Timeline** strip visualizes all five phases in sequence. Below that, each phase has its own card with a toggle (on/off), start/end date pickers, and a status message explaining whether the window is open or locked.
 
@@ -285,7 +286,7 @@ Configure the performance cycle and its phases. The top section shows the active
 
 ### 4.3 Audit Logs
 
-![Audit Logs](images/Screenshot%202026-05-17%20110040.png)
+![Audit Logs](images/Screenshot%202026-05-18%20190325.png)
 
 A full, searchable log of every system action. Each row shows a **Timestamp**, the **User** who made the change (with their role), the **Action** (color-coded pill e.g. Updated Escalation Status, Opened Cycle Phase, Updated Locked Goal, Requested Goal Sheet Rework), the **Goal** affected, a **Locked Change** badge for post-lock edits, and **Before / After** snapshots of the changed fields.
 
@@ -300,7 +301,7 @@ Use the **Search logs** bar to filter by keyword, or the **Filter by Action** dr
 
 ### 4.4 Reports & Governance
 
-![Reports & Governance](images/Screenshot%202026-05-17%20110047.png)
+![Reports & Governance](images/Screenshot%202026-05-18%20190333.png)
 
 A completion dashboard with exportable achievement data. Three KPI tiles show **Approved Goals** (eligible for check-ins), **Employee Completion %** (Q1 check-ins submitted), and **Manager Completion %** (Q1 manager comments logged). Below that, the **Completion Dashboard** table lists every employee with their manager, department, goals count, employee done ratio, manager done ratio, and a status pill - Complete (green), Manager pending (orange), or Employee pending (red).
 
@@ -313,7 +314,7 @@ A completion dashboard with exportable achievement data. Three KPI tiles show **
 
 ### 4.5 Escalation Center
 
-![Escalation Center](images/Screenshot%202026-05-17%20110054.png)
+![Escalation Center](images/Screenshot%202026-05-18%20190340.png)
 
 Rule-based escalation tracking. Four KPI tiles at the top show Open Escalations (need action), Manager Level, HR Level (skip-level / HR), and Active Rules (demo configuration). Below that, three **Active** rule cards define the triggers:
 
@@ -336,11 +337,11 @@ Filter the log using the tabs: **All**, **open**, **monitoring**, **resolved**.
 
 ### 4.6 Settings
 
-![Settings -- Goal Settings & Admin Goal Intervention](images/Screenshot%202026-05-17%20110102.png)
+![Settings -- Goal Settings & Admin Goal Intervention](images/Screenshot%202026-05-18%20190347.png)
 
-![Settings -- Push Shared KPI, Notification & Performance Review](images/Screenshot%202026-05-17%20110253.png)
+![Settings -- Push Shared KPI, Notification & Performance Review](images/Screenshot%202026-05-18%20190403.png)
 
-![Settings -- Security & Compliance, Integration Settings](images/Screenshot%202026-05-17%20110312.png)
+![Settings -- Security & Compliance, Integration Settings](images/Screenshot%202026-05-18%20190409.png)
 
 The Settings page is a single scrollable screen that controls every global policy and integration for the portal. It is divided into five sections:
 
